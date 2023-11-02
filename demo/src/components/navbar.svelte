@@ -1,0 +1,39 @@
+<script lang="ts">
+  import {getContext} from 'svelte';
+  export let heading: string;
+
+  const url: URL = getContext('url');
+
+  const items: {href: string; text: string; active?: boolean}[] = [
+    {href: '/', text: 'Home'},
+    {href: '/docs/', text: 'Documentation'},
+    {href: 'https://github.com/dbushell/dinossr/', text: 'GitHub'}
+  ];
+
+  items.forEach((item) => {
+    item.active = url?.pathname === item.href;
+  });
+</script>
+
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container">
+    <div class="d-flex align-items-center">
+      <img src="/logo.png" alt="" width="32" height="32" class="me-2" />
+      <a class="navbar-brand" href="/">{heading}</a>
+    </div>
+    <ul class="nav">
+      {#each items as item}
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            class:text-body-emphasis={item.active}
+            aria-current={item.active ? 'page' : undefined}
+            href={item.href}
+          >
+            <span>{item.text}</span>
+          </a>
+        </li>
+      {/each}
+    </ul>
+  </div>
+</nav>

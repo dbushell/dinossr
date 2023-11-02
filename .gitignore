@@ -1,0 +1,9 @@
+/*
+!.gitignore
+!LICENSE
+!README.md
+!mod.ts
+!src
+src/*
+!src/*.ts
+!demo

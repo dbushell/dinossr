@@ -1,0 +1,11 @@
+/*
+!.gitignore
+!mod.ts
+!tsconfig.json
+!src
+src/*
+!src/components
+!src/routes
+!src/static
+!src/app.html
+!src/**/*.svelte
