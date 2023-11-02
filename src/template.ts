@@ -2,12 +2,12 @@ import {path} from './deps.ts';
 import {velocirouter} from './deps.ts';
 
 // Return the `app.html` template
-export const readTemplate = async (srcDir: string): Promise<string> => {
+export const readTemplate = async (dir: string): Promise<string> => {
   let template = '';
   try {
-    template = await Deno.readTextFile(path.resolve(srcDir, './app.html'));
+    template = await Deno.readTextFile(path.resolve(dir, './app.html'));
   } catch {
-    console.warn(`Missing template: ${srcDir}/app.html`);
+    console.warn(`Missing template: ${dir}/app.html`);
   }
   return template;
 };

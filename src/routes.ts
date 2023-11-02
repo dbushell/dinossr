@@ -115,7 +115,7 @@ export const addRoutes = async (
     const key = handler.method.toLowerCase() as Lowercase<
       RenderHandler['method']
     >;
-    router[key](handler.pattern, createHandle(handler, template));
+    router[key]({pathname: handler.pattern}, createHandle(handler, template));
     if (handler.method === 'GET') {
       redirect(router, handler);
     }

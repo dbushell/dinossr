@@ -42,9 +42,9 @@ export const serve = async (dir: string, options?: ServeOptions) => {
   });
 
   // Add file system routes
-  const srcDir = path.resolve(dir, './src');
-  await addStaticRoutes(router, srcDir);
-  await addRoutes(router, bumbler, srcDir);
+  dir = path.resolve(dir, './src');
+  await addStaticRoutes(router, dir);
+  await addRoutes(router, bumbler, dir);
 
   // Setup server
   const server = Deno.serve(options?.serve ?? {}, (request, info) =>

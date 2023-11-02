@@ -34,7 +34,7 @@ export const addStaticRoutes = async (router: VRouter, dir: string) => {
   }
   for (const abspath of await traverse(staticDir)) {
     const pattern = '/' + path.relative(staticDir, abspath);
-    router.get(pattern, (request: Request) => {
+    router.get({pathname: pattern}, (request: Request) => {
       return serveFile(request, abspath);
     });
   }
