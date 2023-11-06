@@ -53,7 +53,7 @@ export const importModule = async (
           render.html += `
 <script type="module">
 const blobCode = "${encodeBase64(dom)}";
-const blob = new Blob([atob(blobCode)], {type: 'text/javascript'});
+const blob = new Blob([decodeURIComponent(escape(atob(blobCode)))], {type: 'text/javascript; charset=utf-8'});
 const url = URL.createObjectURL(blob);
 const mod = await import(url);
 URL.revokeObjectURL(url);
