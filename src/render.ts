@@ -10,7 +10,7 @@ export const importModule = async (
 
   const handlers: RenderHandler[] = [];
 
-  // Default functions  are treated as GET handlers
+  // Default functions are treated as GET handlers
   if (typeof mod.default === 'function') {
     handlers.push({
       pattern,
