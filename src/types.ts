@@ -12,6 +12,7 @@ export interface ServeOptions {
 
 export interface RenderModule {
   pattern?: string;
+  csr?: boolean;
   get?: VHandle;
   post?: VHandle;
   load?: (

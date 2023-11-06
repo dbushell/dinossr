@@ -1,11 +1,11 @@
-import {bumble} from './deps.ts';
+import {bumble, encodeBase64} from './deps.ts';
 import type {VHandle, RenderModule, RenderHandler} from './types.ts';
 
 export const importModule = async (
   abspath: string,
   bumbler: bumble.default<RenderModule>
 ): Promise<RenderHandler[]> => {
-  const mod = await bumbler.bumble(abspath);
+  const mod = await bumbler.bumbleSSR(abspath);
   const pattern = mod.pattern ?? '';
 
   const handlers: RenderHandler[] = [];
@@ -24,6 +24,16 @@ export const importModule = async (
   // Handle Svelte component export
   else if (typeof mod?.default?.render === 'function') {
     const component = mod.default as bumble.BumbleComponent;
+
+    let dom = '';
+    if (mod.csr && abspath.endsWith('.svelte')) {
+      dom = await bumbler.bumbleDOM(abspath);
+      dom = dom.replaceAll(
+        'from "svelte',
+        'from "https://cdn.skypack.dev/svelte@4.2.2'
+      );
+    }
+
     handlers.push({
       pattern,
       method: 'GET',
@@ -31,12 +41,34 @@ export const importModule = async (
         const url = new URL(request.url);
         const params = match?.pathname?.groups;
         const data = mod.load ? await mod.load(request, {params}) : {};
+
         const render = component.render({
           url,
           params,
           pattern,
           data
         });
+
+        if (mod.csr) {
+          render.html += `
+<script type="module">
+const blobCode = "${encodeBase64(dom)}";
+const blob = new Blob([atob(blobCode)], {type: 'text/javascript'});
+const url = URL.createObjectURL(blob);
+const mod = await import(url);
+URL.revokeObjectURL(url);
+const target = document.querySelector('#app');
+target.innerHTML = '';
+new mod.default({target, props: {
+  url: new URL('${url.href}'),
+  params: ${JSON.stringify(params)},
+  pattern: '${pattern}',
+  data: ${JSON.stringify(data)}
+}});
+</script>
+`;
+        }
+
         return {
           response: new Response(render.html, {
             headers: {'content-type': 'text/html; charset=utf-8'}
