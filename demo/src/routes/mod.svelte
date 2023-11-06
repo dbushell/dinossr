@@ -1,9 +1,5 @@
-<script context="module">
-  export const csr = true;
-</script>
-
 <script lang="ts">
-  import {onMount, setContext} from 'svelte';
+  import {setContext} from 'svelte';
   import Layout from '@components/layout.svelte';
   import Alert from '@components/alert.svelte';
   import Card from '@components/card.svelte';
@@ -14,10 +10,6 @@
 
   const title = 'DinoSrr';
   const heading = 'DinoSrr';
-
-  onMount(() => {
-    console.log('mounted');
-  });
 </script>
 
 <svelte:head>
