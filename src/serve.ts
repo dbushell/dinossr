@@ -18,6 +18,12 @@ export const resolvePaths = (dir: string, options: ServeOptions) => {
 };
 
 export const serve = async (dir: string, options?: ServeOptions) => {
+  // Add file system routes
+  if (!path.isAbsolute(dir)) {
+    throw new Error('Directory path must be absolute');
+  }
+  dir = path.resolve(dir, './');
+
   // Setup options
   const defaultOptions: ServeOptions = {
     bumble: {
@@ -37,15 +43,10 @@ export const serve = async (dir: string, options?: ServeOptions) => {
   });
 
   // Setup bundler
-  const bumbler = new bumble.default<RenderModule>({
+  const bumbler = new bumble.default<RenderModule>(dir, {
     ...options?.bumble
   });
 
-  // Add file system routes
-  if (!path.isAbsolute(dir)) {
-    throw new Error('Directory path must be absolute');
-  }
-  dir = path.resolve(dir, './src');
   await addStaticRoutes(router, dir);
   await addRoutes(router, bumbler, dir);
 
