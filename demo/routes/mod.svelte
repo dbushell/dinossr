@@ -10,15 +10,15 @@
 
   setContext('url', url);
 
-  const title = 'DinoSrr';
   const heading = 'DinoSrr';
+  const title = `${heading} - Deno SSR Web Framework`;
 </script>
 
 <svelte:head>
   <title>{title}</title>
 </svelte:head>
 
-<Layout>
+<Layout alert={false}>
   <h1>{heading} <sup class="fs-6 badge text-bg-info">Alpha</sup></h1>
   <p class="lead mb-5">
     A minimal web framework built for Deno and Deno Deploy.

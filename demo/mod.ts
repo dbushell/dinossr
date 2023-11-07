@@ -1,12 +1,9 @@
-import {serve, ServeOptions} from '../mod.ts';
-import tsconfig from './tsconfig.json' assert {type: 'json'};
+import {serve} from '../mod.ts';
 
 const dir = new URL('./', import.meta.url).pathname;
 
-const options: ServeOptions = {
-  bumble: {
-    typescript: {paths: tsconfig.compilerOptions.paths}
-  }
-};
-
-serve(dir, options);
+serve(dir, {
+  // bumble: {
+  //   dynamicImports: false
+  // }
+});

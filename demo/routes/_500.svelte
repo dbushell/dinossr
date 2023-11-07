@@ -1,8 +1,8 @@
 <script>
   import Layout from '@components/layout.svelte';
 
-  const title = 'DinoSrr - 500 Internal Server Error';
   const heading = '500 Internal Server Error';
+  const title = `DinoSrr - ${heading}`;
 </script>
 
 <svelte:head>
@@ -10,5 +10,5 @@
 </svelte:head>
 
 <Layout>
-  <h1>{heading}</h1>
+  <h1 class="mb-4">{heading}</h1>
 </Layout>

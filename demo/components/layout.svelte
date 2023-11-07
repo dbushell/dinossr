@@ -1,6 +1,8 @@
 <script>
   import Navbar from '@components/navbar.svelte';
   import Footer from '@components/footer.svelte';
+
+  export let alert = true;
 </script>
 
 <Navbar heading="DinoSsr" />
@@ -9,4 +11,4 @@
   <slot />
 </main>
 
-<Footer />
+<Footer {alert} />

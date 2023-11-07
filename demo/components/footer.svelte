@@ -1,8 +1,16 @@
 <script>
   import Rule from '@components/rule.svelte';
+  import Alert from '@components/alert.svelte';
+
+  export let alert = true;
 </script>
 
-<footer class="container pt-4">
+{#if alert}
+  <div class="container">
+    <Alert />
+  </div>
+{/if}
+<footer class="container" class:pt-4={!alert}>
   <Rule />
   <p>
     <span>Copyright © {new Date().getFullYear()}</span>

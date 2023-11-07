@@ -15,7 +15,20 @@
   ];
 
   items.forEach((item) => {
-    item.active = url?.pathname === item.href;
+    if (!url) return;
+    if (url.pathname === item.href) {
+      item.active = true;
+      return;
+    }
+    // Ignore homepage matching everything
+    if (item.href === '/' || url.pathname === '/') {
+      return;
+    }
+    // Match sub-pages
+    if (url.pathname.startsWith(item.href)) {
+      item.active = true;
+      return;
+    }
   });
 </script>
 
