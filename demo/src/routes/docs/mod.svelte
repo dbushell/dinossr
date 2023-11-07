@@ -1,8 +1,10 @@
-<script lang="ts">
+<script>
   import {setContext} from 'svelte';
   import Layout from '@components/layout.svelte';
 
-  export let url: URL;
+  /** @type {URL} */
+  export let url;
+
   setContext('url', url);
 
   const title = 'DinoSrr - Documentation';

@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
   export let label = 'Button';
   export let link = '/';
 </script>

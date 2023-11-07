@@ -1,10 +1,14 @@
-<script lang="ts">
+<script>
   import {getContext} from 'svelte';
-  export let heading: string;
 
-  const url: URL = getContext('url');
+  /** @type {string} */
+  export let heading;
 
-  const items: {href: string; text: string; active?: boolean}[] = [
+  /** @type {URL} */
+  const url = getContext('url');
+
+  /** @type {Array<{href: string; text: string; active?: boolean}>} */
+  const items = [
     {href: '/', text: 'Home'},
     {href: '/docs/', text: 'Documentation'},
     {href: 'https://github.com/dbushell/dinossr/', text: 'GitHub'}
