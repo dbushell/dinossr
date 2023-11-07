@@ -1,0 +1,16 @@
+{
+  "pages": [
+    {
+      "name": "Documentation",
+      "href": "/docs/"
+    },
+    {
+      "name": "Project Structure",
+      "href": "/docs/structure/"
+    },
+    {
+      "name": "Deno Server",
+      "href": "/docs/server/"
+    }
+  ]
+}

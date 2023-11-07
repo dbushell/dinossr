@@ -3,6 +3,7 @@
 !mod.ts
 !tsconfig.json
 !components
+!data
 !routes
 !static
 !app.html

@@ -1,6 +1,8 @@
 <script>
   import {setContext} from 'svelte';
   import Layout from '@components/layout.svelte';
+  import DocsNav from '@components/docs-nav.svelte';
+  import docs from '@data/docs.json';
 
   /** @type {URL} */
   export let url;
@@ -22,19 +24,14 @@
   </p>
   <div class="mb-4">
     <ul class="nav flex-column mb-4">
+      {#each docs.pages.slice(1) as page}
       <li class="nav-item">
-        <a class="nav-link" href="/docs/structure/">
-          <span>→ Project Structure</span>
-        </a>
-        <a class="nav-link" href="/docs/server/">
-          <span>→ Deno Server</span>
+        <a class="nav-link" href={page.href}>
+          <span>→ {page.name}</span>
         </a>
       </li>
+      {/each}
     </ul>
   </div>
-  <div class="mb-4 d-flex align-items-center justify-content-between">
-    <a href="/docs/structure/" class="btn btn-small btn-outline-info">
-      <span>Project Structure →</span>
-    </a>
-  </div>
+  <DocsNav />
 </Layout>

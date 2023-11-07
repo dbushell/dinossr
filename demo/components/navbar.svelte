@@ -14,22 +14,22 @@
     {href: 'https://github.com/dbushell/dinossr/', text: 'GitHub'}
   ];
 
-  items.forEach((item) => {
-    if (!url) return;
+  for (const item of items) {
+    if (!url) break;
     if (url.pathname === item.href) {
       item.active = true;
-      return;
+      continue;
     }
     // Ignore homepage matching everything
     if (item.href === '/' || url.pathname === '/') {
-      return;
+      continue;
     }
     // Match sub-pages
     if (url.pathname.startsWith(item.href)) {
       item.active = true;
-      return;
+      continue;
     }
-  });
+  }
 </script>
 
 <nav class="navbar navbar-expand-lg bg-body-tertiary">

@@ -1,7 +1,9 @@
 <script>
   import {setContext} from 'svelte';
   import Layout from '@components/layout.svelte';
-  import Structure from '@components/structure.svelte';
+  import DocsBreadcrumb from '@components/docs-breadcrumb.svelte';
+  import DocsNav from '@components/docs-nav.svelte';
+  import DocsStructure from '@components/docs-structure.svelte';
 
   /** @type {URL} */
   export let url;
@@ -18,15 +20,10 @@
 
 <Layout>
   <h1>{heading}</h1>
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="/docs/">Documentation</a></li>
-      <li class="breadcrumb-item active" aria-current="page">{heading}</li>
-    </ol>
-  </nav>
+  <DocsBreadcrumb />
   <div class="mb-4">
     <p>Project files are organised like so:</p>
-    <Structure />
+    <DocsStructure />
     <p>
       Automatic routes are generated from the <code>routes</code> directory structure.
     </p>
@@ -41,12 +38,5 @@
       <code>@components/name.svelte</code>.
     </p>
   </div>
-  <div class="mb-4 d-flex align-items-center justify-content-between">
-    <a href="/docs/" class="btn btn-small btn-outline-info">
-      <span>← Documentation</span>
-    </a>
-    <a href="/docs/server/" class="btn btn-small btn-outline-info">
-      <span>Deno Server →</span>
-    </a>
-  </div>
+  <DocsNav />
 </Layout>
