@@ -1,7 +1,7 @@
 <script>
   import Layout from '@components/layout.svelte';
   import DocsNav from '@components/docs-nav.svelte';
-  import docs from '@data/docs.json';
+  import docs from '@lib/docs.json';
 
   const heading = 'Documentation';
   const title = `DinoSrr - ${heading}`;

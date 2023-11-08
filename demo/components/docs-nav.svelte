@@ -1,17 +1,11 @@
 <script>
-  import docs from '@data/docs.json';
   import {getContext} from 'svelte';
+  import docs from '@lib/docs.json';
+  import {docsIndex} from '@lib/helpers.ts';
 
   /** @type {URL} */
   const url = getContext('url');
-
-  let index = 0;
-  for (let i = 0; i < docs.pages.length; i++) {
-    if (docs.pages[i].href === url?.pathname) {
-      index = i;
-      break;
-    }
-  }
+  const index = docsIndex(docs, url);
 </script>
 
 <div class="mb-4 d-flex align-items-center justify-content-between">

@@ -2,12 +2,13 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"],
+      "@lib/*": ["./src/lib/*"],
       "@components/*": ["./src/components/*"]
     },
-    "moduleResolution": "node",
-    "lib": ["esnext"],
-    "module": "esnext",
-    "target": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["ESNext", "DOM"],
+    "module": "ESNext",
+    "target": "ESNext",
     "strict": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
