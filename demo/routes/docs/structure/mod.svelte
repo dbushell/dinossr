@@ -1,14 +1,8 @@
 <script>
-  import {setContext} from 'svelte';
   import Layout from '@components/layout.svelte';
   import DocsBreadcrumb from '@components/docs-breadcrumb.svelte';
   import DocsNav from '@components/docs-nav.svelte';
   import DocsStructure from '@components/docs-structure.svelte';
-
-  /** @type {URL} */
-  export let url;
-
-  setContext('url', url);
 
   const heading = 'Project Structure';
   const title = `DinoSrr - ${heading} (Documentation)`;

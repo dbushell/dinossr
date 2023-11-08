@@ -25,6 +25,7 @@ export const importModule = async (
   else if (typeof mod?.default?.render === 'function') {
     const component = mod.default as bumble.BumbleComponent;
 
+    // Render DOM for client-side hydration
     let dom = '';
     if (mod.csr && abspath.endsWith('.svelte')) {
       dom = await bumbler.bumbleDOM(abspath);
@@ -38,17 +39,16 @@ export const importModule = async (
       pattern,
       method: 'GET',
       render: async (request, _response, {match}) => {
+        // Setup context and props
         const url = new URL(request.url);
         const params = match?.pathname?.groups;
         const data = mod.load ? await mod.load(request, {params}) : {};
-
-        const render = component.render({
-          url,
-          params,
-          pattern,
-          data
-        });
-
+        const context = new Map<string, unknown>();
+        context.set('url', url);
+        context.set('pattern', pattern);
+        context.set('params', params);
+        context.set('data', data);
+        const render = component.render(Object.fromEntries(context), {context});
         if (mod.csr) {
           render.html += `
 <script type="module">
@@ -59,16 +59,16 @@ const mod = await import(url);
 URL.revokeObjectURL(url);
 const target = document.querySelector('#app');
 target.innerHTML = '';
-new mod.default({target, props: {
-  url: new URL('${url.href}'),
-  params: ${JSON.stringify(params)},
-  pattern: '${pattern}',
-  data: ${JSON.stringify(data)}
-}});
+const context = new Map();
+context.set('url', new URL('${url.href}'));
+context.set('pattern', '${pattern}');
+context.set('params', ${JSON.stringify(params)});
+context.set('data', ${JSON.stringify(data)});
+context.set('browser', true);
+new mod.default({target, context, props: Object.fromEntries(context)});
 </script>
 `;
         }
-
         return {
           response: new Response(render.html, {
             headers: {'content-type': 'text/html; charset=utf-8'}
@@ -89,7 +89,6 @@ new mod.default({target, props: {
       })
     });
   }
-
   // Support POST handler
   if (typeof mod.post === 'function') {
     handlers.push({
@@ -100,6 +99,5 @@ new mod.default({target, props: {
       })
     });
   }
-
   return handlers;
 };

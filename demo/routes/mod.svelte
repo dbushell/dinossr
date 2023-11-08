@@ -1,14 +1,8 @@
 <script>
-  import {setContext} from 'svelte';
   import Layout from '@components/layout.svelte';
   import Alert from '@components/alert.svelte';
   import Card from '@components/card.svelte';
   import Rule from '@components/rule.svelte';
-
-  /** @type {URL} */
-  export let url;
-
-  setContext('url', url);
 
   const heading = 'DinoSrr';
   const title = `${heading} - Deno SSR Web Framework`;

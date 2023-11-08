@@ -1,13 +1,7 @@
 <script>
-  import {setContext} from 'svelte';
   import Layout from '@components/layout.svelte';
   import DocsBreadcrumb from '@components/docs-breadcrumb.svelte';
   import DocsNav from '@components/docs-nav.svelte';
-
-  /** @type {URL} */
-  export let url;
-
-  setContext('url', url);
 
   const heading = 'Deno Server';
   const title = `DinoSrr - ${heading} (Documentation)`;
