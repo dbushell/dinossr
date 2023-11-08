@@ -18,6 +18,7 @@ export const resolvePaths = (dir: string, options: ServeOptions) => {
 };
 
 export const serve = async (dir: string, options?: ServeOptions) => {
+  const start = performance.now();
   // Add file system routes
   if (!path.isAbsolute(dir)) {
     throw new Error('Directory path must be absolute');
@@ -54,6 +55,9 @@ export const serve = async (dir: string, options?: ServeOptions) => {
   const server = Deno.serve(options?.serve ?? {}, (request, info) =>
     router.handle(request, info)
   );
-
+  if (options?.bumble?.dev) {
+    const time = (performance.now() - start).toFixed(2);
+    console.log(`🚀 ${time}ms`);
+  }
   return {router, bumbler, server};
 };

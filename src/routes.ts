@@ -88,7 +88,8 @@ const createHandle = (handler: RenderHandler, template: string): VHandle => {
     let response = await render.response;
     if (handler.method === 'GET' && hasTemplate(response)) {
       response = response as Response;
-      let body = template.replace('%BODY%', await response.text());
+      let body = await response.text();
+      body = template.replace('%BODY%', `<div id="app">${body}</div>`);
       body = body.replace('%HEAD%', render.head || '');
       response = new Response(body, response);
       response.headers.set('content-type', 'text/html; charset=utf-8');
@@ -108,18 +109,6 @@ export const addRoutes = async (
   }
 
   const template = await readTemplate(dir);
-
-  // Generate file-based routes
-  for (const handler of await generate(routesDir, bumbler)) {
-    console.debug(`${handler.method} → ${handler.pattern}`);
-    const key = handler.method.toLowerCase() as Lowercase<
-      RenderHandler['method']
-    >;
-    router[key]({pathname: handler.pattern}, createHandle(handler, template));
-    if (handler.method === 'GET') {
-      redirect(router, handler);
-    }
-  }
 
   // Only return body content for GET requests
   const sendBody = (request: Request) =>
@@ -165,5 +154,19 @@ export const addRoutes = async (
         }
       });
     };
+  }
+
+  // Generate file-based routes
+  for (const handler of await generate(routesDir, bumbler)) {
+    if (bumbler.dev) {
+      console.log(`🪄 ${handler.method} → ${handler.pattern}`);
+    }
+    const key = handler.method.toLowerCase() as Lowercase<
+      RenderHandler['method']
+    >;
+    router[key]({pathname: handler.pattern}, createHandle(handler, template));
+    if (handler.method === 'GET') {
+      redirect(router, handler);
+    }
   }
 };
