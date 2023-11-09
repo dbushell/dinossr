@@ -1,20 +1,22 @@
 import {bumble, velocirouter} from './deps.ts';
 
-export type VHandle = velocirouter.Handle<Deno.ServeHandlerInfo>;
+export type Handle = velocirouter.Handle<Deno.ServeHandlerInfo>;
 
-export type VRouter = velocirouter.Router<Deno.ServeHandlerInfo>;
+export type Router = velocirouter.Router<Deno.ServeHandlerInfo>;
+
+export type Bumbler = bumble.Bumbler<RenderModule>;
 
 export interface ServeOptions {
   serve?: Deno.ServeOptions;
   router?: velocirouter.RouterOptions<Deno.ServeHandlerInfo>;
-  bumble?: bumble.BumbleOptions;
+  bumbler?: bumble.BumbleOptions;
 }
 
 export interface RenderModule {
   pattern?: string;
   csr?: boolean;
-  get?: VHandle;
-  post?: VHandle;
+  get?: Handle;
+  post?: Handle;
   load?: (
     request: Request,
     {params}: {params?: Record<string, string | undefined>}
@@ -22,15 +24,15 @@ export interface RenderModule {
 }
 
 export interface RenderResponse {
-  response: ReturnType<VHandle>;
+  response: ReturnType<Handle>;
   head?: string;
   css?: string;
 }
 
-export interface RenderHandler {
+export interface Renderer {
   method: velocirouter.Method;
   pattern: string;
   render: (
-    ...args: Parameters<VHandle>
+    ...args: Parameters<Handle>
   ) => RenderResponse | Promise<RenderResponse>;
 }

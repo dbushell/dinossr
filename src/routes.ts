@@ -1,7 +1,6 @@
-import {path, existsSync, bumble} from './deps.ts';
-import {importModule} from './render.ts';
-import {readTemplate, hasTemplate} from './template.ts';
-import type {VRouter, RenderModule, RenderHandler, VHandle} from './types.ts';
+import {path, existsSync} from './deps.ts';
+import {createHandle, importModule} from './render.ts';
+import type {Bumbler, Router, Renderer} from './types.ts';
 
 // Recursively find routes within directory
 const traverse = async (dir: string, depth = 0): Promise<string[]> => {
@@ -27,12 +26,9 @@ const traverse = async (dir: string, depth = 0): Promise<string[]> => {
   return routes;
 };
 
-// Generate route handlers for directory
-const generate = async (
-  dir: string,
-  bumbler: bumble.default<RenderModule>
-): Promise<RenderHandler[]> => {
-  const handlers: RenderHandler[] = [];
+// Generate route renderer for directory
+const generate = async (dir: string, bumbler: Bumbler): Promise<Renderer[]> => {
+  const renderers: Renderer[] = [];
   for (const abspath of await traverse(dir)) {
     let pattern = '/' + path.relative(dir, abspath);
     // Replace non-capturing groups
@@ -42,38 +38,34 @@ const generate = async (
     // Remove URL
     pattern = path.dirname(pattern);
     // Import module
-    const newHandlers = await importModule(abspath, bumbler);
-    if (!newHandlers.length) {
+    const mod = await importModule(abspath, pattern, bumbler);
+    if (!mod.length) {
       console.warn(`Invalid route: (${abspath})`);
       continue;
     }
-    for (const handler of newHandlers) {
-      // Append module pattern
-      if (handler.pattern.length) {
-        if (handler.pattern.at(0) === '^') {
-          pattern = handler.pattern.slice(1);
-        } else {
-          pattern = path.join(pattern, handler.pattern);
-        }
+    for (const renderer of mod) {
+      // Allow renderer to modify pattern
+      if (renderer.pattern) {
+        pattern = renderer.pattern;
       }
       // Add trailing slash
       if (pattern.at(-1) !== '/' && !/\.[\w]+$/.test(pattern)) {
         pattern += '/';
       }
-      handlers.push({
-        ...handler,
+      renderers.push({
+        ...renderer,
         pattern
       });
     }
   }
-  return handlers;
+  return renderers;
 };
 
 // Add redirect for missing trailing slash
-const redirect = (router: VRouter, handler: RenderHandler) => {
-  if (handler.pattern === '/') return;
-  if (handler.pattern.at(-1) !== '/') return;
-  router.get(handler.pattern.slice(0, -1), (request) => {
+const redirect = (router: Router, renderer: Renderer) => {
+  if (renderer.pattern === '/') return;
+  if (renderer.pattern.at(-1) !== '/') return;
+  router.get(renderer.pattern.slice(0, -1), (request) => {
     const url = new URL(request.url);
     url.pathname += '/';
     return new Response(null, {
@@ -85,34 +77,15 @@ const redirect = (router: VRouter, handler: RenderHandler) => {
   });
 };
 
-// Return a route handle that renders with `app.html`
-const createHandle = (handler: RenderHandler, template: string): VHandle => {
-  return async (...args) => {
-    const render = await handler.render(...args);
-    let response = await render.response;
-    if (handler.method === 'GET' && hasTemplate(response)) {
-      response = response as Response;
-      let body = await response.text();
-      body = template.replace('%BODY%', `<div id="app">${body}</div>`);
-      body = body.replace('%HEAD%', render.head || '');
-      response = new Response(body, response);
-      response.headers.set('content-type', 'text/html; charset=utf-8');
-    }
-    return response;
-  };
-};
-
 export const addRoutes = async (
-  router: VRouter,
-  bumbler: bumble.default<RenderModule>,
+  router: Router,
+  bumbler: Bumbler,
   dir: string
 ) => {
   const routesDir = path.resolve(dir, './routes');
   if (!existsSync(routesDir)) {
     return;
   }
-
-  const template = await readTemplate(dir);
 
   // Only return body content for GET requests
   const sendBody = (request: Request) =>
@@ -122,15 +95,15 @@ export const addRoutes = async (
   // Custom 500 page
   const errorPath = path.join(routesDir, '_500.svelte');
   if (existsSync(errorPath)) {
-    const handler = await importModule(errorPath, bumbler);
-    const vhandle = createHandle(handler[0], template);
+    const renderer = await importModule(errorPath, '(500)', bumbler);
+    const Handle = await createHandle(renderer[0]);
     router.onError = async (error, request, platform) => {
       console.error(error);
       if (!sendBody(request)) {
         return new Response(null, {status: 500});
       }
       // @ts-ignore: TODO: fix?
-      const response = (await vhandle(request, null, {platform})) as Response;
+      const response = (await Handle(request, null, {platform})) as Response;
       return new Response(await response.text(), {
         status: 500,
         headers: {
@@ -143,14 +116,14 @@ export const addRoutes = async (
   // Custom 404 page
   const nomatchPath = path.join(routesDir, '_404.svelte');
   if (existsSync(nomatchPath)) {
-    const handler = await importModule(nomatchPath, bumbler);
-    const vhandle = createHandle(handler[0], template);
+    const renderer = await importModule(nomatchPath, '(404)', bumbler);
+    const Handle = await createHandle(renderer[0]);
     router.onNoMatch = async (request, platform) => {
       if (!sendBody(request)) {
         return new Response(null, {status: 404});
       }
       // @ts-ignore: TODO: fix?
-      const response = (await vhandle(request, null, {platform})) as Response;
+      const response = (await Handle(request, null, {platform})) as Response;
       return new Response(await response.text(), {
         status: 404,
         headers: {
@@ -161,16 +134,14 @@ export const addRoutes = async (
   }
 
   // Generate file-based routes
-  for (const handler of await generate(routesDir, bumbler)) {
+  for (const renderer of await generate(routesDir, bumbler)) {
     if (bumbler.dev) {
-      console.log(`🪄 ${handler.method} → ${handler.pattern}`);
+      console.log(`🪄 ${renderer.method} → ${renderer.pattern}`);
     }
-    const key = handler.method.toLowerCase() as Lowercase<
-      RenderHandler['method']
-    >;
-    router[key]({pathname: handler.pattern}, createHandle(handler, template));
-    if (handler.method === 'GET') {
-      redirect(router, handler);
+    const key = renderer.method.toLowerCase() as Lowercase<Renderer['method']>;
+    router[key]({pathname: renderer.pattern}, await createHandle(renderer));
+    if (renderer.method === 'GET') {
+      redirect(router, renderer);
     }
   }
 };

@@ -1,5 +1,5 @@
 import {path, existsSync, serveFile} from './deps.ts';
-import type {VRouter} from './types.ts';
+import type {Router} from './types.ts';
 
 // Generate list of static files
 const traverse = async (dir: string, depth = 0): Promise<string[]> => {
@@ -27,7 +27,7 @@ const traverse = async (dir: string, depth = 0): Promise<string[]> => {
   return routes;
 };
 
-export const addStaticRoutes = async (router: VRouter, dir: string) => {
+export const addStaticRoutes = async (router: Router, dir: string) => {
   const staticDir = path.resolve(dir, './static');
   if (!existsSync(staticDir)) {
     return;

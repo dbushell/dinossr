@@ -1,14 +1,19 @@
 import {path} from './deps.ts';
 import {velocirouter} from './deps.ts';
 
+const templateCache = new Map<string, string>();
+
 // Return the `app.html` template
-export const readTemplate = async (dir: string): Promise<string> => {
+export const readTemplate = async (dir?: string): Promise<string> => {
+  if (!dir) return [...templateCache.values()]?.at(0) ?? '';
+  if (templateCache.has(dir)) return templateCache.get(dir)!;
   let template = '';
   try {
     template = await Deno.readTextFile(path.resolve(dir, './app.html'));
   } catch {
     console.warn(`Missing template: ${dir}/app.html`);
   }
+  templateCache.set(dir, template);
   return template;
 };
 

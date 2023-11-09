@@ -3,13 +3,13 @@ import {serve} from '../mod.ts';
 const dir = new URL('./', import.meta.url).pathname;
 
 const {router} = await serve(dir, {
-  bumble: {
+  bumbler: {
     dev: true
     // dynamicImports: false
   }
 });
 
-router.use((request, response) => {
+router.use((_req, response) => {
   if (response) {
     response.headers.set('referrer-policy', 'same-origin');
     response.headers.set(
