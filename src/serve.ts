@@ -1,6 +1,7 @@
 import {path, deepMerge, bumble, velocirouter} from './deps.ts';
 import {addStaticRoutes} from './static.ts';
 import {addRoutes} from './routes.ts';
+import {addErrors} from './errors.ts';
 import {readTemplate} from './template.ts';
 import type {ServeOptions, Router, Bumbler} from './types.ts';
 
@@ -52,6 +53,7 @@ export const serve = async (dir: string, options?: ServeOptions) => {
   await readTemplate(dir);
   await addStaticRoutes(router, dir);
   await addRoutes(router, bumbler, dir);
+  await addErrors(router, bumbler, dir);
 
   router.get('/_/immutable/:hash:ext(\\.\\w+)', (_req, response) => {
     if (response?.ok && response?.status === 200) {
