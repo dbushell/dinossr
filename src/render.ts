@@ -1,4 +1,5 @@
-import {bumble, encodeBase64} from './deps.ts';
+import {bumble} from './deps.ts';
+import {encodeHash} from './utils.ts';
 import type {VHandle, RenderModule, RenderHandler} from './types.ts';
 
 export const importModule = async (
@@ -25,15 +26,10 @@ export const importModule = async (
   else if (typeof mod?.default?.render === 'function') {
     const component = mod.default as bumble.BumbleComponent;
 
-    // Render DOM for client-side hydration
-    let dom = '';
-    if (mod.csr && abspath.endsWith('.svelte')) {
-      dom = await bumbler.bumbleDOM(abspath);
-      dom = dom.replaceAll(
-        'from "svelte',
-        'from "https://cdn.skypack.dev/svelte@4.2.2'
-      );
-    }
+    const csrHash = await encodeHash(
+      (await bumbler.deployHash) + pattern,
+      'SHA-1'
+    );
 
     handlers.push({
       pattern,
@@ -50,13 +46,10 @@ export const importModule = async (
         context.set('data', data);
         const render = component.render(Object.fromEntries(context), {context});
         if (mod.csr) {
-          render.html += `
-<script type="module">
-const blobCode = "${encodeBase64(dom)}";
-const blob = new Blob([decodeURIComponent(escape(atob(blobCode)))], {type: 'text/javascript; charset=utf-8'});
-const url = URL.createObjectURL(blob);
-const mod = await import(url);
-URL.revokeObjectURL(url);
+          const script = new URL(`/_/${csrHash}.js`, url);
+          render.head += `\n<link rel="modulepreload" href="${script.href}">`;
+          render.html += `\n<script type="module">
+const mod = await import('${script.href}');
 const target = document.querySelector('#app');
 target.innerHTML = '';
 const context = new Map();
@@ -78,6 +71,26 @@ new mod.default({target, context, props: Object.fromEntries(context)});
         };
       }
     });
+
+    // Render DOM for client-side hydration
+    if (mod.csr && abspath.endsWith('.svelte')) {
+      let dom = await bumbler.bumbleDOM(abspath);
+      dom = dom.replaceAll(
+        'from "svelte',
+        'from "https://cdn.skypack.dev/svelte@4.2.2'
+      );
+      handlers.push({
+        pattern: `^/_/${csrHash}.js`,
+        method: 'GET',
+        render: () => {
+          return {
+            response: new Response(dom, {
+              headers: {'content-type': 'text/javascript; charset=utf-8'}
+            })
+          };
+        }
+      });
+    }
   }
   // Otherwise look for GET handler
   else if (typeof mod.get === 'function') {

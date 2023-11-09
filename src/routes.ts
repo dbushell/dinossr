@@ -50,10 +50,14 @@ const generate = async (
     for (const handler of newHandlers) {
       // Append module pattern
       if (handler.pattern.length) {
-        pattern = path.join(pattern, handler.pattern);
+        if (handler.pattern.at(0) === '^') {
+          pattern = handler.pattern.slice(1);
+        } else {
+          pattern = path.join(pattern, handler.pattern);
+        }
       }
       // Add trailing slash
-      if (pattern.at(-1) !== '/') {
+      if (pattern.at(-1) !== '/' && !/\.[\w]+$/.test(pattern)) {
         pattern += '/';
       }
       handlers.push({
