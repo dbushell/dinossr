@@ -2,6 +2,7 @@
   import Layout from '@components/layout.svelte';
   import DocsBreadcrumb from '@components/docs-breadcrumb.svelte';
   import DocsNav from '@components/docs-nav.svelte';
+  import Code from '@components/code.svelte';
 
   const heading = 'Routing';
   const title = `DinoSrr - ${heading} (Documentation)`;
@@ -69,11 +70,14 @@
       >
       leading the <code>mod.svelte</code> route file.
     </p>
-    <pre class="bg-secondary-subtle p-4 me-4"><code
-        >&lt;script context="module"&gt;
+    <Code
+      language="javascript"
+      code={`
+<script context="module">
   export const pattern = '/:year(\\d+)/:month(\\d+)/:slug';
-&lt;/script&gt;</code
-      ></pre>
+</script>
+`}
+    />
   </div>
   <DocsNav />
 </Layout>

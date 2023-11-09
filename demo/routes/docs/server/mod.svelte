@@ -2,6 +2,7 @@
   import Layout from '@components/layout.svelte';
   import DocsBreadcrumb from '@components/docs-breadcrumb.svelte';
   import DocsNav from '@components/docs-nav.svelte';
+  import Code from '@components/code.svelte';
 
   const heading = 'Deno Server';
   const title = `DinoSrr - ${heading} (Documentation)`;
@@ -19,13 +20,16 @@
       The <code>mod.ts</code> file at the root of the project is the server entry
       point.
     </p>
-    <pre class="bg-secondary-subtle p-4 me-4"><code
-        >import &#123;serve&#125; from 'dinossr';
+    <Code
+      language="javascript"
+      code={`
+import {serve} from 'dinossr';
 
 const dir = new URL('./', import.meta.url).pathname;
 
-serve(dir);</code
-      ></pre>
+serve(dir);
+`}
+    />
     <p>This is started with: <code>deno run -A mod.ts</code>.</p>
     <p>
       The <code>serve</code> function returns the internal instances of
@@ -37,16 +41,19 @@ serve(dir);</code
         >Deno.HttpServer</a
       >.
     </p>
-    <pre class="bg-secondary-subtle p-4 me-4"><code
-        >const &#123;router, server&#125; = await serve(dir);
+    <Code
+      language="javascript"
+      code={`
+const {router, server} = await serve(dir);
 
-router.use((request, response) =&gt; &#123;
-  if (response) &#123;
+router.use((request, response) => {
+  if (response) {
     response.headers.set('referrer-policy', 'same-origin');
-  &#125;
+  }
   return response;
-&#125;);</code
-      ></pre>
+});
+`}
+    />
     <p>
       Additional middleware and routes can be added or existing route responses
       modified.

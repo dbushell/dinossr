@@ -9,12 +9,22 @@ const {router} = await serve(dir, {
   }
 });
 
+const CSP = {
+  'default-src': ["'self'"],
+  'script-src': ["'self'"],
+  'base-uri': ["'none'"],
+  'frame-ancestors': ["'none'"],
+  'form-action': ["'self'"]
+};
+
 router.use((_req, response) => {
   if (response) {
     response.headers.set('referrer-policy', 'same-origin');
     response.headers.set(
       'content-security-policy',
-      `default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self';`
+      Object.entries(CSP)
+        .map(([k, v]) => `${k} ${v.join(' ')}`)
+        .join('; ')
     );
   }
   return response;
