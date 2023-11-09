@@ -9,6 +9,10 @@
       "href": "/docs/structure/"
     },
     {
+      "name": "Routing",
+      "href": "/docs/routing/"
+    },
+    {
       "name": "Deno Server",
       "href": "/docs/server/"
     }
