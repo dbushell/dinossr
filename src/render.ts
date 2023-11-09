@@ -87,7 +87,7 @@ export const importModule = async (
           const script = new URL(`/_/immutable/${hash}.js`, url);
           render.head += `\n<link rel="modulepreload" href="${script.pathname}">`;
           render.html += `\n<script type="module">
-const mod = await import('${script.href}');
+const mod = await import('${script.pathname}');
 const target = document.querySelector('#app');
 const context = new Map();
 context.set('url', new URL('${url.pathname}', window.location.href));
