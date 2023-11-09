@@ -85,12 +85,12 @@ export const importModule = async (
         const render = component.render(Object.fromEntries(context), {context});
         if (mod.csr) {
           const script = new URL(`/_/immutable/${hash}.js`, url);
-          render.head += `\n<link rel="modulepreload" href="${script.href}">`;
+          render.head += `\n<link rel="modulepreload" href="${script.pathname}">`;
           render.html += `\n<script type="module">
 const mod = await import('${script.href}');
 const target = document.querySelector('#app');
 const context = new Map();
-context.set('url', new URL('${url.href}'));
+context.set('url', new URL('${url.pathname}', window.location.href));
 context.set('pattern', '${pattern}');
 context.set('params', ${JSON.stringify(params)});
 context.set('data', ${JSON.stringify(data)});
