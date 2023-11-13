@@ -20,7 +20,7 @@ const traverse = async (dir: string, depth = 0): Promise<string[]> => {
     if (!entry.isFile) {
       continue;
     }
-    if (['.js', '.ts', '.svelte'].includes(path.extname(entry.name))) {
+    if (/\.(js|ts|svelte)$/.test(entry.name)) {
       routes.push(path.join(dir, entry.name));
     }
   }

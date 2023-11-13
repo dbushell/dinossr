@@ -32,9 +32,6 @@ export const importModule = async (
   if (mod.pattern) {
     pattern = path.join(pattern, mod.pattern);
   }
-  // if (pattern.at(-1) !== '/') {
-  //   pattern += '/';
-  // }
 
   // TODO: pass as prop/context?
   // Unique to deployment and component
