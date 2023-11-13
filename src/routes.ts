@@ -1,6 +1,7 @@
 import {path, existsSync} from './deps.ts';
 import {createHandle, importModule} from './render.ts';
 import type {Bumbler, Router, Renderer} from './types.ts';
+import {addError, addNoMatch} from './errors.ts';
 
 // Recursively find routes within directory
 const traverse = async (dir: string, depth = 0): Promise<string[]> => {
@@ -19,7 +20,7 @@ const traverse = async (dir: string, depth = 0): Promise<string[]> => {
     if (!entry.isFile) {
       continue;
     }
-    if (/mod\.(js|ts|svelte)$/.test(entry.name)) {
+    if (['.js', '.ts', '.svelte'].includes(path.extname(entry.name))) {
       routes.push(path.join(dir, entry.name));
     }
   }
@@ -37,6 +38,13 @@ const generate = async (dir: string, bumbler: Bumbler): Promise<Renderer[]> => {
     pattern = pattern.replaceAll(/\[([^\]]+?)\]/g, ':$1');
     // Remove URL
     pattern = path.dirname(pattern);
+    if (pattern.at(-1) !== '/') {
+      pattern += '/';
+    }
+    // Append filename if not index
+    if (!/index\./.test(path.basename(abspath))) {
+      pattern += path.basename(abspath, path.extname(abspath));
+    }
     // Import module
     const mod = await importModule(abspath, pattern, bumbler);
     if (!mod.length) {
@@ -48,10 +56,6 @@ const generate = async (dir: string, bumbler: Bumbler): Promise<Renderer[]> => {
       if (renderer.pattern) {
         pattern = renderer.pattern;
       }
-      // Add trailing slash
-      if (pattern.at(-1) !== '/' && !/\.[\w]+$/.test(pattern)) {
-        pattern += '/';
-      }
       renderers.push({
         ...renderer,
         pattern
@@ -59,22 +63,6 @@ const generate = async (dir: string, bumbler: Bumbler): Promise<Renderer[]> => {
     }
   }
   return renderers;
-};
-
-// Add redirect for missing trailing slash
-const redirect = (router: Router, renderer: Renderer) => {
-  if (renderer.pattern === '/') return;
-  if (renderer.pattern.at(-1) !== '/') return;
-  router.get(renderer.pattern.slice(0, -1), (request) => {
-    const url = new URL(request.url);
-    url.pathname += '/';
-    return new Response(null, {
-      status: 308,
-      headers: {
-        location: url.href
-      }
-    });
-  });
 };
 
 export const addRoutes = async (
@@ -87,15 +75,62 @@ export const addRoutes = async (
     return;
   }
 
+  // Possible routes for auto redirects
+  const redirects = new Set<string>();
+
   // Generate file-based routes
   for (const renderer of await generate(routesDir, bumbler)) {
+    if (renderer.pattern === '/_500') {
+      addError(router, renderer);
+      continue;
+    }
+    if (renderer.pattern === '/_404') {
+      addNoMatch(router, renderer);
+      continue;
+    }
     if (bumbler.dev) {
       console.log(`🪄 ${renderer.method} → ${renderer.pattern}`);
     }
     const key = renderer.method.toLowerCase() as Lowercase<Renderer['method']>;
     router[key]({pathname: renderer.pattern}, await createHandle(renderer));
     if (renderer.method === 'GET') {
-      redirect(router, renderer);
+      if (!/\.[\w]+$/.test(renderer.pattern)) {
+        redirects.add(renderer.pattern);
+      }
     }
   }
+
+  // Setup trailing slash redirects
+  redirects.forEach((pattern) => {
+    if (pattern === '/') return;
+    let alt = pattern;
+    if (pattern.at(-1) === '/') {
+      alt = pattern.slice(0, -1);
+    } else {
+      alt += '/';
+    }
+    if (redirects.has(alt)) {
+      if (bumbler.dev) {
+        console.log(`⚠️ ${alt} + ${pattern}`);
+      }
+      return;
+    }
+    if (bumbler.dev) {
+      console.log(`🪄 308 ${alt} → ${pattern}`);
+    }
+    router.get(alt, (request) => {
+      const url = new URL(request.url);
+      if (url.pathname.at(-1) === '/') {
+        url.pathname = url.pathname.slice(0, -1);
+      } else {
+        url.pathname += '/';
+      }
+      return new Response(null, {
+        status: 308,
+        headers: {
+          location: url.href
+        }
+      });
+    });
+  });
 };

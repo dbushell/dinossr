@@ -1,3 +1,7 @@
+<script context="module">
+  export const pattern = '/';
+</script>
+
 <script>
   import Layout from '@components/layout.svelte';
   import DocsBreadcrumb from '@components/docs-breadcrumb.svelte';
@@ -17,7 +21,7 @@
   <DocsBreadcrumb />
   <div class="mb-4">
     <p>
-      Routes are <code>mod.svelte</code> files nested in the
+      Routes are <code>.svelte</code> files nested inside the
       <code>routes</code> directory.
     </p>
     <p>
@@ -38,27 +42,41 @@
       </thead>
       <tbody>
         <tr>
-          <td><code>mod.svelte</code></td>
+          <td><code>index.svelte</code></td>
           <td>&nbsp;</td>
           <td><code>/</code></td>
         </tr>
         <tr>
-          <td><code>docs/mod.svelte</code></td>
+          <td><code>about.svelte</code></td>
+          <td>&nbsp;</td>
+          <td><code>/about</code></td>
+        </tr>
+        <tr>
+          <td><code>docs/index.svelte</code></td>
           <td>&nbsp;</td>
           <td><code>/docs/</code></td>
         </tr>
         <tr>
-          <td><code>blog/mod.svelte</code></td>
-          <td><code>/:slug</code></td>
+          <td><code>docs/routing.svelte</code></td>
+          <td><code>/</code></td>
+          <td><code>/docs/routing/</code></td>
+        </tr>
+        <tr>
+          <td><code>blog/index.svelte</code></td>
+          <td><code>/:slug/</code></td>
           <td><code>/blog/hello-world/</code></td>
         </tr>
         <tr>
-          <td><code>blog/(post)/mod.svelte</code></td>
-          <td><code>/:year(\\d+)/:month(\\d+)/:slug</code></td>
+          <td><code>blog/(post)/index.svelte</code></td>
+          <td><code>/:year(\\d+)/:month(\\d+)/:slug/</code></td>
           <td><code>/blog/2023/11/hello-world/</code></td>
         </tr>
       </tbody>
     </table>
+    <p>
+      Trailing slashes are controlled by using an <code>index.svelte</code>
+      page or by exporting a pattern ending with a slash.
+    </p>
     <p>
       Using parentheses around a directory name removes it from the URL
       pathname.
@@ -68,13 +86,13 @@
         href="https://svelte.dev/docs/svelte-components#script-context-module"
         target="_blank">module script</a
       >
-      leading the <code>mod.svelte</code> route file.
+      leading the <code>index.svelte</code> route file.
     </p>
     <Code
       language="javascript"
       code={`
 <script context="module">
-  export const pattern = '/:year(\\d+)/:month(\\d+)/:slug';
+  export const pattern = '/:year(\\d+)/:month(\\d+)/:slug/';
 </script>
 `}
     />

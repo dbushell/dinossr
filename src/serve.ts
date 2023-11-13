@@ -1,23 +1,8 @@
 import {path, deepMerge, bumble, velocirouter} from './deps.ts';
 import {addStaticRoutes} from './static.ts';
 import {addRoutes} from './routes.ts';
-import {addErrors} from './errors.ts';
 import {readTemplate} from './template.ts';
 import type {ServeOptions, Router, Bumbler} from './types.ts';
-
-// Convert relative TypeScript paths to absolute
-export const resolvePaths = (dir: string, options: ServeOptions) => {
-  const paths: Record<string, string[]> = {};
-  for (const [key, value] of Object.entries(
-    options.bumbler!.typescript!.paths!
-  )) {
-    for (let i = 0; i < value.length; i++) {
-      value[i] = path.resolve(dir, value[i]);
-    }
-    paths[key] = value;
-  }
-  return paths;
-};
 
 export const serve = async (dir: string, options?: ServeOptions) => {
   const start = performance.now();
@@ -36,9 +21,6 @@ export const serve = async (dir: string, options?: ServeOptions) => {
   };
   // deno-lint-ignore no-explicit-any
   options = deepMerge<any>(defaultOptions, options ?? {});
-  if (options?.bumbler?.typescript?.paths) {
-    options.bumbler.typescript.paths = resolvePaths(dir, options);
-  }
 
   // Setup router
   const router: Router = new velocirouter.Router({
@@ -53,7 +35,6 @@ export const serve = async (dir: string, options?: ServeOptions) => {
   await readTemplate(dir);
   await addStaticRoutes(router, dir);
   await addRoutes(router, bumbler, dir);
-  await addErrors(router, bumbler, dir);
 
   router.get('/_/immutable/:hash:ext(\\.\\w+)', (_req, response) => {
     if (response?.ok && response?.status === 200) {

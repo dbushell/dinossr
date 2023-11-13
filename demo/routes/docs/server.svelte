@@ -1,3 +1,7 @@
+<script context="module">
+  export const pattern = '/';
+</script>
+
 <script>
   import Layout from '@components/layout.svelte';
   import DocsBreadcrumb from '@components/docs-breadcrumb.svelte';

@@ -19,11 +19,11 @@
   <div class="mb-4">
     <ul class="nav flex-column mb-4">
       {#each docs.pages.slice(1) as page}
-      <li class="nav-item">
-        <a class="nav-link" href={page.href}>
-          <span>→ {page.name}</span>
-        </a>
-      </li>
+        <li class="nav-item">
+          <a class="nav-link" href={page.href}>
+            <span>→ {page.name}</span>
+          </a>
+        </li>
       {/each}
     </ul>
   </div>

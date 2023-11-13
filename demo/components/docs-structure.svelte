@@ -6,7 +6,7 @@
       >routes/</span
     >
 <span class="text-secondary">|  |--</span> _404.svelte
-<span class="text-secondary">|  |--</span> mod.svelte
+<span class="text-secondary">|  |--</span> index.svelte
 <span class="text-secondary">|--+</span> <span class="text-primary-emphasis"
       >static/</span
     >
