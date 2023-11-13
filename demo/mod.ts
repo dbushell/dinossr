@@ -4,7 +4,7 @@ const dir = new URL('./', import.meta.url).pathname;
 
 const {router} = await serve(dir, {
   bumbler: {
-    dev: true
+    dev: true,
     // dynamicImports: false
   }
 });

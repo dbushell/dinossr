@@ -26,7 +26,7 @@ export const importModule = async (
   pattern: string,
   bumbler: Bumbler
 ): Promise<Renderer[]> => {
-  const mod = await bumbler.bumbleSSR(abspath);
+  const {mod} = await bumbler.bumbleSSR(abspath);
 
   // Append pattern to file path
   if (mod.pattern) {
