@@ -26,7 +26,9 @@ export const importModule = async (
   pattern: string,
   bumbler: Bumbler
 ): Promise<Renderer[]> => {
-  const {mod} = await bumbler.bumbleSSR(abspath);
+  const {mod} = await bumbler.bumbleSSR(abspath, {
+    filterExports: ['default', 'pattern', 'get', 'post', 'load', 'csr']
+  });
 
   // Append pattern to file path
   if (mod.pattern) {
@@ -108,7 +110,9 @@ new mod.default({target, context, hydrate: true, props: Object.fromEntries(conte
 
     // Render DOM for client-side hydration
     if (mod.csr && abspath.endsWith('.svelte')) {
-      let dom = await bumbler.bumbleDOM(abspath);
+      let dom = await bumbler.bumbleDOM(abspath, {
+        filterExports: ['default', 'pattern']
+      });
       dom = dom.replaceAll(
         'from "svelte',
         'from "https://cdn.skypack.dev/svelte@4.2.2'
