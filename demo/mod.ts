@@ -2,9 +2,11 @@ import {serve} from '../mod.ts';
 
 const dir = new URL('./', import.meta.url).pathname;
 
+const dev = !Deno.env.has('DENO_REGION');
+
 const {router} = await serve(dir, {
   bumbler: {
-    dev: true,
+    dev
     // dynamicImports: false
   }
 });

@@ -1,12 +1,21 @@
-import {path, bumble} from './deps.ts';
+import {path, debounce, bumble} from './deps.ts';
 import {encodeHash} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
-import type {Bumbler, Handle, Renderer} from './types.ts';
+import type {Bumbler, Handle, Renderer, RenderCallback} from './types.ts';
+
+const watchModules = new Map<string, Deno.FsWatcher>();
+const watchRenderers = new Map<string, Renderer>();
 
 // Return a route handle that renders with `app.html`
 export const createHandle = async (renderer: Renderer): Promise<Handle> => {
   const template = await readTemplate();
   return async (...args) => {
+    for (const r of watchRenderers.values()) {
+      if (r.method === renderer.method && r.pattern === renderer.pattern) {
+        renderer = r;
+        break;
+      }
+    }
     const render = await renderer.render(...args);
     let response = await render.response;
     if (renderer.method === 'GET' && hasTemplate(response)) {
@@ -24,9 +33,10 @@ export const createHandle = async (renderer: Renderer): Promise<Handle> => {
 export const importModule = async (
   abspath: string,
   pattern: string,
-  bumbler: Bumbler
+  bumbler: Bumbler,
+  watch?: boolean
 ): Promise<Renderer[]> => {
-  const {mod} = await bumbler.bumbleSSR(abspath, {
+  const {manifest, mod} = await bumbler.bumbleSSR(abspath, {
     filterExports: ['default', 'pattern', 'get', 'post', 'load', 'csr']
   });
 
@@ -39,15 +49,35 @@ export const importModule = async (
   // Unique to deployment and component
   const hash = await encodeHash((await bumbler.deployHash) + pattern, 'SHA-1');
 
+  if (watch) {
+    if (watchModules.has(abspath)) {
+      const watcher = watchModules.get(abspath) as Deno.FsWatcher;
+      watcher.close();
+    }
+    const watcher = Deno.watchFs([...manifest.dependencies.keys()]);
+    const update = debounce(async (ev: Deno.FsEvent) => {
+      if (ev.kind === 'modify') {
+        watcher.close();
+        await importModule(abspath, pattern, bumbler, watch);
+      }
+    }, 500);
+    (async () => {
+      for await (const event of watcher) {
+        update(event);
+      }
+    })();
+  }
+
   const renderers: Renderer[] = [];
 
   const add = (method: Renderer['method'], handle: Handle) => {
+    const render: RenderCallback = (...args) => ({
+      response: handle(...args)
+    });
     renderers.push({
       pattern,
       method,
-      render: (...args) => ({
-        response: handle(...args)
-      })
+      render
     });
   };
 
@@ -67,25 +97,21 @@ export const importModule = async (
   // Handle Svelte component export
   else if (typeof mod?.default?.render === 'function') {
     const component = mod.default as bumble.BumbleComponent;
-
-    renderers.push({
-      pattern,
-      method: 'GET',
-      render: async (request, _response, {match}) => {
-        // Setup context and props
-        const url = new URL(request.url);
-        const params = match?.pathname?.groups;
-        const data = mod.load ? await mod.load(request, {params}) : {};
-        const context = new Map<string, unknown>();
-        context.set('url', url);
-        context.set('pattern', pattern);
-        context.set('params', params);
-        context.set('data', data);
-        const render = component.render(Object.fromEntries(context), {context});
-        if (mod.csr) {
-          const script = new URL(`/_/immutable/${hash}.js`, url);
-          render.head += `\n<link rel="modulepreload" href="${script.pathname}">`;
-          render.html += `\n<script type="module">
+    const render: RenderCallback = async (request, _response, {match}) => {
+      // Setup context and props
+      const url = new URL(request.url);
+      const params = match?.pathname?.groups;
+      const data = mod.load ? await mod.load(request, {params}) : {};
+      const context = new Map<string, unknown>();
+      context.set('url', url);
+      context.set('pattern', pattern);
+      context.set('params', params);
+      context.set('data', data);
+      const render = component.render(Object.fromEntries(context), {context});
+      if (mod.csr) {
+        const script = new URL(`/_/immutable/${hash}.js`, url);
+        render.head += `\n<link rel="modulepreload" href="${script.pathname}">`;
+        render.html += `\n<script type="module">
 const mod = await import('${script.pathname}');
 const target = document.querySelector('#app');
 const context = new Map();
@@ -97,15 +123,19 @@ context.set('browser', true);
 new mod.default({target, context, hydrate: true, props: Object.fromEntries(context)});
 </script>
 `;
-        }
-        return {
-          response: new Response(render.html, {
-            headers: {'content-type': 'text/html; charset=utf-8'}
-          }),
-          head: render.head,
-          css: render.css?.code
-        };
       }
+      return {
+        response: new Response(render.html, {
+          headers: {'content-type': 'text/html; charset=utf-8'}
+        }),
+        head: render.head,
+        css: render.css?.code
+      };
+    };
+    renderers.push({
+      method: 'GET',
+      pattern,
+      render
     });
 
     // Render DOM for client-side hydration
@@ -117,18 +147,32 @@ new mod.default({target, context, hydrate: true, props: Object.fromEntries(conte
         'from "svelte',
         'from "https://cdn.skypack.dev/svelte@4.2.2'
       );
+      const pattern = `/_/immutable/${hash}.js`;
+      const render: RenderCallback = () => {
+        return {
+          response: new Response(dom, {
+            headers: {'content-type': 'text/javascript; charset=utf-8'}
+          })
+        };
+      };
       renderers.push({
-        pattern: `/_/immutable/${hash}.js`,
         method: 'GET',
-        render: () => {
-          return {
-            response: new Response(dom, {
-              headers: {'content-type': 'text/javascript; charset=utf-8'}
-            })
-          };
-        }
+        pattern,
+        render
       });
     }
+  }
+
+  if (watch) {
+    renderers.forEach((newRenderer) => {
+      const key = newRenderer.method + newRenderer.pattern;
+      const oldRenderer = watchRenderers.get(key);
+      if (oldRenderer) {
+        oldRenderer.render = newRenderer.render;
+      } else {
+        watchRenderers.set(key, newRenderer);
+      }
+    });
   }
 
   return renderers;

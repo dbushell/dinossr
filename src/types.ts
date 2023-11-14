@@ -29,10 +29,12 @@ export interface RenderResponse {
   css?: string;
 }
 
+export interface RenderCallback {
+  (...args: Parameters<Handle>): RenderResponse | Promise<RenderResponse>;
+}
+
 export interface Renderer {
   method: velocirouter.Method;
   pattern: string;
-  render: (
-    ...args: Parameters<Handle>
-  ) => RenderResponse | Promise<RenderResponse>;
+  render: RenderCallback;
 }
