@@ -4,8 +4,7 @@ import {encodeHash} from './utils.ts';
 const builtin = ['island'];
 const builtinDir = new URL('./svelte', import.meta.url).pathname;
 
-const hashMap = new Map<string, string>();
-
+const islandMap = new Map<string, string>();
 const islandImport = /^\s*?import(.*?)from\s+['"]@dinossr\/island['"]/m;
 
 export const sveltePreprocessor = (deployHash: string) => {
@@ -24,7 +23,7 @@ export const sveltePreprocessor = (deployHash: string) => {
       // Add island hash prop to component
       const hash = await encodeHash(deployHash + params.filename, 'SHA-1');
       code = params.content.replace(tag, `<$1 $2 _island="${hash}">`);
-      hashMap.set(params.filename!, hash);
+      islandMap.set(params.filename!, hash);
       // Look for module script
       let context = false;
       const scripts = code.matchAll(/<script(\b[^>]*)>(.*?)<\/script>/gis);
@@ -42,9 +41,9 @@ export const sveltePreprocessor = (deployHash: string) => {
     },
     script: (params) => {
       let code = params.content;
-      const hash = hashMap.get(params.filename!);
+      const hash = islandMap.get(params.filename!);
       // Append island hash export to module script
-      if (params.attributes.context === 'module' && hash) {
+      if (hash && params.attributes.context === 'module') {
         code += `\nexport const _island = "${hash}";\n`;
       } else {
         code = code.replace(

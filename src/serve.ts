@@ -2,8 +2,8 @@ import {path, deepMerge, bumble, velocirouter} from './deps.ts';
 import {addStaticRoutes} from './static.ts';
 import {addRoutes} from './routes.ts';
 import {readTemplate} from './template.ts';
-import type {ServeOptions, Router, Bumbler} from './types.ts';
 import {sveltePreprocessor} from './svelte.ts';
+import type {ServeOptions, Router, Bumbler} from './types.ts';
 
 export const serve = async (dir: string, options?: ServeOptions) => {
   const start = performance.now();

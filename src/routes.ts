@@ -1,7 +1,7 @@
 import {path, existsSync} from './deps.ts';
 import {createHandle, importModule} from './render.ts';
-import type {Bumbler, Router, Renderer} from './types.ts';
 import {addError, addNoMatch} from './errors.ts';
+import type {Bumbler, Router, Renderer} from './types.ts';
 
 // Recursively find routes within directory
 const traverse = async (dir: string, depth = 0): Promise<string[]> => {
