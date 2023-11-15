@@ -33,9 +33,10 @@ export const serve = async (dir: string, options?: ServeOptions) => {
   const bumbler: Bumbler = new bumble.Bumbler(dir, {
     ...options?.bumbler
   });
-  bumbler.sveltePreprocess = sveltePreprocessor(
-    (await bumbler.deployHash) ?? ''
-  );
+
+  const deployHash = (await bumbler.deployHash) ?? '';
+
+  bumbler.sveltePreprocess = sveltePreprocessor(deployHash);
 
   await readTemplate(dir);
   await addStaticRoutes(router, dir);
@@ -53,7 +54,7 @@ export const serve = async (dir: string, options?: ServeOptions) => {
 
   // Setup server
   const server = Deno.serve(options?.serve ?? {}, (request, info) =>
-    router.handle(request, info)
+    router.handle(request, {info, deployHash})
   );
   if (options?.bumbler?.dev) {
     const time = (performance.now() - start).toFixed(2);

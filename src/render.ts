@@ -32,7 +32,11 @@ export const importModule = async (
 
   // Append pattern to file path
   if (mod.pattern) {
-    pattern = path.join(pattern, mod.pattern);
+    if (/^\.\w+$/.test(mod.pattern)) {
+      pattern += mod.pattern;
+    } else {
+      pattern = path.join(pattern, mod.pattern);
+    }
   }
 
   const renderers: Renderer[] = [];
