@@ -3,6 +3,7 @@ import {addStaticRoutes} from './static.ts';
 import {addRoutes} from './routes.ts';
 import {readTemplate} from './template.ts';
 import type {ServeOptions, Router, Bumbler} from './types.ts';
+import {sveltePreprocessor} from './svelte.ts';
 
 export const serve = async (dir: string, options?: ServeOptions) => {
   const start = performance.now();
@@ -19,6 +20,7 @@ export const serve = async (dir: string, options?: ServeOptions) => {
       dynamicImports: Deno.env.has('DENO_REGION') === false
     }
   };
+
   // deno-lint-ignore no-explicit-any
   options = deepMerge<any>(defaultOptions, options ?? {});
 
@@ -31,6 +33,9 @@ export const serve = async (dir: string, options?: ServeOptions) => {
   const bumbler: Bumbler = new bumble.Bumbler(dir, {
     ...options?.bumbler
   });
+  bumbler.sveltePreprocess = sveltePreprocessor(
+    (await bumbler.deployHash) ?? ''
+  );
 
   await readTemplate(dir);
   await addStaticRoutes(router, dir);

@@ -1,21 +1,12 @@
-import {path, debounce, bumble} from './deps.ts';
-import {encodeHash} from './utils.ts';
+import {path, bumble} from './deps.ts';
+import {encodeHash, encodeHash64} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
 import type {Bumbler, Handle, Renderer, RenderCallback} from './types.ts';
-
-const watchModules = new Map<string, Deno.FsWatcher>();
-const watchRenderers = new Map<string, Renderer>();
 
 // Return a route handle that renders with `app.html`
 export const createHandle = async (renderer: Renderer): Promise<Handle> => {
   const template = await readTemplate();
   return async (...args) => {
-    for (const r of watchRenderers.values()) {
-      if (r.method === renderer.method && r.pattern === renderer.pattern) {
-        renderer = r;
-        break;
-      }
-    }
     const render = await renderer.render(...args);
     let response = await render.response;
     if (renderer.method === 'GET' && hasTemplate(response)) {
@@ -33,39 +24,15 @@ export const createHandle = async (renderer: Renderer): Promise<Handle> => {
 export const importModule = async (
   abspath: string,
   pattern: string,
-  bumbler: Bumbler,
-  watch?: boolean
+  bumbler: Bumbler
 ): Promise<Renderer[]> => {
   const {manifest, mod} = await bumbler.bumbleSSR(abspath, {
-    filterExports: ['default', 'pattern', 'get', 'post', 'load', 'csr']
+    filterExports: ['default', 'pattern', 'get', 'post', 'load']
   });
 
   // Append pattern to file path
   if (mod.pattern) {
     pattern = path.join(pattern, mod.pattern);
-  }
-
-  // TODO: pass as prop/context?
-  // Unique to deployment and component
-  const hash = await encodeHash((await bumbler.deployHash) + pattern, 'SHA-1');
-
-  if (watch) {
-    if (watchModules.has(abspath)) {
-      const watcher = watchModules.get(abspath) as Deno.FsWatcher;
-      watcher.close();
-    }
-    const watcher = Deno.watchFs([...manifest.dependencies.keys()]);
-    const update = debounce(async (ev: Deno.FsEvent) => {
-      if (ev.kind === 'modify') {
-        watcher.close();
-        await importModule(abspath, pattern, bumbler, watch);
-      }
-    }, 500);
-    (async () => {
-      for await (const event of watcher) {
-        update(event);
-      }
-    })();
   }
 
   const renderers: Renderer[] = [];
@@ -97,6 +64,43 @@ export const importModule = async (
   // Handle Svelte component export
   else if (typeof mod?.default?.render === 'function') {
     const component = mod.default as bumble.BumbleComponent;
+
+    const islandMeta: Array<{hash: string; href: string}> = [];
+
+    const islandEntries: string[] = [];
+    for (const [entry, dep] of manifest.dependencies) {
+      if (dep.exports.includes('_island')) {
+        islandEntries.push(entry);
+      }
+    }
+
+    for (const entry of islandEntries) {
+      const hash = await encodeHash(
+        (await bumbler.deployHash) + entry,
+        'SHA-1'
+      );
+      const href = `/_/immutable/${hash}.js`;
+      islandMeta.push({hash, href});
+      let code = await bumbler.bumbleDOM(entry, {
+        filterExports: ['default', 'pattern']
+      });
+      code = code.replaceAll(
+        'from "svelte',
+        'from "https://cdn.skypack.dev/svelte@4.2.2'
+      );
+      renderers.push({
+        method: 'GET',
+        pattern: href,
+        render: () => {
+          return {
+            response: new Response(code, {
+              headers: {'content-type': 'text/javascript; charset=utf-8'}
+            })
+          };
+        }
+      });
+    }
+
     const render: RenderCallback = async (request, _response, {match}) => {
       // Setup context and props
       const url = new URL(request.url);
@@ -108,26 +112,59 @@ export const importModule = async (
       context.set('params', params);
       context.set('data', data);
       const render = component.render(Object.fromEntries(context), {context});
-      if (mod.csr) {
-        const script = new URL(`/_/immutable/${hash}.js`, url);
-        render.head += `\n<link rel="modulepreload" href="${script.pathname}">`;
-        render.html += `\n<script type="module">
-const mod = await import('${script.pathname}');
-const target = document.querySelector('#app');
+      islandMeta.forEach(({href}) => {
+        render.head += `\n<link rel="modulepreload" href="${href}">\n`;
+      });
+      let styleHash = '';
+      let scriptHash = '';
+      if (islandMeta.length) {
+        const style = `
+[data-island] {
+  display: contents;
+}
+`;
+        const script = `
 const context = new Map();
 context.set('url', new URL('${url.pathname}', window.location.href));
 context.set('pattern', '${pattern}');
 context.set('params', ${JSON.stringify(params)});
 context.set('data', ${JSON.stringify(data)});
 context.set('browser', true);
-new mod.default({target, context, hydrate: true, props: Object.fromEntries(context)});
-</script>
+const props = Object.fromEntries(context);
+const islands = Array.from(document.querySelectorAll('[data-island]'));
+islands.forEach(async (isle) => {
+  if (isle.parentNode.closest('[data-island]')) {
+    return;
+  }
+  try {
+    const mod = await import(\`/_/immutable/\${isle.dataset.island}.js\`);
+    const target = document.createDocumentFragment();
+    const div = document.createElement('div');
+    isle.replaceWith(div);
+    target.appendChild(isle);
+    new mod.default({context, props, target, hydrate: true});
+    div.replaceWith(target);
+  } catch (err) {
+    console.log(err);
+  }
+});
 `;
+        styleHash = await encodeHash64(style, 'SHA-256');
+        scriptHash = await encodeHash64(script, 'SHA-256');
+        render.head += `<script defer type="module" data-hash="${scriptHash}">${script}</script>\n`;
+        render.head += `<style data-hash="${styleHash}">${style}</style>\n`;
+      }
+      const response = new Response(render.html, {
+        headers: {'content-type': 'text/html; charset=utf-8'}
+      });
+      if (styleHash) {
+        response.headers.append('x-style-src', `sha256-${styleHash}`);
+      }
+      if (scriptHash) {
+        response.headers.append('x-script-src', `sha256-${scriptHash}`);
       }
       return {
-        response: new Response(render.html, {
-          headers: {'content-type': 'text/html; charset=utf-8'}
-        }),
+        response,
         head: render.head,
         css: render.css?.code
       };
@@ -136,42 +173,6 @@ new mod.default({target, context, hydrate: true, props: Object.fromEntries(conte
       method: 'GET',
       pattern,
       render
-    });
-
-    // Render DOM for client-side hydration
-    if (mod.csr && abspath.endsWith('.svelte')) {
-      let dom = await bumbler.bumbleDOM(abspath, {
-        filterExports: ['default', 'pattern']
-      });
-      dom = dom.replaceAll(
-        'from "svelte',
-        'from "https://cdn.skypack.dev/svelte@4.2.2'
-      );
-      const pattern = `/_/immutable/${hash}.js`;
-      const render: RenderCallback = () => {
-        return {
-          response: new Response(dom, {
-            headers: {'content-type': 'text/javascript; charset=utf-8'}
-          })
-        };
-      };
-      renderers.push({
-        method: 'GET',
-        pattern,
-        render
-      });
-    }
-  }
-
-  if (watch) {
-    renderers.forEach((newRenderer) => {
-      const key = newRenderer.method + newRenderer.pattern;
-      const oldRenderer = watchRenderers.get(key);
-      if (oldRenderer) {
-        oldRenderer.render = newRenderer.render;
-      } else {
-        watchRenderers.set(key, newRenderer);
-      }
     });
   }
 

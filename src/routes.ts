@@ -46,7 +46,7 @@ const generate = async (dir: string, bumbler: Bumbler): Promise<Renderer[]> => {
       pattern += path.basename(abspath, path.extname(abspath));
     }
     // Import module
-    const mod = await importModule(abspath, pattern, bumbler, bumbler.dev);
+    const mod = await importModule(abspath, pattern, bumbler);
     if (!mod.length) {
       console.warn(`Invalid route: (${abspath})`);
       continue;

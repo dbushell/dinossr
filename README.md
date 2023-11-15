@@ -4,7 +4,7 @@
 
 A minimal web framework powered by:
 
-* [Svelte Bumble](https://github.com/dbushell/svelte-bumble)
+* [Bumble](https://github.com/dbushell/bumble)
 * [VelociRouter](https://github.com/dbushell/velocirouter)
 
 * * *

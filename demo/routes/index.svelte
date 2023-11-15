@@ -3,6 +3,7 @@
   import Alert from '@components/alert.svelte';
   import Card from '@components/card.svelte';
   import Rule from '@components/rule.svelte';
+  import Clock from '@components/clock.svelte';
 
   const heading = 'DinoSrr';
   const title = `${heading} - Deno SSR Web Framework`;
@@ -21,8 +22,7 @@
     <div class="col col-12 col-md-6 col-lg-4">
       <h2 class="fw-light text-info-emphasis">SSR First</h2>
       <p>
-        Pages are rendered server side with Svelte components or JavaScript
-        functions.
+        Pages are rendered server side with Svelte components.
       </p>
     </div>
     <div class="col col-12 col-md-6 col-lg-4">
@@ -32,6 +32,10 @@
     <div class="col col-12 col-md-6 col-lg-4">
       <h2 class="fw-light text-info-emphasis">Routing</h2>
       <p>File system and <code>URLPattern</code> based routes.</p>
+    </div>
+    <div class="col col-12 col-md-6 col-lg-4">
+      <h2 class="fw-light text-info-emphasis">Islands</h2>
+      <p><Clock /> Interactive client side components.</p>
     </div>
   </div>
   <Alert />
@@ -49,9 +53,9 @@
     </div>
     <div class="col col-12 col-md-5 col-lg-4">
       <Card
-        title="Svelte Bumble"
+        title="Bumble"
         text="An experimental just-in-time Svelte + TypeScript module bundler and importer ✨"
-        link="https://github.com/dbushell/svelte-bumble"
+        link="https://github.com/dbushell/bumble"
         linkText="GitHub"
       />
     </div>

@@ -6,4 +6,7 @@
 !src
 src/*
 !src/*.ts
+!src/svelte
+src/svelte/*
+!src/svelte/*.svelte
 !demo

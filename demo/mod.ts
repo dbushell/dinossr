@@ -13,14 +13,30 @@ const {router} = await serve(dir, {
 
 const CSP = {
   'default-src': ["'self'"],
-  'script-src': ["'self'"],
+  'style-src': ["'self'"],
+  'script-src': ["'self'", 'https://cdn.skypack.dev'],
   'base-uri': ["'none'"],
   'frame-ancestors': ["'none'"],
   'form-action': ["'self'"]
 };
 
-router.use((_req, response) => {
+const updateCSP = (response: Response, csp: keyof typeof CSP) => {
+  const key = `x-${csp}`;
+  if (!response.headers.has(key)) {
+    return;
+  }
+  const hash = response.headers
+    .get(key)!
+    .split(',')
+    .map((s) => `'${s.trim()}'`);
+  CSP[csp].push(...hash);
+  response.headers.delete(key);
+};
+
+router.use((_request, response) => {
   if (response) {
+    updateCSP(response, 'style-src');
+    updateCSP(response, 'script-src');
     response.headers.set('referrer-policy', 'same-origin');
     response.headers.set(
       'content-security-policy',
