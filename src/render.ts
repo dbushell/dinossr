@@ -82,7 +82,7 @@ export const importModule = async (
       const href = `/_/immutable/${hash}.js`;
       islandMeta.push({hash, href});
       let code = await bumbler.bumbleDOM(entry, {
-        filterExports: ['default', 'pattern']
+        filterExports: ['default']
       });
       code = code.replaceAll(
         'from "svelte',

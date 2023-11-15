@@ -23,7 +23,7 @@ export const sveltePreprocessor = (deployHash: string) => {
       }
       // Add island hash prop to component
       const hash = await encodeHash(deployHash + params.filename, 'SHA-1');
-      code = params.content.replace(tag, `<$1 $2 _hash="${hash}">`);
+      code = params.content.replace(tag, `<$1 $2 _island="${hash}">`);
       hashMap.set(params.filename!, hash);
       // Look for module script
       let context = false;
