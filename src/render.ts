@@ -88,10 +88,10 @@ export const importModule = async (
       let code = await bumbler.bumbleDOM(entry, {
         filterExports: ['default']
       });
-      code = code.replaceAll(
-        'from "svelte',
-        'from "https://cdn.skypack.dev/svelte@4.2.2'
-      );
+      // code = code.replaceAll(
+      //   'from "svelte',
+      //   'from "https://esm.sh/svelte@4.2.3'
+      // );
       renderers.push({
         method: 'GET',
         pattern: href,
@@ -116,11 +116,9 @@ export const importModule = async (
       context.set('params', params);
       context.set('data', data);
       const render = component.render(Object.fromEntries(context), {context});
-      islandMeta.forEach(({href}) => {
-        render.head += `\n<link rel="modulepreload" href="${href}">\n`;
-      });
       let styleHash = '';
       let scriptHash = '';
+      let importHash = '';
       if (islandMeta.length) {
         const style = `
 [data-island] {
@@ -153,8 +151,22 @@ islands.forEach(async (isle) => {
   }
 });
 `;
+        const importMap = `
+{
+  "imports": {
+    "svelte": "https://cdn.skypack.dev/svelte@4.2.3",
+    "svelte/internal": "https://cdn.skypack.dev/svelte@4.2.3/internal"
+  }
+}
+`;
         styleHash = await encodeHash64(style, 'SHA-256');
         scriptHash = await encodeHash64(script, 'SHA-256');
+        importHash = await encodeHash64(importMap, 'SHA-256');
+        render.head += `\n`;
+        render.head += `<script type="importmap" data-hash="${importHash}">${importMap}</script>\n`;
+        islandMeta.forEach(({href}) => {
+          render.head += `<link rel="modulepreload" href="${href}">\n`;
+        });
         render.head += `<script defer type="module" data-hash="${scriptHash}">${script}</script>\n`;
         render.head += `<style data-hash="${styleHash}">${style}</style>\n`;
       }
@@ -166,6 +178,9 @@ islands.forEach(async (isle) => {
       }
       if (scriptHash) {
         response.headers.append('x-script-src', `sha256-${scriptHash}`);
+      }
+      if (importHash) {
+        response.headers.append('x-script-src', `sha256-${importHash}`);
       }
       return {
         response,
