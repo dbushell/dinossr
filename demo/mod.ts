@@ -25,12 +25,14 @@ const updateCSP = (response: Response, csp: keyof typeof CSP) => {
   if (!response.headers.has(key)) {
     return;
   }
-  const hash = response.headers
-    .get(key)!
-    .split(',')
-    .map((s) => `'${s.trim()}'`);
-  CSP[csp].push(...hash);
+  const value = response.headers.get(key)!;
   response.headers.delete(key);
+  const hash = value.split(',').map((s) => `'${s.trim()}'`);
+  hash.forEach((h) => {
+    if (!CSP[csp].includes(h)) {
+      CSP[csp].push(h);
+    }
+  });
 };
 
 router.use((_request, response) => {
