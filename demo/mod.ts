@@ -14,7 +14,7 @@ const {router} = await serve(dir, {
 const CSP = {
   'default-src': ["'self'"],
   'style-src': ["'self'"],
-  'script-src': ["'self'", 'https://cdn.skypack.dev'],
+  'script-src': ["'self'"],
   'base-uri': ["'none'"],
   'frame-ancestors': ["'none'"],
   'form-action': ["'self'"]

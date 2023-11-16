@@ -153,8 +153,13 @@ islands.forEach(async (isle) => {
         const importMap = `
 {
   "imports": {
-    "svelte": "https://cdn.skypack.dev/svelte@4.2.3",
-    "svelte/internal": "https://cdn.skypack.dev/svelte@4.2.3/internal"
+    "svelte": "/_/immutable/svelte@4.2.3",
+    "svelte/internal": "/_/immutable/svelte@4.2.3/internal",
+    "svelte/animate": "/_/immutable/svelte@4.2.3/animate",
+    "svelte/easing": "/_/immutable/svelte@4.2.3/easing",
+    "svelte/motion": "/_/immutable/svelte@4.2.3/motion",
+    "svelte/store": "/_/immutable/svelte@4.2.3/store",
+    "svelte/transition": "/_/immutable/svelte@4.2.3/transition"
   }
 }
 `;
