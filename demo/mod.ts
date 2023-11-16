@@ -20,29 +20,29 @@ const CSP = {
   'form-action': ["'self'"]
 };
 
-const updateCSP = (response: Response, csp: keyof typeof CSP) => {
-  const key = `x-${csp}`;
-  if (!response.headers.has(key)) {
-    return;
-  }
-  const value = response.headers.get(key)!;
-  response.headers.delete(key);
-  const hash = value.split(',').map((s) => `'${s.trim()}'`);
-  hash.forEach((h) => {
-    if (!CSP[csp].includes(h)) {
-      CSP[csp].push(h);
+const getCSP = (response: Response) => {
+  // @ts-ignore: TODO types
+  const csp: typeof CSP = {};
+  for (const [k, v] of Object.entries(CSP)) {
+    const key = k as keyof typeof CSP;
+    csp[key] = [...v];
+    const xkey = `x-${key}`;
+    if (response.headers.has(xkey)) {
+      const value = response.headers.get(xkey)!;
+      response.headers.delete(xkey);
+      csp[key].push(...value.split(',').map((s) => `'${s.trim()}'`));
     }
-  });
+  }
+  return csp;
 };
 
 router.use((_request, response) => {
   if (response) {
-    updateCSP(response, 'style-src');
-    updateCSP(response, 'script-src');
+    const csp = getCSP(response);
     response.headers.set('referrer-policy', 'same-origin');
     response.headers.set(
       'content-security-policy',
-      Object.entries(CSP)
+      Object.entries(csp)
         .map(([k, v]) => `${k} ${v.join(' ')}`)
         .join('; ')
     );

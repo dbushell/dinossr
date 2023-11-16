@@ -12,7 +12,7 @@ export const createHandle = async (renderer: Renderer): Promise<Handle> => {
     if (renderer.method === 'GET' && hasTemplate(response)) {
       response = response as Response;
       let body = await response.text();
-      body = template.replace('%BODY%', `<div id="app">${body}</div>`);
+      body = template.replace('%BODY%', `<div data-root>${body}</div>`);
       body = body.replace('%HEAD%', render.head || '');
       response = new Response(body, response);
       response.headers.set('content-type', 'text/html; charset=utf-8');
@@ -104,7 +104,6 @@ export const importModule = async (
         }
       });
     }
-
     const render: RenderCallback = async (request, _response, {match}) => {
       // Setup context and props
       const url = new URL(request.url);
@@ -116,11 +115,15 @@ export const importModule = async (
       context.set('params', params);
       context.set('data', data);
       const render = component.render(Object.fromEntries(context), {context});
-      let styleHash = '';
-      let scriptHash = '';
-      let importHash = '';
+      const headers = new Headers();
+      render.head += `\n`;
+      let style = `
+[data-root] {
+  display: contents;
+}
+`;
       if (islandMeta.length) {
-        const style = `
+        style += `
 [data-island] {
   display: contents;
 }
@@ -159,29 +162,23 @@ islands.forEach(async (isle) => {
   }
 }
 `;
-        styleHash = await encodeHash64(style, 'SHA-256');
-        scriptHash = await encodeHash64(script, 'SHA-256');
-        importHash = await encodeHash64(importMap, 'SHA-256');
-        render.head += `\n`;
+        const importHash = await encodeHash64(importMap, 'SHA-256');
+        const scriptHash = await encodeHash64(script, 'SHA-256');
+        headers.append('x-script-src', `sha256-${importHash}`);
+        headers.append('x-script-src', `sha256-${scriptHash}`);
         render.head += `<script type="importmap" data-hash="${importHash}">${importMap}</script>\n`;
         islandMeta.forEach(({href}) => {
           render.head += `<link rel="modulepreload" href="${href}">\n`;
         });
         render.head += `<script defer type="module" data-hash="${scriptHash}">${script}</script>\n`;
-        render.head += `<style data-hash="${styleHash}">${style}</style>\n`;
       }
+      const styleHash = await encodeHash64(style, 'SHA-256');
+      headers.append('x-style-src', `sha256-${styleHash}`);
+      render.head += `<style data-hash="${styleHash}">${style}</style>\n`;
+      headers.set('content-type', 'text/html; charset=utf-8');
       const response = new Response(render.html, {
-        headers: {'content-type': 'text/html; charset=utf-8'}
+        headers
       });
-      if (styleHash) {
-        response.headers.append('x-style-src', `sha256-${styleHash}`);
-      }
-      if (scriptHash) {
-        response.headers.append('x-script-src', `sha256-${scriptHash}`);
-      }
-      if (importHash) {
-        response.headers.append('x-script-src', `sha256-${importHash}`);
-      }
       return {
         response,
         head: render.head,
