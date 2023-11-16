@@ -1,8 +1,8 @@
-import {path, svelte} from './deps.ts';
+import {svelte} from './deps.ts';
 import {encodeHash} from './utils.ts';
 
 const builtin = ['island'];
-const builtinDir = new URL('./svelte', import.meta.url).pathname;
+const builtinURL = new URL('./svelte/', import.meta.url);
 
 const islandMap = new Map<string, string>();
 const islandImport = /^\s*?import(.*?)from\s+['"]@dinossr\/island['"]/m;
@@ -52,8 +52,8 @@ export const sveltePreprocessor = (deployHash: string) => {
             if (args[1].startsWith('@dinossr/')) {
               const name = args[1].slice(9);
               if (builtin.includes(name)) {
-                args[1] = path.resolve(builtinDir, name) + '.svelte';
-                return `import ${args[0]} from "${args[1]}";\n`;
+                const url = new URL(`./${name}.svelte`, builtinURL);
+                return `import ${args[0]} from "${url.href}";\n`;
               }
             }
             return match;
