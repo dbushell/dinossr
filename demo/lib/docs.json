@@ -13,6 +13,14 @@
       "href": "/docs/routing/"
     },
     {
+      "name": "Context",
+      "href": "/docs/context/"
+    },
+    {
+      "name": "Islands",
+      "href": "/docs/islands/"
+    },
+    {
       "name": "Deno Server",
       "href": "/docs/server/"
     }

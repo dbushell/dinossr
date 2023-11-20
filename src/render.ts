@@ -9,10 +9,13 @@ export const createHandle = async (renderer: Renderer): Promise<Handle> => {
   return async (...args) => {
     const render = await renderer.render(...args);
     let response = await render.response;
+    if (response?.headers.get('content-type')?.startsWith('text/html')) {
+      return response;
+    }
     if (renderer.method === 'GET' && hasTemplate(response)) {
       response = response as Response;
       let body = await response.text();
-      body = template.replace('%BODY%', `<div data-root>${body}</div>`);
+      body = template.replace('%BODY%', `<dinossr-root>${body}</dinossr-root>`);
       body = body.replace('%HEAD%', render.head || '');
       response = new Response(body, response);
       response.headers.set('content-type', 'text/html; charset=utf-8');
@@ -52,21 +55,8 @@ export const importModule = async (
     });
   };
 
-  // Support POST handle
-  if (typeof mod.post === 'function') {
-    add('POST', mod.post as Handle);
-  }
-
-  // Use default function as GET handle
-  if (typeof mod.default === 'function') {
-    add('GET', mod.default as Handle);
-  }
-  // Look for named GET handle
-  else if (typeof mod.get === 'function') {
-    add('GET', mod.get as Handle);
-  }
-  // Handle Svelte component export
-  else if (typeof mod?.default?.render === 'function') {
+  // Handle Svelte component
+  if (typeof (mod?.default as bumble.BumbleComponent)?.render === 'function') {
     const component = mod.default as bumble.BumbleComponent;
 
     const islandMeta: Array<{hash: string; href: string}> = [];
@@ -110,17 +100,17 @@ export const importModule = async (
       context.set('pattern', pattern);
       context.set('params', params);
       context.set('data', data);
-      const render = component.render(Object.fromEntries(context), {context});
+      const render = component.render({}, {context});
       const headers = new Headers();
       render.head += `\n`;
       let style = `
-[data-root] {
+dinossr-root {
   display: contents;
 }
 `;
       if (islandMeta.length) {
         style += `
-[data-island] {
+dinossr-island {
   display: contents;
 }
 `;
@@ -131,24 +121,37 @@ context.set('pattern', '${pattern}');
 context.set('params', ${JSON.stringify(params)});
 context.set('data', ${JSON.stringify(data)});
 context.set('browser', true);
-const props = Object.fromEntries(context);
-const islands = Array.from(document.querySelectorAll('[data-island]'));
-islands.forEach(async (isle) => {
-  if (isle.parentNode.closest('[data-island]')) {
-    return;
+
+const islands = new WeakSet();
+const islandIds = new Set();
+
+class DinossrIsland extends HTMLElement {
+  constructor() {
+    super();
   }
-  try {
-    const mod = await import(\`/_/immutable/\${isle.dataset.island}.js\`);
+  async connectedCallback() {
+    const uuid = this.dataset.uuid;
+    if (islands.has(this) || islandIds.has(uuid)) return;
+    islands.add(this);
+    islandIds.add(uuid);
+    if (this.parentNode.closest('dinossr-island')) return;
+    const [hash, id] = uuid.split(':');
+    const json = document.head.querySelector(\`[data-uuid="\${uuid}"][type*="/json"]\`);
+    const props = json ? JSON.parse(json.textContent) : {};
+    context.set('_islandId', id);
+    const mod = await import(\`/_/immutable/\${hash}.js\`);
     const target = document.createDocumentFragment();
     const div = document.createElement('div');
-    isle.replaceWith(div);
-    target.appendChild(isle);
+    this.replaceWith(div);
+    target.appendChild(this);
     new mod.default({context, props, target, hydrate: true});
     div.replaceWith(target);
-  } catch (err) {
-    console.log(err);
   }
-});
+}
+
+customElements.define('dinossr-island', DinossrIsland);
+
+
 `;
         const importMap = `
 {
@@ -171,12 +174,11 @@ islands.forEach(async (isle) => {
         islandMeta.forEach(({href}) => {
           render.head += `<link rel="modulepreload" href="${href}">\n`;
         });
-        render.head += `<script defer type="module" data-hash="${scriptHash}">${script}</script>\n`;
+        render.html += `<script defer type="module" data-hash="${scriptHash}">${script}</script>\n`;
       }
       const styleHash = await encodeHash64(style, 'SHA-256');
       headers.append('x-style-src', `sha256-${styleHash}`);
       render.head += `<style data-hash="${styleHash}">${style}</style>\n`;
-      headers.set('content-type', 'text/html; charset=utf-8');
       const response = new Response(render.html, {
         headers
       });
@@ -191,6 +193,26 @@ islands.forEach(async (isle) => {
       pattern,
       render
     });
+
+    // Allow additional GET handle
+    if (typeof mod.get === 'function') {
+      add('GET', mod.get as Handle);
+    }
+  }
+
+  // Use default function as GET handle
+  else if (typeof mod.default === 'function') {
+    add('GET', mod.default as Handle);
+  }
+
+  // Look for named GET handle
+  else if (typeof mod.get === 'function') {
+    add('GET', mod.get as Handle);
+  }
+
+  // Support POST handle
+  if (typeof mod.post === 'function') {
+    add('POST', mod.post as Handle);
   }
 
   return renderers;

@@ -19,6 +19,8 @@
   import {onMount} from 'svelte';
   import Island from '@dinossr/island';
 
+  export let title = '';
+
   let datetime = '';
   let emoji = '';
   let time = '';
@@ -27,11 +29,8 @@
     const now = new Date();
     now.setMilliseconds(0);
     datetime = now.toISOString();
+    time = now.toLocaleTimeString('en-GB');
     emoji = unicode[(now.getHours() % 12 || 12) - 1];
-    const hh = now.getHours().toString().padStart(2, '0');
-    const mm = now.getMinutes().toString().padStart(2, '0');
-    const ss = now.getSeconds().toString().padStart(2, '0');
-    time = `${hh}:${mm}:${ss}`;
   };
 
   update();
@@ -41,6 +40,6 @@
   });
 </script>
 
-<Island>
-  <time {datetime}>{emoji} <code>{time}</code></time>
+<Island props={$$props}>
+  <time {title} {datetime}>{emoji} <code>{time}</code></time>
 </Island>

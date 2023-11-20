@@ -1,8 +1,24 @@
 <script context="module">
+  import {highlight} from '@lib/highlight.js';
+
   export const pattern = '/';
+
+  export const load = () => {
+    return {
+      code1: highlight(
+        'svelte',
+        `
+<script context="module">
+  export const pattern = '/:year(\\d+)/:month(\\d+)/:slug/';
+<\/script>
+`
+      )
+    };
+  };
 </script>
 
 <script>
+  import {getContext} from 'svelte';
   import Layout from '@components/layout.svelte';
   import DocsBreadcrumb from '@components/docs-breadcrumb.svelte';
   import DocsNav from '@components/docs-nav.svelte';
@@ -10,6 +26,8 @@
 
   const heading = 'Routing';
   const title = `DinoSrr - ${heading} (Documentation)`;
+
+  const {code1} = getContext('data') ?? {};
 </script>
 
 <svelte:head>
@@ -88,14 +106,7 @@
       >
       leading the <code>index.svelte</code> route file.
     </p>
-    <Code
-      language="javascript"
-      code={`
-<script context="module">
-  export const pattern = '/:year(\\d+)/:month(\\d+)/:slug/';
-</script>
-`}
-    />
+    <Code language="svelte" code={code1} />
   </div>
   <DocsNav />
 </Layout>

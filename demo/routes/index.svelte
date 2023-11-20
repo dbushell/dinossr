@@ -21,9 +21,7 @@
   <div class="row row-gap-4 mb-4">
     <div class="col col-12 col-md-6 col-lg-4">
       <h2 class="fw-light text-info-emphasis">SSR First</h2>
-      <p>
-        Pages are rendered server side with Svelte components.
-      </p>
+      <p>Pages are rendered server side with Svelte components.</p>
     </div>
     <div class="col col-12 col-md-6 col-lg-4">
       <h2 class="fw-light text-info-emphasis">No Build</h2>
@@ -35,7 +33,7 @@
     </div>
     <div class="col col-12 col-md-6 col-lg-4">
       <h2 class="fw-light text-info-emphasis">Islands</h2>
-      <p><Clock /> Interactive client side components.</p>
+      <p><Clock title="current time" /> Interactive client side components.</p>
     </div>
   </div>
   <Alert />

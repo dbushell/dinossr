@@ -28,6 +28,10 @@ export const serve = async (dir: string, options?: ServeOptions) => {
 
   // Setup router
   const router: Router = new velocirouter.Router({
+    onError: (error) => {
+      console.error(error);
+      return new Response(null, {status: 500});
+    },
     ...options?.router
   });
 
@@ -38,7 +42,7 @@ export const serve = async (dir: string, options?: ServeOptions) => {
 
   const deployHash = (await bumbler.deployHash) ?? '';
 
-  bumbler.sveltePreprocess = sveltePreprocessor(deployHash);
+  bumbler.sveltePreprocess = sveltePreprocessor(dir, deployHash);
 
   await readTemplate(dir);
   await addStaticRoutes(router, dir);

@@ -1,15 +1,30 @@
 <script context="module">
-  const protectedProps = ['data-island'];
+  const protectedProps = ['data-uuid', 'props'];
 </script>
 
 <script>
+  import {getContext} from 'svelte';
+
   export let _island = '';
-  const props = Object.fromEntries(
+  export let _islandId = getContext('_islandId') ?? crypto.randomUUID();
+  export let props = {};
+
+  const browser = getContext('browser');
+
+  const containerProps = Object.fromEntries(
     Object.entries($$props ?? {}).filter(([k]) => !/^[_$]/.test(k))
   );
-  protectedProps.forEach((k) => delete props[k]);
+  protectedProps.forEach((k) => delete containerProps[k]);
 </script>
 
-<span data-island={_island} {...props}>
+<svelte:head>
+  {#if !browser && Object.keys(props).length}
+    {@html `<script data-uuid="${_island}:${_islandId}" type="application/json">${JSON.stringify(
+      props
+    )}</script>`}
+  {/if}
+</svelte:head>
+
+<dinossr-island data-uuid="{_island}:{_islandId}" {...containerProps}>
   <slot />
-</span>
+</dinossr-island>

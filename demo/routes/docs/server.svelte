@@ -1,8 +1,39 @@
 <script context="module">
+  import {highlight} from '@lib/highlight.js';
+
   export const pattern = '/';
+
+  export const load = () => {
+    return {
+      code1: highlight(
+        'javascript',
+        `
+import {serve} from 'dinossr';
+
+const dir = new URL('./', import.meta.url).pathname;
+
+serve(dir);
+`
+      ),
+      code2: highlight(
+        'javascript',
+        `
+const {router, server} = await serve(dir);
+
+router.use((request, response) => {
+  if (response) {
+    response.headers.set('referrer-policy', 'same-origin');
+  }
+  return response;
+});
+`
+      )
+    };
+  };
 </script>
 
 <script>
+  import {getContext} from 'svelte';
   import Layout from '@components/layout.svelte';
   import DocsBreadcrumb from '@components/docs-breadcrumb.svelte';
   import DocsNav from '@components/docs-nav.svelte';
@@ -10,6 +41,8 @@
 
   const heading = 'Deno Server';
   const title = `DinoSrr - ${heading} (Documentation)`;
+
+  const {code1, code2} = getContext('data') ?? {};
 </script>
 
 <svelte:head>
@@ -24,16 +57,7 @@
       The <code>mod.ts</code> file at the root of the project is the server entry
       point.
     </p>
-    <Code
-      language="javascript"
-      code={`
-import {serve} from 'dinossr';
-
-const dir = new URL('./', import.meta.url).pathname;
-
-serve(dir);
-`}
-    />
+    <Code language="javascript" code={code1} />
     <p>This is started with: <code>deno run -A mod.ts</code>.</p>
     <p>
       The <code>serve</code> function returns the internal instances of
@@ -45,19 +69,7 @@ serve(dir);
         >Deno.HttpServer</a
       >.
     </p>
-    <Code
-      language="javascript"
-      code={`
-const {router, server} = await serve(dir);
-
-router.use((request, response) => {
-  if (response) {
-    response.headers.set('referrer-policy', 'same-origin');
-  }
-  return response;
-});
-`}
-    />
+    <Code language="javascript" code={code2} />
     <p>
       Additional middleware and routes can be added or existing route responses
       modified.
