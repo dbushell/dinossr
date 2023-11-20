@@ -22,8 +22,9 @@ export const sveltePreprocessor = (dir: string, deployHash: string) => {
         if (entry.startsWith(builtinURL.href)) {
           return {code};
         }
+        // Remove all import/export statements
         const script = new bumble.Script(code, entry, dir);
-        return {code: script.getCode({exports: true})};
+        return {code: script.getCode()};
       }
     };
 
