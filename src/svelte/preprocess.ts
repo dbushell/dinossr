@@ -1,8 +1,8 @@
-import {bumble, svelte} from './deps.ts';
-import {encodeHash} from './utils.ts';
+import {bumble, svelte} from '../deps.ts';
+import {encodeHash} from '../utils.ts';
 
 const builtin = ['island'];
-const builtinURL = new URL('./svelte/', import.meta.url);
+const builtinURL = new URL('./', import.meta.url);
 
 const islandMap = new Map<string, string>();
 const islandImport = /import(.*?)from\s+['"]@dinossr\/island['"]/;

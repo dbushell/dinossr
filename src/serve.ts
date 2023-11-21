@@ -2,7 +2,7 @@ import {path, deepMerge, bumble, velocirouter} from './deps.ts';
 import {addStaticRoutes} from './static.ts';
 import {addRoutes} from './routes.ts';
 import {readTemplate} from './template.ts';
-import {sveltePreprocessor} from './svelte.ts';
+import {sveltePreprocessor} from './svelte/preprocess.ts';
 import type {ServeOptions, Router, Bumbler} from './types.ts';
 
 const cdnCache = new Map<string, string>();

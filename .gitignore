@@ -5,8 +5,10 @@
 !mod.ts
 !src
 src/*
-!src/*.ts
 !src/svelte
 src/svelte/*
-!src/svelte/*.svelte
+!src/**/*.ts
+!src/**/*.js
+!src/**/*.json
+!src/**/*.svelte
 !demo

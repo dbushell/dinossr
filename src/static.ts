@@ -32,10 +32,10 @@ export const addStaticRoutes = async (router: Router, dir: string) => {
   if (!existsSync(staticDir)) {
     return;
   }
-  for (const abspath of await traverse(staticDir)) {
-    const pattern = '/' + path.relative(staticDir, abspath);
+  for (const entry of await traverse(staticDir)) {
+    const pattern = '/' + path.relative(staticDir, entry);
     router.get({pathname: pattern}, (request: Request) => {
-      return serveFile(request, abspath);
+      return serveFile(request, entry);
     });
   }
 };

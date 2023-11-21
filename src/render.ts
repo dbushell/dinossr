@@ -3,6 +3,10 @@ import {encodeHash, encodeHash64} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
 import type {Bumbler, Handle, Renderer, RenderCallback} from './types.ts';
 
+const importMap = JSON.parse(
+  Deno.readTextFileSync(new URL('./svelte/imports.json', import.meta.url))
+);
+
 // Return a route handle that renders with `app.html`
 export const createHandle = async (renderer: Renderer): Promise<Handle> => {
   const template = await readTemplate();
@@ -25,11 +29,11 @@ export const createHandle = async (renderer: Renderer): Promise<Handle> => {
 };
 
 export const importModule = async (
-  abspath: string,
+  entry: string,
   pattern: string,
   bumbler: Bumbler
 ): Promise<Renderer[]> => {
-  const {manifest, mod} = await bumbler.bumbleSSR(abspath, {
+  const {manifest, mod} = await bumbler.bumbleSSR(entry, {
     filterExports: ['default', 'pattern', 'get', 'post', 'load']
   });
 
@@ -121,10 +125,8 @@ context.set('pattern', '${pattern}');
 context.set('params', ${JSON.stringify(params)});
 context.set('data', ${JSON.stringify(data)});
 context.set('browser', true);
-
 const islands = new WeakSet();
 const islandIds = new Set();
-
 class DinossrIsland extends HTMLElement {
   constructor() {
     super();
@@ -148,29 +150,14 @@ class DinossrIsland extends HTMLElement {
     div.replaceWith(target);
   }
 }
-
 customElements.define('dinossr-island', DinossrIsland);
-
-
 `;
-        const importMap = `
-{
-  "imports": {
-    "svelte": "/_/immutable/svelte@4.2.3",
-    "svelte/internal": "/_/immutable/svelte@4.2.3/internal",
-    "svelte/animate": "/_/immutable/svelte@4.2.3/animate",
-    "svelte/easing": "/_/immutable/svelte@4.2.3/easing",
-    "svelte/motion": "/_/immutable/svelte@4.2.3/motion",
-    "svelte/store": "/_/immutable/svelte@4.2.3/store",
-    "svelte/transition": "/_/immutable/svelte@4.2.3/transition"
-  }
-}
-`;
-        const importHash = await encodeHash64(importMap, 'SHA-256');
+        const importText = JSON.stringify(importMap);
+        const importHash = await encodeHash64(importText, 'SHA-256');
         const scriptHash = await encodeHash64(script, 'SHA-256');
         headers.append('x-script-src', `sha256-${importHash}`);
         headers.append('x-script-src', `sha256-${scriptHash}`);
-        render.head += `<script type="importmap" data-hash="${importHash}">${importMap}</script>\n`;
+        render.head += `<script type="importmap" data-hash="${importHash}">${importText}</script>\n`;
         islandMeta.forEach(({href}) => {
           render.head += `<link rel="modulepreload" href="${href}">\n`;
         });

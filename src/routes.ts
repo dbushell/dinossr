@@ -30,8 +30,8 @@ const traverse = async (dir: string, depth = 0): Promise<string[]> => {
 // Generate route renderer for directory
 const generate = async (dir: string, bumbler: Bumbler): Promise<Renderer[]> => {
   const renderers: Renderer[] = [];
-  for (const abspath of await traverse(dir)) {
-    let pattern = '/' + path.relative(dir, abspath);
+  for (const entry of await traverse(dir)) {
+    let pattern = '/' + path.relative(dir, entry);
     // Replace non-capturing groups
     pattern = pattern.replaceAll(/\([^\)]+?\)\/?/g, '');
     // Replace named parameters
@@ -42,13 +42,13 @@ const generate = async (dir: string, bumbler: Bumbler): Promise<Renderer[]> => {
       pattern += '/';
     }
     // Append filename if not index
-    if (!/index\./.test(path.basename(abspath))) {
-      pattern += path.basename(abspath, path.extname(abspath));
+    if (!/index\./.test(path.basename(entry))) {
+      pattern += path.basename(entry, path.extname(entry));
     }
     // Import module
-    const mod = await importModule(abspath, pattern, bumbler);
+    const mod = await importModule(entry, pattern, bumbler);
     if (!mod.length) {
-      console.warn(`Invalid route: (${abspath})`);
+      console.warn(`Invalid route: (${entry})`);
       continue;
     }
     for (const renderer of mod) {
