@@ -5,6 +5,7 @@ import type {Bumbler, Router, Renderer} from '../types.ts';
 
 export {addProxyRoute} from './proxy.ts';
 export {addStaticRoutes} from './static.ts';
+export {addPolicyRoute} from './policy.ts';
 
 // Recursively find routes within directory
 const traverse = async (dir: string, depth = 0): Promise<string[]> => {

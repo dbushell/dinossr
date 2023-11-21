@@ -1,5 +1,10 @@
 import {path, deepMerge, bumble, velocirouter} from './deps.ts';
-import {addProxyRoute, addStaticRoutes, addRoutes} from './routes/mod.ts';
+import {
+  addRoutes,
+  addStaticRoutes,
+  addProxyRoute,
+  addPolicyRoute
+} from './routes/mod.ts';
 import {readTemplate} from './template.ts';
 import {sveltePreprocessor} from './svelte/preprocess.ts';
 import type {ServeOptions, Router, Bumbler} from './types.ts';
@@ -52,7 +57,6 @@ export const serve = async (dir: string, options?: ServeOptions) => {
   await readTemplate(dir);
 
   addProxyRoute(router, options?.origin);
-
   await addStaticRoutes(router, dir);
   await addRoutes(router, bumbler, dir);
 
@@ -95,6 +99,8 @@ export const serve = async (dir: string, options?: ServeOptions) => {
     }
     return response;
   });
+
+  addPolicyRoute(router);
 
   // Setup server
   const server = Deno.serve(options?.serve ?? {}, (request, info) =>
