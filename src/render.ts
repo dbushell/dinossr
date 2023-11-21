@@ -13,6 +13,9 @@ export const createHandle = async (renderer: Renderer): Promise<Handle> => {
   return async (...args) => {
     const render = await renderer.render(...args);
     let response = await render.response;
+    if (!(response instanceof Response)) {
+      response = response?.response;
+    }
     if (response?.headers.get('content-type')?.startsWith('text/html')) {
       return response;
     }

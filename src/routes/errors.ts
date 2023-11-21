@@ -1,5 +1,5 @@
-import {createHandle} from './render.ts';
-import type {Renderer, Router} from './types.ts';
+import {createHandle} from '../render.ts';
+import type {Renderer, Router} from '../types.ts';
 
 // Only return body content for GET requests
 const sendBody = (request: Request) =>

@@ -1,5 +1,5 @@
-import {path, existsSync, serveFile} from './deps.ts';
-import type {Router} from './types.ts';
+import {path, existsSync, serveFile} from '../deps.ts';
+import type {Router} from '../types.ts';
 
 // Generate list of static files
 const traverse = async (dir: string, depth = 0): Promise<string[]> => {
