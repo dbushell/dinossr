@@ -109,7 +109,6 @@ export const importModule = async (
       context.set('data', data);
       const render = component.render({}, {context});
       const headers = new Headers();
-      render.head += `\n`;
       let style = `
 dinossr-root {
   display: contents;
@@ -160,11 +159,11 @@ customElements.define('dinossr-island', DinossrIsland);
         const scriptHash = await encodeHash64(script, 'SHA-256');
         headers.append('x-script-src', `sha256-${importHash}`);
         headers.append('x-script-src', `sha256-${scriptHash}`);
-        render.head += `<script type="importmap" data-hash="${importHash}">${importText}</script>\n`;
+        render.head += `\n<script type="importmap" data-hash="${importHash}">${importText}</script>\n`;
         islandMeta.forEach(({href}) => {
           render.head += `<link rel="modulepreload" href="${href}">\n`;
         });
-        render.html += `<script defer type="module" data-hash="${scriptHash}">${script}</script>\n`;
+        render.html += `\n<script defer type="module" data-hash="${scriptHash}">${script}</script>\n`;
       }
       const styleHash = await encodeHash64(style, 'SHA-256');
       headers.append('x-style-src', `sha256-${styleHash}`);
