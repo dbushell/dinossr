@@ -4,13 +4,7 @@ const dir = new URL('./', import.meta.url).pathname;
 
 const dev = !Deno.env.has('DENO_REGION');
 
-let origin = undefined;
-if (Deno.env.has('ORIGIN')) {
-  origin = new URL(Deno.env.get('ORIGIN')!);
-}
-
 const {router} = await serve(dir, {
-  origin,
   bumbler: {
     dev
     // dynamicImports: false

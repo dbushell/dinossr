@@ -15,8 +15,14 @@ export const serve = async (dir: string, options?: ServeOptions) => {
   }
   dir = path.resolve(dir, './');
 
+  let origin = undefined;
+  if (Deno.env.has('ORIGIN')) {
+    origin = new URL(Deno.env.get('ORIGIN')!);
+  }
+
   // Setup options
   const defaultOptions: ServeOptions = {
+    origin,
     bumbler: {
       deployId: Deno.env.get('DENO_DEPLOYMENT_ID') ?? Date.now().toString(),
       dynamicImports: Deno.env.has('DENO_REGION') === false
