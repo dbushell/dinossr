@@ -1,4 +1,4 @@
-import {path, deepMerge, bumble, velocirouter} from './deps.ts';
+import {fs, path, deepMerge, bumble, velocirouter} from './deps.ts';
 import {
   addRoutes,
   addStaticRoutes,
@@ -8,6 +8,7 @@ import {
 } from './routes/mod.ts';
 import {readTemplate} from './template.ts';
 import {sveltePreprocessor} from './svelte/preprocess.ts';
+import {encodeHash} from './utils.ts';
 import type {ServeOptions, Router, Bumbler} from './types.ts';
 
 export const serve = async (dir: string, options?: ServeOptions) => {
@@ -18,13 +19,32 @@ export const serve = async (dir: string, options?: ServeOptions) => {
   }
   dir = path.resolve(dir, './');
 
+  let deployHash = '';
+  const deployHashPath = path.join(Deno.cwd(), '.dinossr/id.txt');
+  if (!Deno.env.has('DINOSSR_DEPLOY_ID')) {
+    if (await fs.exists(deployHashPath)) {
+      deployHash = await Deno.readTextFile(deployHashPath);
+      deployHash = deployHash.trim();
+    }
+  }
+
+  deployHash =
+    deployHash ||
+    (await encodeHash(
+      Deno.env.get('DINOSSR_DEPLOY_ID') ??
+        Deno.env.get('DENO_DEPLOYMENT_ID') ??
+        Date.now().toString(),
+      'SHA-1'
+    ));
+
   // Setup options
   const defaultOptions: ServeOptions = {
     origin: Deno.env.has('ORIGIN')
       ? new URL(Deno.env.get('ORIGIN')!)
       : undefined,
     bumbler: {
-      deployId: Deno.env.get('DENO_DEPLOYMENT_ID') ?? Date.now().toString(),
+      build: Deno.env.has('DINOSSR_BUILD'),
+      deployHash,
       dynamicImports: Deno.env.has('DENO_REGION') === false
     }
   };
@@ -46,9 +66,9 @@ export const serve = async (dir: string, options?: ServeOptions) => {
     ...options?.bumbler
   });
 
-  const deployHash = (await bumbler.deployHash) ?? '';
-
   bumbler.sveltePreprocess = sveltePreprocessor(dir, deployHash);
+
+  await bumbler.start();
 
   await readTemplate(dir);
 
@@ -60,6 +80,12 @@ export const serve = async (dir: string, options?: ServeOptions) => {
   addPolicyRoute(router);
 
   bumbler.stop();
+
+  if (Deno.env.has('DINOSSR_BUILD')) {
+    await fs.ensureFile(deployHashPath);
+    await Deno.writeTextFile(deployHashPath, deployHash);
+    return;
+  }
 
   // Setup server
   const server = Deno.serve(options?.serve ?? {}, (request, info) =>
