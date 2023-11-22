@@ -1,7 +1,13 @@
+import {requestMap} from './mod.ts';
 import type {Router} from '../types.ts';
 
 export const addProxyRoute = (router: Router, origin?: URL) => {
   router.use((request, response, {stopPropagation}) => {
+    if (requestMap.get(request)?.ignore) return;
+    if (request.headers.get('upgrade') === 'websocket') {
+      requestMap.set(request, {ignore: true});
+      return;
+    }
     // Modify request url if behind proxy
     const base = new URL(request.url);
     if (request.headers.has('x-forwarded-host')) {

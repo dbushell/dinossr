@@ -1,3 +1,4 @@
+import {requestMap} from './mod.ts';
 import type {Router} from '../types.ts';
 
 const defaultPolicies = {
@@ -26,7 +27,8 @@ const getPolicies = (response: Response) => {
 };
 
 export const addPolicyRoute = (router: Router) => {
-  router.use((_request, response) => {
+  router.use((request, response) => {
+    if (requestMap.get(request)?.ignore) return;
     if (!response) return;
     const csp = getPolicies(response);
     response.headers.set('referrer-policy', 'same-origin');

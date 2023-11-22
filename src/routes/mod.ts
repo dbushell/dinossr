@@ -8,6 +8,8 @@ export {addStaticRoutes} from './static.ts';
 export {addPolicyRoute} from './policy.ts';
 export {addCacheRoute} from './cache.ts';
 
+export const requestMap = new WeakMap<Request, {ignore?: boolean}>();
+
 // Recursively find routes within directory
 const traverse = async (dir: string, depth = 0): Promise<string[]> => {
   // TODO: provide option to override?
