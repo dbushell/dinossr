@@ -10,8 +10,6 @@ import {readTemplate} from './template.ts';
 import {sveltePreprocessor} from './svelte/preprocess.ts';
 import type {ServeOptions, Router, Bumbler} from './types.ts';
 
-const cdnCache = new Map<string, string>();
-
 export const serve = async (dir: string, options?: ServeOptions) => {
   const start = performance.now();
   // Add file system routes
@@ -58,38 +56,10 @@ export const serve = async (dir: string, options?: ServeOptions) => {
   await addStaticRoutes(router, dir);
   await addRoutes(router, bumbler, dir);
 
-  router.get(
-    {pathname: '/_/immutable/svelte@*'},
-    async (_req, _res, {match}) => {
-      let slug = match.pathname.groups[0];
-      if (!slug) return;
-      if (!slug.startsWith('/-/')) {
-        slug = `/svelte@${slug}`;
-      }
-      const url = new URL(`https://cdn.skypack.dev${slug}`);
-      let body = cdnCache.get(url.href);
-      if (!body) {
-        const res = await fetch(url, {
-          headers: {
-            'cache-control': 'no-store'
-          }
-        });
-        if (!res.ok || res.status !== 200) return;
-        body = await res.text();
-        body = body.replaceAll('/-/svelte@', '/_/immutable/svelte@/-/svelte@');
-        cdnCache.set(url.href, body);
-      }
-      return new Response(body, {
-        headers: {
-          'content-type': 'text/javascript; charset=utf-8',
-          'content-length': body.length.toString()
-        }
-      });
-    }
-  );
-
   addCacheRoute(router);
   addPolicyRoute(router);
+
+  bumbler.stop();
 
   // Setup server
   const server = Deno.serve(options?.serve ?? {}, (request, info) =>

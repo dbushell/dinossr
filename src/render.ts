@@ -3,10 +3,6 @@ import {encodeHash, encodeHash64} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
 import type {Bumbler, Handle, Renderer, RenderCallback} from './types.ts';
 
-const importMap = JSON.parse(
-  Deno.readTextFileSync(new URL('./svelte/imports.json', import.meta.url))
-);
-
 // Return a route handle that renders with `app.html`
 export const createHandle = async (renderer: Renderer): Promise<Handle> => {
   const template = await readTemplate();
@@ -154,12 +150,9 @@ class DinossrIsland extends HTMLElement {
 }
 customElements.define('dinossr-island', DinossrIsland);
 `;
-        const importText = JSON.stringify(importMap);
-        const importHash = await encodeHash64(importText, 'SHA-256');
         const scriptHash = await encodeHash64(script, 'SHA-256');
-        headers.append('x-script-src', `sha256-${importHash}`);
         headers.append('x-script-src', `sha256-${scriptHash}`);
-        render.head += `\n<script type="importmap" data-hash="${importHash}">${importText}</script>\n`;
+        render.head += `\n`;
         islandMeta.forEach(({href}) => {
           render.head += `<link rel="modulepreload" href="${href}">\n`;
         });
