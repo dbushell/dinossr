@@ -1,4 +1,4 @@
-import {fs, path, deepMerge, bumble, velocirouter} from './deps.ts';
+import {path, deepMerge, bumble, velocirouter} from './deps.ts';
 import {
   addRoutes,
   addStaticRoutes,
@@ -7,49 +7,30 @@ import {
   addCacheRoute
 } from './routes/mod.ts';
 import {readTemplate} from './template.ts';
-import {sveltePreprocessor} from './svelte/preprocess.ts';
-import {encodeHash} from './utils.ts';
+import {sveltePreprocess} from './svelte/preprocess.ts';
+import {getDeployHash, setDeployHash} from './utils.ts';
 import type {ServeOptions, Router, Bumbler} from './types.ts';
 
 export const serve = async (dir: string, options?: ServeOptions) => {
   const start = performance.now();
-  // Add file system routes
+
   if (!path.isAbsolute(dir)) {
     throw new Error('Directory path must be absolute');
   }
   dir = path.resolve(dir, './');
 
-  let deployHash = '';
-  const deployHashPath = path.join(Deno.cwd(), '.dinossr/id.txt');
-  if (!Deno.env.has('DINOSSR_DEPLOY_ID')) {
-    if (await fs.exists(deployHashPath)) {
-      deployHash = await Deno.readTextFile(deployHashPath);
-      deployHash = deployHash.trim();
-      console.log(`Deploy hash: "${deployHash}"`);
-    }
-  }
-
-  deployHash =
-    deployHash ||
-    (await encodeHash(
-      Deno.env.get('DINOSSR_DEPLOY_ID') ??
-        Deno.env.get('DENO_DEPLOYMENT_ID') ??
-        Date.now().toString(),
-      'SHA-1'
-    ));
-
   // Setup options
+  const deployHash = await getDeployHash();
   const defaultOptions: ServeOptions = {
     origin: Deno.env.has('ORIGIN')
       ? new URL(Deno.env.get('ORIGIN')!)
       : undefined,
     bumbler: {
       build: Deno.env.has('DINOSSR_BUILD'),
-      deployHash,
-      dynamicImports: Deno.env.has('DENO_REGION') === false
+      dynamicImports: Deno.env.has('DENO_REGION') === false,
+      deployHash
     }
   };
-
   // deno-lint-ignore no-explicit-any
   options = deepMerge<any>(defaultOptions, options ?? {});
 
@@ -64,14 +45,13 @@ export const serve = async (dir: string, options?: ServeOptions) => {
 
   // Setup bundler
   const bumbler: Bumbler = new bumble.Bumbler(dir, {
-    ...options?.bumbler
+    ...options?.bumbler,
+    sveltePreprocess: sveltePreprocess(dir, deployHash)
   });
 
-  bumbler.sveltePreprocess = sveltePreprocessor(dir, deployHash);
+  await readTemplate(dir);
 
   await bumbler.start();
-
-  await readTemplate(dir);
 
   addProxyRoute(router, options?.origin);
   await addStaticRoutes(router, dir);
@@ -83,13 +63,8 @@ export const serve = async (dir: string, options?: ServeOptions) => {
   bumbler.stop();
 
   if (Deno.env.has('DINOSSR_BUILD')) {
-    await fs.ensureFile(deployHashPath);
-    await Deno.writeTextFile(deployHashPath, deployHash);
+    await setDeployHash(deployHash);
     return;
-  }
-
-  for await (const dir of Deno.readDir(path.join(Deno.cwd(), '.dinossr', deployHash))) {
-    console.log(`Cache: ${dir.name}`);
   }
 
   // Setup server

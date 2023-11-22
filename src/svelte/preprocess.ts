@@ -7,7 +7,7 @@ const builtinURL = new URL('./', import.meta.url);
 const islandMap = new Map<string, string>();
 const islandImport = /import(.*?)from\s+['"]@dinossr\/island['"]/;
 
-export const sveltePreprocessor = (dir: string, deployHash: string) => {
+export const sveltePreprocess = (dir: string, deployHash: string) => {
   return (entry: string, options?: bumble.BumbleOptions) => {
     // Remove DOM render import statements from module scripts
     const domGroup: svelte.PreprocessorGroup = {
