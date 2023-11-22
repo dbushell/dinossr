@@ -1,0 +1,33 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: vx.x.x
+
+      - name: Build
+        run: DINOSSR_BUILD=1 DINOSSR_DEPLOY_ID=${{ github.run_id }} deno run -A demo/mod.ts
+
+      - name: Deploy
+        uses: denoland/deployctl@v1
+        with:
+          project: dinossr
+          entrypoint: demo/mod.ts
