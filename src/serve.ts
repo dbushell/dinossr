@@ -25,6 +25,7 @@ export const serve = async (dir: string, options?: ServeOptions) => {
     if (await fs.exists(deployHashPath)) {
       deployHash = await Deno.readTextFile(deployHashPath);
       deployHash = deployHash.trim();
+      console.log(`Deploy hash: "${deployHash}"`);
     }
   }
 
