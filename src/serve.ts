@@ -3,7 +3,8 @@ import {
   addRoutes,
   addStaticRoutes,
   addProxyRoute,
-  addPolicyRoute
+  addPolicyRoute,
+  addCacheRoute
 } from './routes/mod.ts';
 import {readTemplate} from './template.ts';
 import {sveltePreprocessor} from './svelte/preprocess.ts';
@@ -19,14 +20,11 @@ export const serve = async (dir: string, options?: ServeOptions) => {
   }
   dir = path.resolve(dir, './');
 
-  let origin = undefined;
-  if (Deno.env.has('ORIGIN')) {
-    origin = new URL(Deno.env.get('ORIGIN')!);
-  }
-
   // Setup options
   const defaultOptions: ServeOptions = {
-    origin,
+    origin: Deno.env.has('ORIGIN')
+      ? new URL(Deno.env.get('ORIGIN')!)
+      : undefined,
     bumbler: {
       deployId: Deno.env.get('DENO_DEPLOYMENT_ID') ?? Date.now().toString(),
       dynamicImports: Deno.env.has('DENO_REGION') === false
@@ -90,16 +88,7 @@ export const serve = async (dir: string, options?: ServeOptions) => {
     }
   );
 
-  router.get({pathname: '/_/immutable/*'}, (_req, response) => {
-    if (response?.ok && response?.status === 200) {
-      response.headers.set(
-        'cache-control',
-        'public, max-age=31536000, immutable'
-      );
-    }
-    return response;
-  });
-
+  addCacheRoute(router);
   addPolicyRoute(router);
 
   // Setup server
