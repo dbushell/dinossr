@@ -88,6 +88,10 @@ export const serve = async (dir: string, options?: ServeOptions) => {
     return;
   }
 
+  for await (const dir of Deno.readDir(path.join(Deno.cwd(), '.dinossr', deployHash))) {
+    console.log(`Cache: ${dir.name}`);
+  }
+
   // Setup server
   const server = Deno.serve(options?.serve ?? {}, (request, info) =>
     router.handle(request, {info, deployHash})
