@@ -33,7 +33,7 @@ export const importModule = async (
   bumbler: Bumbler
 ): Promise<Renderer[]> => {
   const {manifest, mod} = await bumbler.bumbleSSR(entry, {
-    filterExports: ['default', 'pattern', 'get', 'post', 'load']
+    filterExports: ['default', 'pattern', 'order', 'get', 'post', 'load']
   });
 
   // Append pattern to file path
@@ -52,6 +52,7 @@ export const importModule = async (
       response: handle(...args)
     });
     renderers.push({
+      order: mod.order ?? 0,
       pattern,
       method,
       render
@@ -72,10 +73,7 @@ export const importModule = async (
     }
 
     for (const entry of islandEntries) {
-      const hash = await encodeHash(
-        (await bumbler.deployHash) + entry,
-        'SHA-1'
-      );
+      const hash = await encodeHash(bumbler.deployHash + entry, 'SHA-1');
       const href = `/_/immutable/${hash}.js`;
       islandMeta.push({hash, href});
       const code = await bumbler.bumbleDOM(entry, {
@@ -151,7 +149,7 @@ class DinossrIsland extends HTMLElement {
 customElements.define('dinossr-island', DinossrIsland);
 `;
         const scriptHash = await encodeHash64(script, 'SHA-256');
-        headers.append('x-script-src', `sha256-${scriptHash}`);
+        headers.append('x-script-src', `'sha256-${scriptHash}'`);
         render.head += `\n`;
         islandMeta.forEach(({href}) => {
           render.head += `<link rel="modulepreload" href="${href}">\n`;
@@ -159,7 +157,7 @@ customElements.define('dinossr-island', DinossrIsland);
         render.html += `\n<script defer type="module" data-hash="${scriptHash}">${script}</script>\n`;
       }
       const styleHash = await encodeHash64(style, 'SHA-256');
-      headers.append('x-style-src', `sha256-${styleHash}`);
+      headers.append('x-style-src', `'sha256-${styleHash}'`);
       render.head += `<style data-hash="${styleHash}">${style}</style>\n`;
       const response = new Response(render.html, {
         headers

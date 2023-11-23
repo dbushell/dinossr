@@ -86,7 +86,9 @@ export const addRoutes = async (
   const redirects = new Set<string>();
 
   // Generate file-based routes
-  for (const renderer of await generate(routesDir, bumbler)) {
+  const routes = await generate(routesDir, bumbler);
+  routes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  for (const renderer of routes) {
     if (renderer.pattern === '/_500') {
       addError(router, renderer);
       continue;
@@ -102,7 +104,9 @@ export const addRoutes = async (
     router[key]({pathname: renderer.pattern}, await createHandle(renderer));
     if (renderer.method === 'GET') {
       if (!/\.[\w]+$/.test(renderer.pattern)) {
-        redirects.add(renderer.pattern);
+        if (!/\*|:|\\/.test(renderer.pattern)) {
+          redirects.add(renderer.pattern);
+        }
       }
     }
   }

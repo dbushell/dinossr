@@ -17,6 +17,7 @@ export interface ServeOptions {
 
 export interface RenderModule {
   pattern?: string;
+  order?: number;
   get?: Handle;
   post?: Handle;
   load?: (
@@ -39,4 +40,5 @@ export interface Renderer {
   method: velocirouter.Method;
   pattern: string;
   render: RenderCallback;
+  order?: number;
 }

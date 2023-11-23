@@ -2,9 +2,19 @@ import {requestMap} from './mod.ts';
 import type {Router} from '../types.ts';
 
 const defaultPolicies = {
+  'child-src': ["'self'"],
+  'connect-src': ["'self'"],
   'default-src': ["'self'"],
-  'style-src': ["'self'"],
+  'frame-src': ["'self'"],
+  'font-src': ["'self'"],
+  'img-src': ["'self'"],
+  'manifest-src': ["'self'"],
+  'media-src': ["'self'"],
+  'object-src': ["'none'"],
+  'prefetch-src': ["'self'"],
   'script-src': ["'self'"],
+  'style-src': ["'self'"],
+  'worker-src': ["'self'"],
   'base-uri': ["'none'"],
   'frame-ancestors': ["'none'"],
   'form-action': ["'self'"]
@@ -20,7 +30,7 @@ const getPolicies = (response: Response) => {
     if (response.headers.has(xkey)) {
       const value = response.headers.get(xkey)!;
       response.headers.delete(xkey);
-      csp[key].push(...value.split(',').map((s) => `'${s.trim()}'`));
+      csp[key].push(...value.split(',').map((s) => `${s.trim()}`));
     }
   }
   return csp;
@@ -31,6 +41,15 @@ export const addPolicyRoute = (router: Router) => {
     if (requestMap.get(request)?.ignore) return;
     if (!response) return;
     const csp = getPolicies(response);
+    // Remove redundant policies
+    if (csp['default-src'].includes("'self'")) {
+      for (const [k, v] of Object.entries(csp)) {
+        if (k === 'default-src') continue;
+        if (v.length === 1 && v[0] === "'self'") {
+          delete csp[k as keyof typeof csp];
+        }
+      }
+    }
     response.headers.set('referrer-policy', 'same-origin');
     response.headers.set(
       'content-security-policy',
