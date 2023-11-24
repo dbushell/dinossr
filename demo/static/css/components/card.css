@@ -1,0 +1,66 @@
+@layer components {
+  .Card-container {
+    container-name: card-container;
+    container-type: inline-size;
+    display: grid;
+    gap: var(--grid-column-gap);
+    grid-template-columns: repeat(6, 1fr);
+
+    & > * {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .Card {
+    display: block;
+    background-image: linear-gradient(
+      225deg,
+      oklch(var(--color-bg) / 1),
+      oklch(var(--color-bg) / 0.5)
+    );
+    border: calc((1 / 16) * 1rem) solid oklch(var(--color-subtle));
+    border-radius: calc((8 / 16) * 1rem);
+    padding: var(--space-m) var(--space-m-l);
+
+    & > h2,
+    & > h3 {
+      position: relative;
+      width: max-content;
+
+      &::before {
+        background-image: linear-gradient(
+          to right,
+          oklch(var(--color-blue) / 1),
+          oklch(var(--color-green) / 0.5) 40%,
+          oklch(var(--color-green) / 0) 100%
+        );
+        content: '';
+        display: block;
+        height: calc((2 / 16) * 1rem);
+        inset-block-start: 100%;
+        inset-inline: 0;
+        position: absolute;
+      }
+    }
+
+    & p {
+      --font-size: var(--step-0);
+    }
+  }
+
+  @container card-container (inline-size >= calc((600 / 16) * 1rem)) and  (inline-size < calc((1000 / 16) * 1rem)) {
+    .Card {
+      grid-column: auto / span 3;
+
+      &:last-child:nth-child(2n + 1) {
+        grid-column: 1 / -1;
+      }
+    }
+  }
+
+  @container card-container (inline-size >= calc((1000 / 16) * 1rem)) {
+    .Card {
+      grid-column: auto / span 2;
+    }
+  }
+}

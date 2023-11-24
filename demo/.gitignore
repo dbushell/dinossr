@@ -1,10 +1,1 @@
-/*
-!.gitignore
-!mod.ts
-!tsconfig.json
-!components
-!lib
-!routes
-!static
-!app.html
-!**/*.svelte
+deno.lock

@@ -1,61 +1,53 @@
 <script>
   import Layout from '@components/layout.svelte';
-  import Alert from '@components/alert.svelte';
-  import Card from '@components/card.svelte';
-  import Rule from '@components/rule.svelte';
-  import Clock from '@components/clock.svelte';
+  import Hero from '@components/hero.svelte';
+  import Container from '@components/container.svelte';
+  import Button from '@components/button.svelte';
 
-  const heading = 'DinoSrr';
-  const title = `${heading} - Deno SSR Web Framework`;
+  const description = 'A minimal web framework for Deno and Svelte fans';
+  const title = `DinoSsr - ${description}`;
 </script>
 
 <svelte:head>
   <title>{title}</title>
 </svelte:head>
 
-<Layout alert={false}>
-  <h1>{heading} <sup class="fs-6 badge text-bg-info">Alpha</sup></h1>
-  <p class="lead mb-5">
-    A minimal web framework built for Deno and Deno Deploy.
-  </p>
-  <div class="row row-gap-4 mb-4">
-    <div class="col col-12 col-md-6 col-lg-4">
-      <h2 class="fw-light text-info-emphasis">SSR First</h2>
-      <p>Pages are rendered server side with Svelte components.</p>
+<Layout>
+  <Hero heading="DinoSsr" {description} />
+  <Container>
+    <div class="Card-container">
+      <article class="Card">
+        <h3>Svelte: Just in Time</h3>
+        <p>
+          DinoSsr renders server-side with Svelte templates and no build step.
+        </p>
+        <Button small href="/docs/" label="Documentation" />
+      </article>
+      <article class="Card">
+        <h3>Flexible Routing</h3>
+        <p>
+          DinoSsr uses file based routing with web standard <strong
+            >URL Pattern API</strong
+          > configuration.
+        </p>
+        <Button small href="/docs/routing/" label="Routing Docs" />
+      </article>
+      <article class="Card">
+        <h3>Island Hydration</h3>
+        <p>
+          Islands are Svelte components that become interactive on the
+          front-end.
+        </p>
+        <Button small href="/docs/islands/" label="Island Docs" />
+      </article>
     </div>
-    <div class="col col-12 col-md-6 col-lg-4">
-      <h2 class="fw-light text-info-emphasis">No Build</h2>
-      <p>Just-in-time rendering with no build step.</p>
+  </Container>
+  <Container>
+    <div class="Alert">
+      <p>
+        <strong>DinoSsr</strong> is an experimental work in progress and subject
+        to change!
+      </p>
     </div>
-    <div class="col col-12 col-md-6 col-lg-4">
-      <h2 class="fw-light text-info-emphasis">Routing</h2>
-      <p>File system and <code>URLPattern</code> based routes.</p>
-    </div>
-    <div class="col col-12 col-md-6 col-lg-4">
-      <h2 class="fw-light text-info-emphasis">Islands</h2>
-      <p><Clock title="current time" /> Interactive client side components.</p>
-    </div>
-  </div>
-  <Alert />
-  <Rule />
-  <h2 class="h3 text-secondary">Powered by...</h2>
-  <p>DinoSrr is built upon these projects:</p>
-  <div class="row row-gap-4 my-4">
-    <div class="col col-12 col-md-5 col-lg-4">
-      <Card
-        title="VelociRouter"
-        text="A minimal async Request → Response router powered by URL Pattern API magic ✨"
-        link="https://github.com/dbushell/velocirouter"
-        linkText="GitHub"
-      />
-    </div>
-    <div class="col col-12 col-md-5 col-lg-4">
-      <Card
-        title="Bumble"
-        text="An experimental just-in-time Svelte + TypeScript module bundler and importer ✨"
-        link="https://github.com/dbushell/bumble"
-        linkText="GitHub"
-      />
-    </div>
-  </div>
+  </Container>
 </Layout>

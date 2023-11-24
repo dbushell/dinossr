@@ -1,0 +1,127 @@
+@layer components {
+  :root {
+    --heading-space: var(--space-s-m);
+    --header-height: calc(
+      (var(--heading-space) * 2) + var(--button-small-height)
+    );
+  }
+
+  .Header {
+    --grid-template: var(--grid-template-basic);
+    background: oklch(var(--color-bg-dark));
+    height: var(--header-height);
+    padding-block: var(--heading-space);
+    position: relative;
+    z-index: 1;
+  }
+
+  .Header__main {
+    align-items: center;
+    container-name: header;
+    container-type: inline-size;
+    display: flex;
+    gap: var(--space-m);
+    justify-content: space-between;
+
+    &:has(.\:popover-open) {
+      container: none;
+    }
+  }
+
+  .Header__logo {
+    --underline-opacity: 0;
+    margin-inline-end: auto;
+    font-size: var(--font-size);
+    font-weight: 400;
+    position: relative;
+
+    &:not(:focus):not(:hover) {
+      --color: var(--color-blue);
+    }
+  }
+
+  .Header__tag {
+    color: oklch(var(--color-bg-dark));
+    display: block;
+    background: oklch(var(--color-green));
+    background-image: linear-gradient(
+      45deg,
+      oklch(var(--color-blue)),
+      oklch(var(--color-green))
+    );
+    border-radius: calc((8 / 16) * 1rem);
+    font-size: var(--step-0);
+    font-weight: 700;
+    inset-block-start: 0;
+    inset-inline-start: calc(100% + var(--space-xs));
+    line-height: 1;
+    padding: var(--space-3xs) var(--space-2xs);
+    position: absolute;
+    text-transform: uppercase;
+    transform: scale(0.75);
+    transform-origin: 0% 50%;
+  }
+
+  .Header__nav {
+    --grid-template: var(--grid-template-basic);
+    background: oklch(var(--color-bg-dark));
+    color: oklch(var(--color-text));
+    border: 0;
+    display: none;
+    height: auto;
+    inset: 0 0 auto 0;
+    min-height: var(--header-height);
+    padding-block-start: var(--heading-space);
+    padding-block-end: calc(var(--heading-space) + var(--button-small-height));
+    position: fixed;
+    width: 100%;
+
+    &:popover-open {
+      display: grid;
+    }
+
+    &.\:popover-open {
+      display: grid;
+      z-index: 1;
+    }
+
+    & .Button--nav {
+      justify-self: end;
+    }
+  }
+
+  @container header (inline-size >= calc((500 / 16) * 1rem)) {
+    .Header__main {
+      & .Button--nav {
+        display: none;
+      }
+    }
+
+    .Header__nav {
+      display: contents;
+
+      &:popover-open {
+        display: contents;
+      }
+
+      &.\:popover-open {
+        display: contents;
+      }
+
+      & .Menu {
+        flex-direction: row;
+        gap: var(--space-m);
+      }
+
+      & .Menu__item {
+        border: 0;
+        padding: 0;
+        width: auto;
+      }
+    }
+
+    .Header__menu {
+      flex-direction: row;
+    }
+  }
+}

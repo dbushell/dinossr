@@ -1,0 +1,12 @@
+@layer base {
+  .Document {
+    background: oklch(var(--color-bg));
+    color: oklch(var(--color-text));
+    font-family: var(--font-sans), sans-serif;
+    font-weight: 400;
+    line-height: var(--line-height);
+    margin: 0;
+    padding: 0;
+    scrollbar-color: oklch(var(--color-blue)) oklch(var(--color-bg));
+  }
+}

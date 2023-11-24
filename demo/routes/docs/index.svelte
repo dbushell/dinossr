@@ -1,10 +1,15 @@
+<script context="module">
+  export const pattern = '/';
+</script>
+
 <script>
-  import Layout from '@components/layout.svelte';
-  import DocsNav from '@components/docs-nav.svelte';
+  import Layout from '@components/layout-docs.svelte';
+  import Alert from '@components/docs-alert.svelte';
+  import Pagination from '@components/pagination.svelte';
   import docs from '@lib/docs.json';
 
   const heading = 'Documentation';
-  const title = `DinoSrr - ${heading}`;
+  const title = `DinoSsr - ${heading}`;
 </script>
 
 <svelte:head>
@@ -12,20 +17,18 @@
 </svelte:head>
 
 <Layout>
-  <h1>{heading}</h1>
-  <p class="lead">
-    DinoSsr is an experimental work in progress and subject to change.
-  </p>
-  <div class="mb-4">
-    <ul class="nav flex-column mb-4">
-      {#each docs.pages.slice(1) as page}
-        <li class="nav-item">
-          <a class="nav-link" href={page.href}>
-            <span>→ {page.name}</span>
-          </a>
-        </li>
-      {/each}
-    </ul>
-  </div>
-  <DocsNav />
+  <h1>Documentation</h1>
+  <Alert />
+  <p>Current documentation:</p>
+  <ul>
+    {#each docs.pages.slice(1) as page}
+      <li>
+        <a href={page.href}>
+          <span>{page.name}</span>
+        </a>
+      </li>
+    {/each}
+  </ul>
+  <p>Further documentation to come.</p>
+  <Pagination />
 </Layout>

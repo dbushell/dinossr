@@ -1,14 +1,10 @@
 <script>
-  import Navbar from '@components/navbar.svelte';
+  import Header from '@components/header.svelte';
   import Footer from '@components/footer.svelte';
-
-  export let alert = true;
 </script>
 
-<Navbar heading="DinoSsr" />
-
-<main class="container pt-5">
+<div class="App">
+  <Header />
   <slot />
-</main>
-
-<Footer {alert} />
+  <Footer />
+</div>

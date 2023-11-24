@@ -22,7 +22,7 @@ const {router, server} = await serve(dir);
 
 router.use((request, response) => {
   if (response) {
-    response.headers.set('referrer-policy', 'same-origin');
+    response.headers.set('x-powered-by', 'DinoSsr');
   }
   return response;
 });
@@ -34,13 +34,13 @@ router.use((request, response) => {
 
 <script>
   import {getContext} from 'svelte';
-  import Layout from '@components/layout.svelte';
-  import DocsBreadcrumb from '@components/docs-breadcrumb.svelte';
-  import DocsNav from '@components/docs-nav.svelte';
+  import Layout from '@components/layout-docs.svelte';
+  import Alert from '@components/docs-alert.svelte';
+  import Pagination from '@components/pagination.svelte';
   import Code from '@components/code.svelte';
 
   const heading = 'Deno Server';
-  const title = `DinoSrr - ${heading} (Documentation)`;
+  const title = `DinoSsr - ${heading} (Documentation)`;
 
   const {code1, code2} = getContext('data') ?? {};
 </script>
@@ -51,29 +51,31 @@ router.use((request, response) => {
 
 <Layout>
   <h1>{heading}</h1>
-  <DocsBreadcrumb />
-  <div class="mb-4">
-    <p>
-      The <code>mod.ts</code> file at the root of the project is the server entry
-      point.
-    </p>
-    <Code language="javascript" code={code1} />
-    <p>This is started with: <code>deno run -A mod.ts</code>.</p>
-    <p>
-      The <code>serve</code> function returns the internal instances of
-      <a href="https://github.com/dbushell/velocirouter" target="_blank"
-        >VelociRouter</a
-      >
-      and
-      <a href="https://deno.land/api?s=Deno.HttpServer" target="_blank"
-        >Deno.HttpServer</a
-      >.
-    </p>
-    <Code language="javascript" code={code2} />
-    <p>
-      Additional middleware and routes can be added or existing route responses
-      modified.
-    </p>
-  </div>
-  <DocsNav />
+  <Alert />
+  <p>
+    The <code>mod.ts</code> file at the root of the project is the server entry point.
+  </p>
+  <Code language="javascript" code={code1} />
+  <p>This is started with: <code>deno run -A mod.ts</code>.</p>
+  <p>
+    The <code>serve</code> function returns the internal instances of
+    <a href="https://github.com/dbushell/velocirouter" target="_blank"
+      >VelociRouter</a
+    >
+    and
+    <a href="https://deno.land/api?s=Deno.HttpServer" target="_blank"
+      >Deno.HttpServer</a
+    >.
+  </p>
+  <Code language="javascript" code={code2} />
+  <p>
+    Additional middleware and routes can be added or existing route responses
+    modified.
+  </p>
+  <h2>Deno Deploy</h2>
+  <p>
+    DinoSsr is fully compatible with Deno Deploy. Isolate start-up times can be
+    slow. There is still plenty of optimisation to do here!
+  </p>
+  <Pagination />
 </Layout>

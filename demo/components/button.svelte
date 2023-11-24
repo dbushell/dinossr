@@ -1,8 +1,22 @@
 <script>
   export let label = 'Button';
-  export let link = '/';
+  export let href;
+  export let type;
+  export let small;
+
+  const tag = href ? 'a' : 'button';
+
+  const props = {
+    href,
+    type
+  };
 </script>
 
-<a class="btn btn-primary" href={link}>
-  <span>{label}</span>
-</a>
+<svelte:element
+  this={tag}
+  {...props}
+  class="Button"
+  class:Button--small={small}
+>
+  <span class="Button__label">{label}</span>
+</svelte:element>

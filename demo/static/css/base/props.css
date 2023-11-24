@@ -1,0 +1,105 @@
+@layer base {
+  /* @link https://utopia.fyi/type/calculator?c=314,14,1.125,1464,16,1.414,5,0,&s=0.75|0.5|0.25,1.5|2|3|4|6,s-l&g=s,m,3xl,12 */
+
+  :root {
+    --step-0: clamp(0.875rem, 0.8409rem + 0.1739vw, 1rem);
+    --step-1: clamp(0.9844rem, 0.8671rem + 0.5974vw, 1.4138rem);
+    --step-2: clamp(1.1075rem, 0.864rem + 1.2409vw, 1.9994rem);
+    --step-3: clamp(1.2456rem, 0.8139rem + 2.2vw, 2.8269rem);
+    --step-4: clamp(1.4019rem, 0.6932rem + 3.6113vw, 3.9975rem);
+    --step-5: clamp(1.5769rem, 0.4641rem + 5.6704vw, 5.6525rem);
+  }
+
+  /* @link https://utopia.fyi/space/calculator?c=314,14,1.125,1464,16,1.414,5,0,&s=0.75|0.5|0.25,1.5|2|3|4|6,s-l&g=s,m,3xl,12 */
+
+  :root {
+    --space-3xs: clamp(0.25rem, 0.25rem + 0vw, 0.25rem);
+    --space-2xs: clamp(0.4375rem, 0.4204rem + 0.087vw, 0.5rem);
+    --space-xs: clamp(0.6875rem, 0.6704rem + 0.087vw, 0.75rem);
+    --space-s: clamp(0.875rem, 0.8409rem + 0.1739vw, 1rem);
+    --space-m: clamp(1.3125rem, 1.2613rem + 0.2609vw, 1.5rem);
+    --space-l: clamp(1.75rem, 1.6817rem + 0.3478vw, 2rem);
+    --space-xl: clamp(2.625rem, 2.5226rem + 0.5217vw, 3rem);
+    --space-2xl: clamp(3.5rem, 3.3635rem + 0.6957vw, 4rem);
+    --space-3xl: clamp(5.25rem, 5.0452rem + 1.0435vw, 6rem);
+
+    /* One-up pairs */
+    --space-3xs-2xs: clamp(0.25rem, 0.1817rem + 0.3478vw, 0.5rem);
+    --space-2xs-xs: clamp(0.4375rem, 0.3522rem + 0.4348vw, 0.75rem);
+    --space-xs-s: clamp(0.6875rem, 0.6022rem + 0.4348vw, 1rem);
+    --space-s-m: clamp(0.875rem, 0.7043rem + 0.8696vw, 1.5rem);
+    --space-m-l: clamp(1.3125rem, 1.1248rem + 0.9565vw, 2rem);
+    --space-l-xl: clamp(1.75rem, 1.4087rem + 1.7391vw, 3rem);
+    --space-xl-2xl: clamp(2.625rem, 2.2496rem + 1.913vw, 4rem);
+    --space-2xl-3xl: clamp(3.5rem, 2.8174rem + 3.4783vw, 6rem);
+
+    /* Custom pairs */
+    --space-s-l: clamp(0.875rem, 0.5678rem + 1.5652vw, 2rem);
+  }
+
+  /* @link https://utopia.fyi/grid/calculator?c=314,14,1.125,1464,16,1.414,5,0,&s=0.75|0.5|0.25,1.5|2|3|4|6,s-l&g=s,m,3xl,12 */
+
+  :root {
+    --grid-max-width: 91.5rem;
+    --grid-columns: 12;
+    --grid-column-gap: var(
+      --space-s-m,
+      clamp(0.875rem, 0.7043rem + 0.8696vw, 1.5rem)
+    );
+    --grid-row-gap: var(--space-l-xl);
+
+    --grid-margin: clamp(
+      0px,
+      calc(5dvw - var(--grid-column-gap)),
+      calc(var(--space-xl) - var(--grid-column-gap))
+    );
+
+    --grid-main: clamp(
+      0px,
+      calc(100% - (var(--grid-column-gap) * 2)),
+      calc(var(--grid-max-width) - (var(--grid-column-gap) * 2))
+    );
+
+    --grid-column: calc(
+      (
+          var(--grid-main) -
+            (var(--grid-column-gap) * ((var(--grid-columns) - 1)))
+        ) / var(--grid-columns)
+    );
+
+    --grid-template-basic: [outer-start] auto [inner-start main-start]
+      var(--grid-main) [main-end inner-end] auto [outer-end];
+
+    --grid-template-advanced: [outer-start] auto [inner-start aside-start]
+      repeat(3, var(--grid-column)) [aside-end main-start]
+      repeat(9, var(--grid-column)) [main-end inner-end] auto [outer-end];
+
+    --block-gap1: var(--space-m);
+    --block-gap2: var(--space-l);
+  }
+
+  :root {
+    --scroll-y: 0;
+    --scroll-dir: 1;
+
+    --color-bg: 20% 0.015 275;
+    --color-bg-dark: 15% 0.015 275;
+    --color-bg-light: 25% 0.015 275;
+    --color-text: 97% 0.02 80;
+    --color-off: 67% 0.02 80;
+    --color-subtle: 30% 0.015 275;
+    --color-blue: 70% 0.162 250;
+    --color-green: 75% 0.172 150;
+    --color-pink: 75% 0.22 330;
+    --color-yellow: 95% 0.12 102;
+    --color-focus: var(--color-pink);
+    --color-anchor: var(--color-green);
+
+    --focus-outline: calc((2 / 16) * 1rem) solid oklch(var(--color-focus));
+
+    --font-serif: 'DMSerifDisplay';
+    --font-sans: 'OpenSans';
+    --font-size: var(--step-1);
+    --line-height: 1.4;
+  }
+}

@@ -1,0 +1,109 @@
+@layer components {
+  :root {
+    --button-height: calc(
+      (var(--step-1) * 1.2) + (var(--space-s) * 2) + ((4 / 16) * 1rem)
+    );
+    --button-small-height: calc(
+      (var(--step-0) * 1.2) + (var(--space-xs) * 2) + ((2 / 16) * 1rem)
+    );
+  }
+
+  .Button-group {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-block: var(--block-gap2);
+
+    & > * {
+      flex: 0 0 auto;
+    }
+
+    &:first-child {
+      margin-block-start: 0;
+    }
+
+    &:last-child {
+      margin-block-end: 0;
+    }
+  }
+
+  .Button {
+    --color: var(--color-green);
+    --border-width: 2;
+    --border-opacity: 0;
+    --font-size: var(--step-1);
+    --padding-block: var(--space-xs);
+    --padding-inline: var(--space-s);
+    --background-padding-box: linear-gradient(
+      to right,
+      oklch(var(--color-bg)),
+      oklch(var(--color-bg)) 34%,
+      oklch(var(--color-bg) / 0.95) 67%,
+      oklch(var(--color-bg) / 0.9)
+    );
+    --background-border-box: linear-gradient(
+      45deg,
+      oklch(var(--color-blue)),
+      oklch(var(--color-green))
+    );
+    border-radius: calc((8 / 16) * 1rem);
+    border: calc((var(--border-width) / 16) * 1rem) solid
+      oklch(var(--color) / var(--border-opacity));
+    background: var(--background-padding-box) padding-box,
+      var(--background-border-box) border-box;
+    background-size: 300% 100%, 100% 100%;
+    background-position: 0 0, 0 0;
+    color: oklch(var(--color));
+    display: block;
+    font-family: var(--font-sans), sans-serif;
+    font-size: var(--font-size);
+    font-weight: 700;
+    line-height: 1.2;
+    padding: var(--padding-block) var(--padding-inline);
+    text-decoration: none;
+    transition: color 200ms, border-color 200ms, background-position 400ms;
+    width: max-content;
+
+    &:hover {
+      --color: var(--color-blue);
+      --border-opacity: 1;
+      background-position: 100% 0, 0 0;
+    }
+
+    &:focus {
+      --color: var(--color-focus);
+      outline: none;
+    }
+
+    &:focus-visible {
+      --underline-opacity: 0;
+      outline: var(--focus-outline);
+      outline-offset: calc((2 / 16) * 1rem);
+    }
+  }
+
+  .Button--small {
+    --border-width: 1;
+    --font-size: var(--step-0);
+  }
+
+  .Button--nav {
+    --border-width: 1;
+    --font-size: var(--step-1);
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    height: var(--button-small-height);
+    padding: 0;
+    width: var(--button-small-height);
+
+    & svg {
+      fill: currentColor;
+      height: var(--space-m);
+      pointer-events: none;
+      user-select: none;
+      width: var(--space-m);
+    }
+  }
+}

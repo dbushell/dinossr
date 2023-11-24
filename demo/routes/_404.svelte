@@ -1,8 +1,9 @@
 <script>
   import Layout from '@components/layout.svelte';
+  import Container from '@components/container.svelte';
 
   const heading = '404 Not Found';
-  const title = `DinoSrr - ${heading}`;
+  const title = `DinoSsr - ${heading}`;
 </script>
 
 <svelte:head>
@@ -10,5 +11,7 @@
 </svelte:head>
 
 <Layout>
-  <h1 class="mb-4">{heading}</h1>
+  <Container>
+    <h1>{heading}</h1>
+  </Container>
 </Layout>

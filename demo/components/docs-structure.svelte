@@ -1,16 +1,10 @@
-<pre class="mb-4"><code class="d-block bg-secondary-subtle p-4"
-    ><span class="text-secondary">+</span> <span class="text-primary-emphasis"
-      >project/</span
-    >
-<span class="text-secondary">|--+</span> <span class="text-primary-emphasis"
-      >routes/</span
-    >
-<span class="text-secondary">|  |--</span> _404.svelte
-<span class="text-secondary">|  |--</span> index.svelte
-<span class="text-secondary">|--+</span> <span class="text-primary-emphasis"
-      >static/</span
-    >
-<span class="text-secondary">|  |--</span> favicon.ico
-<span class="text-secondary">|--</span> app.html
-<span class="text-secondary">|--</span> mod.ts
+<pre class="Code"><code
+    ><span>+</span> <span>project/</span>
+<span>|--+</span> <span>routes/</span>
+<span>|  |--</span> _404.svelte
+<span>|  |--</span> index.svelte
+<span>|--+</span> <span>static/</span>
+<span>|  |--</span> favicon.ico
+<span>|--</span> app.html
+<span>|--</span> mod.ts
 </code></pre>

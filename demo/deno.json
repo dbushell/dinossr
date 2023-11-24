@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "dinossr": "https://raw.githubusercontent.com/dbushell/dinossr/v0.5.2/mod.ts"
+  }
+}

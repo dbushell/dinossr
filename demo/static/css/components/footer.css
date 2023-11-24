@@ -1,0 +1,9 @@
+@layer components {
+  .Footer {
+    --color-anchor: var(--color-off);
+    --grid-template: var(--grid-template-basic);
+    color: oklch(var(--color-off));
+    background: oklch(var(--color-bg-dark));
+    padding-block: var(--space-l-xl);
+  }
+}

@@ -22,13 +22,13 @@
 
 <script>
   import {getContext} from 'svelte';
-  import Layout from '@components/layout.svelte';
-  import DocsBreadcrumb from '@components/docs-breadcrumb.svelte';
-  import DocsNav from '@components/docs-nav.svelte';
+  import Layout from '@components/layout-docs.svelte';
+  import Alert from '@components/docs-alert.svelte';
+  import Pagination from '@components/pagination.svelte';
   import Code from '@components/code.svelte';
 
   const heading = 'Context';
-  const title = `DinoSrr - ${heading} (Documentation)`;
+  const title = `DinoSsr - ${heading} (Documentation)`;
 
   const {code1} = getContext('data') ?? {};
 </script>
@@ -39,25 +39,25 @@
 
 <Layout>
   <h1>{heading}</h1>
-  <DocsBreadcrumb />
-  <div class="mb-4">
-    <p>
-      Routes are rendered with access to a global Svelte context accessible from
-      any child component.
-    </p>
-    <Code language="svelte" code={code1} />
-    <p>Available context properties are:</p>
-    <h3><code>url</code></h3>
-    <p>An instance of <code>URL</code> for the current route.</p>
-    <h3><code>pattern</code></h3>
-    <p>The URL Pattern pathname of the current route.</p>
-    <h3><code>params</code></h3>
-    <p>An object of any URL Pattern matches.</p>
-    <h3><code>browser</code></h3>
-    <p>
-      <code>undefined</code>; or <code>true</code> if component is a
-      <a href="/docs/islands">client-side Island</a>.
-    </p>
-  </div>
-  <DocsNav />
+  <Alert />
+  <p>
+    Routes are rendered with access to a global Svelte context accessible from
+    any child component.
+  </p>
+  <Code language="svelte" code={code1} />
+  <p>Available context properties are:</p>
+  <h3><code>url</code></h3>
+  <p>An instance of <code>URL</code> for the current route.</p>
+  <h3><code>pattern</code></h3>
+  <p>The URL Pattern pathname of the current route.</p>
+  <h3><code>params</code></h3>
+  <p>An object of any URL Pattern matches.</p>
+  <h3><code>browser</code></h3>
+  <p>
+    <code>true</code> if component is a
+    <a href="/docs/islands/">client-side Island</a> else <code>undefined</code>.
+  </p>
+  <h3><code>data</code></h3>
+  <p>An object returned by the route <code>load</code> function.</p>
+  <Pagination />
 </Layout>

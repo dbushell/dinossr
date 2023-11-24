@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
     "paths": {
-      "@/*": ["./src/*"],
-      "@lib/*": ["./src/lib/*"],
-      "@components/*": ["./src/components/*"]
+      "@lib/*": ["./lib/*"],
+      "@components/*": ["./components/*"]
     },
     "moduleResolution": "bundler",
     "lib": ["ESNext", "DOM"],
