@@ -20,6 +20,12 @@ export const createHandle = async (renderer: Renderer): Promise<Handle> => {
     if (renderer.method === 'GET' && hasTemplate(response)) {
       response = response as Response;
       let body = await response.text();
+      if (!template) {
+        if (/<([^>]+)(\s[^>]+)?>(.*?)<\/\1>/.test(body)) {
+          response.headers.set('content-type', 'text/html; charset=utf-8');
+        }
+        return response;
+      }
       body = template.replace('%BODY%', `<dinossr-root>${body}</dinossr-root>`);
       body = body.replace('%HEAD%', render.head || '');
       response = new Response(body, response);

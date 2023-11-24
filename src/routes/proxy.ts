@@ -6,7 +6,7 @@ export const addProxyRoute = (router: Router, origin?: URL) => {
     if (requestMap.get(request)?.ignore) return;
     if (request.headers.get('upgrade') === 'websocket') {
       requestMap.set(request, {ignore: true});
-      return;
+      return response;
     }
     // Modify request url if behind proxy
     const base = new URL(request.url);

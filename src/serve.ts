@@ -11,11 +11,12 @@ import {sveltePreprocess} from './svelte/preprocess.ts';
 import {getDeployHash, setDeployHash} from './utils.ts';
 import type {ServeOptions, Router, Bumbler} from './types.ts';
 
-export const serve = async (dir: string, options?: ServeOptions) => {
+export const serve = async (dir?: string, options?: ServeOptions) => {
   const start = performance.now();
 
+  dir = dir ?? Deno.cwd();
   if (!path.isAbsolute(dir)) {
-    throw new Error('Directory path must be absolute');
+    console.warn('An absolute directory path is preferred!');
   }
   dir = path.resolve(dir, './');
 
