@@ -65,7 +65,7 @@ export const serve = async (dir?: string, options?: ServeOptions) => {
 
   if (Deno.env.has('DINOSSR_BUILD')) {
     await setDeployHash(deployHash);
-    return;
+    Deno.exit(0);
   }
 
   // Setup server

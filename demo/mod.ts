@@ -8,10 +8,6 @@ const dinossr = await serve(dir, {
   }
 });
 
-if (!dinossr) {
-  Deno.exit(1);
-}
-
 const {router, server} = dinossr;
 
 router.onError = (error) => {
