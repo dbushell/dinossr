@@ -103,10 +103,9 @@ export const addRoutes = async (
     const key = renderer.method.toLowerCase() as Lowercase<Renderer['method']>;
     router[key]({pathname: renderer.pattern}, await createHandle(renderer));
     if (renderer.method === 'GET') {
-      if (!/\.[\w]+$/.test(renderer.pattern)) {
-        if (!/\*|:|\\/.test(renderer.pattern)) {
-          redirects.add(renderer.pattern);
-        }
+      // TODO: better way to determine redirect routes
+      if (!/\.[\w]+$|\*/.test(renderer.pattern)) {
+        redirects.add(renderer.pattern);
       }
     }
   }

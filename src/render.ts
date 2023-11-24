@@ -3,6 +3,8 @@ import {encodeHash, encodeHash64} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
 import type {Bumbler, Handle, Renderer, RenderCallback} from './types.ts';
 
+const islandHashes = new Set<string>();
+
 // Return a route handle that renders with `app.html`
 export const createHandle = async (renderer: Renderer): Promise<Handle> => {
   const template = await readTemplate();
@@ -76,6 +78,11 @@ export const importModule = async (
       const hash = await encodeHash(bumbler.deployHash + entry, 'SHA-1');
       const href = `/_/immutable/${hash}.js`;
       islandMeta.push({hash, href});
+      if (islandHashes.has(hash)) {
+        continue;
+      }
+      islandHashes.add(hash);
+      // Add a route for the island script
       const code = await bumbler.bumbleDOM(entry, {
         filterExports: ['default']
       });
@@ -91,6 +98,7 @@ export const importModule = async (
         }
       });
     }
+
     const render: RenderCallback = async (request, _response, {match}) => {
       // Setup context and props
       const url = new URL(request.url);
@@ -168,6 +176,7 @@ customElements.define('dinossr-island', DinossrIsland);
         css: render.css?.code
       };
     };
+
     renderers.push({
       method: 'GET',
       pattern,
