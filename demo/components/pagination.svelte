@@ -3,7 +3,6 @@
   import docs from '@lib/docs.json';
   import {docsIndex} from '@lib/helpers.js';
 
-  /** @type {URL} */
   const url = getContext('url');
   const index = docsIndex(docs, url);
 </script>

@@ -97,6 +97,7 @@
 
     --focus-outline: calc((2 / 16) * 1rem) solid oklch(var(--color-focus));
 
+    --font-monospace: 'MonaspaceNeon';
     --font-serif: 'DMSerifDisplay';
     --font-sans: 'OpenSans';
     --font-size: var(--step-1);

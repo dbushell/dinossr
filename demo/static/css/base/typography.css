@@ -145,7 +145,7 @@
   }
 
   pre {
-    font-family: 'MonaspaceNeon', monospace;
+    font-family: var(--font-monospace), monospace;
     margin-block-end: var(--block-gap1);
 
     &:last-child {
@@ -154,7 +154,7 @@
   }
 
   code {
-    font-family: 'MonaspaceNeon', monospace;
+    font-family: var(--font-monospace), monospace;
     color: oklch(var(--color-blue));
   }
 }
