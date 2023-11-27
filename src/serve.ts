@@ -7,18 +7,18 @@ import {
   addCacheRoute
 } from './routes/mod.ts';
 import {readTemplate} from './template.ts';
-import {sveltePreprocess} from './svelte/preprocess.ts';
+import {esbuildResolve, sveltePreprocess} from './svelte/mod.ts';
 import {getDeployHash, setDeployHash} from './utils.ts';
 import type {ServeOptions, Router, Bumbler} from './types.ts';
 
 export const serve = async (dir?: string, options?: ServeOptions) => {
   const start = performance.now();
 
-  dir = dir ?? Deno.cwd();
+  dir ??= Deno.cwd();
   if (!path.isAbsolute(dir)) {
     console.warn('An absolute directory path is preferred!');
+    dir = path.resolve(dir, './');
   }
-  dir = path.resolve(dir, './');
 
   // Setup options
   const deployHash = await getDeployHash();
@@ -47,7 +47,8 @@ export const serve = async (dir?: string, options?: ServeOptions) => {
   // Setup bundler
   const bumbler: Bumbler = new bumble.Bumbler(dir, {
     ...options?.bumbler,
-    sveltePreprocess: sveltePreprocess(dir, deployHash)
+    sveltePreprocess: sveltePreprocess(dir, deployHash),
+    esbuildResolve
   });
 
   await readTemplate(dir);

@@ -37,12 +37,16 @@ export const createHandle = async (renderer: Renderer): Promise<Handle> => {
 
 export const importModule = async (
   entry: string,
+  dir: string,
   pattern: string,
   bumbler: Bumbler
 ): Promise<Renderer[]> => {
-  const {manifest, mod} = await bumbler.bumbleSSR(entry, {
+  const {metafile, mod} = await bumbler.bumbleSSR(entry, {
     filterExports: ['default', 'pattern', 'order', 'get', 'post', 'load']
   });
+
+  // TODO: fix?
+  dir = dir.replace(/\/routes$/, '');
 
   // Append pattern to file path
   if (mod.pattern) {
@@ -72,11 +76,15 @@ export const importModule = async (
     const component = mod.default as bumble.BumbleComponent;
 
     const islandMeta: Array<{hash: string; href: string}> = [];
-
     const islandEntries: string[] = [];
-    for (const [entry, dep] of manifest.dependencies) {
-      if (dep.exports.includes('_island')) {
-        islandEntries.push(entry);
+
+    if (metafile) {
+      for (const [key, input] of Object.entries(metafile.inputs)) {
+        const found = input.imports.find(
+          (i) => i.original === '@dinossr/island'
+        );
+        if (!found) continue;
+        islandEntries.push(key);
       }
     }
 

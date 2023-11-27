@@ -12,7 +12,10 @@ export interface ServeOptions {
   origin?: URL;
   serve?: Deno.ServeOptions;
   router?: velocirouter.RouterOptions<Platform>;
-  bumbler?: bumble.BumbleOptions;
+  bumbler?: Pick<
+    bumble.BumbleOptions,
+    'dev' | 'build' | 'deployHash' | 'dynamicImports'
+  >;
 }
 
 export interface RenderModule {

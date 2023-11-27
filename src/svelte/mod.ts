@@ -1,39 +1,54 @@
 import {bumble, svelte} from '../deps.ts';
 import {encodeHash} from '../utils.ts';
 
-const builtin = ['island'];
-const builtinURL = new URL('./', import.meta.url);
+const url = new URL('./', import.meta.url);
 
 const islandMap = new Map<string, string>();
-const islandImport = /import(.*?)from\s+['"]@dinossr\/island['"]/;
+const islandMatch = /import(.*?)from\s+['"]@dinossr\/island['"]/;
+
+export const esbuildResolve: bumble.BumbleOptions['esbuildResolve'] = (
+  args
+) => {
+  // Resolve DinoSsr built-in components
+  if (args.path.startsWith('@dinossr/')) {
+    return {
+      path: new URL(`./${args.path.slice(9)}.svelte`, url).href,
+      namespace: 'fetch'
+    };
+  }
+};
 
 export const sveltePreprocess = (dir: string, deployHash: string) => {
   return (entry: string, options?: bumble.BumbleOptions) => {
     // Remove DOM render import statements from module scripts
-    const domGroup: svelte.PreprocessorGroup = {
+    const islandDom: svelte.PreprocessorGroup = {
       script: (params) => {
-        const code = params.content;
-        if (options?.svelte?.generate !== 'dom') {
+        let code = params.content;
+        if (options?.svelteCompile?.generate !== 'dom') {
           return {code};
         }
         if (params.attributes.context !== 'module') {
           return {code};
         }
-        if (entry.startsWith(builtinURL.href)) {
+        if (params.filename!.startsWith(url.pathname)) {
           return {code};
         }
         // Remove all import/export statements
         const script = new bumble.Script(code, entry, dir);
-        return {code: script.getCode()};
+        code = script.getCode({
+          exports: true,
+          filterExports: options.filterExports
+        });
+        return {code};
       }
     };
 
     // Island preprocessor
-    const islandGroup: svelte.PreprocessorGroup = {
+    const islandImport: svelte.PreprocessorGroup = {
       markup: async (params) => {
         let code = params.content;
         // Check for island import statement
-        const match = islandImport.exec(code);
+        const match = islandMatch.exec(code);
         if (!match) {
           return {code};
         }
@@ -67,35 +82,20 @@ export const sveltePreprocess = (dir: string, deployHash: string) => {
           code = '<script context="module"></script>\n' + code;
         }
         return {code};
-      },
+      }
+    };
+
+    const islandId: svelte.PreprocessorGroup = {
       script: (params) => {
         let code = params.content;
-        const hash = islandMap.get(params.filename!);
-        if (!hash) {
-          return {code};
-        }
         // Append island hash export to module script
-        if (params.attributes.context === 'module') {
+        const hash = islandMap.get(params.filename!);
+        if (hash && params.attributes.context === 'module') {
           code += `\nexport const _island = "${hash}";\n`;
-          return {code};
         }
-        // Add absolute URL to island import
-        code = code.replace(
-          /^\s*?import(.*?)from\s+['"](.+?)['"]\s*?;/gm,
-          (match, ...args) => {
-            if (args[1].startsWith('@dinossr/')) {
-              const name = args[1].slice(9);
-              if (builtin.includes(name)) {
-                const url = new URL(`./${name}.svelte`, builtinURL);
-                return `import ${args[0]} from "${url.href}";\n`;
-              }
-            }
-            return match;
-          }
-        );
         return {code};
       }
     };
-    return [domGroup, islandGroup];
+    return [islandDom, islandImport, islandId];
   };
 };

@@ -103,8 +103,8 @@
     Svelte component.
   </p>
   <p>
-    <code>&lt;Island&gt;</code> should be the only top-level element wrapping
-    the entire component HTML.
+    <code>&lt;Island&gt;</code> should be the only top-level element wrapping the
+    entire component HTML.
   </p>
   <h2>Context and Props</h2>
   <p>
