@@ -8,25 +8,8 @@
   export let heading = 'DinoSsr';
   export let tag = 'Alpha';
 
-  export let menuItems = [
-    {
-      href: '/',
-      name: 'Home'
-    },
-    {
-      href: '/about/',
-      name: 'About'
-    },
-    {
-      href: '/docs/',
-      name: 'Documentation'
-    },
-    {
-      href: 'https://github.com/dbushell/dinossr/',
-      name: 'GitHub',
-      button: true
-    }
-  ];
+  /** @type Array<{name: string, href: string, target?: string}> */
+  export let menu = [];
 
   let nav;
   let toggle;
@@ -121,7 +104,7 @@
         >
           <IconClose />
         </button>
-        <Menu items={menuItems} />
+        <Menu items={menu} />
       </nav>
     </div>
   </header>

@@ -1,0 +1,63 @@
+{
+  "header": {
+    "menu": [
+      {
+        "name": "Home",
+        "href": "/"
+      },
+      {
+        "name": "About",
+        "href": "/about/"
+      },
+      {
+        "name": "Documentation",
+        "href": "/docs/"
+      },
+      {
+        "name": "GitHub",
+        "href": "https://github.com/dbushell/dinossr/",
+        "button": true
+      }
+    ]
+  },
+  "footer": {
+    "menu": [
+      {
+        "name": "David Bushell",
+        "href": "https://dbushell.com"
+      },
+      {
+        "name": "GitHub",
+        "href": "https://github.com/dbushell/dinossr/"
+      }
+    ]
+  },
+  "docs": {
+    "menu": [
+      {
+        "name": "Documentation",
+        "href": "/docs/"
+      },
+      {
+        "name": "Project Structure",
+        "href": "/docs/structure/"
+      },
+      {
+        "name": "Routing",
+        "href": "/docs/routing/"
+      },
+      {
+        "name": "Context",
+        "href": "/docs/context/"
+      },
+      {
+        "name": "Islands",
+        "href": "/docs/islands/"
+      },
+      {
+        "name": "Deno Server",
+        "href": "/docs/server/"
+      }
+    ]
+  }
+}

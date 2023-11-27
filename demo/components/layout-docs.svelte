@@ -3,18 +3,18 @@
   import Footer from '@components/footer.svelte';
   import Container from '@components/container.svelte';
   import Menu from '@components/menu.svelte';
-  import docs from '@lib/docs.json';
+  import {docs, header, footer} from '@lib/data.json';
 </script>
 
 <div class="App">
-  <Header />
+  <Header menu={header.menu} />
   <Container>
     <aside>
-      <Menu items={docs.pages} />
+      <Menu items={docs.menu} />
     </aside>
     <main>
       <slot />
     </main>
   </Container>
-  <Footer />
+  <Footer links={footer.menu} />
 </div>

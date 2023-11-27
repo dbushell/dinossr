@@ -6,7 +6,7 @@
   import Layout from '@components/layout-docs.svelte';
   import Alert from '@components/docs-alert.svelte';
   import Pagination from '@components/pagination.svelte';
-  import docs from '@lib/docs.json';
+  import {docs} from '@lib/data.json';
 
   const heading = 'Documentation';
   const title = `DinoSsr - ${heading}`;
@@ -21,10 +21,10 @@
   <Alert />
   <p>Current documentation:</p>
   <ul>
-    {#each docs.pages.slice(1) as page}
+    {#each docs.menu.slice(1) as item}
       <li>
-        <a href={page.href}>
-          <span>{page.name}</span>
+        <a href={item.href}>
+          <span>{item.name}</span>
         </a>
       </li>
     {/each}

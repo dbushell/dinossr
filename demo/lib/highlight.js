@@ -1,11 +1,8 @@
-// import hljs from 'https://esm.sh/highlight.js@11.9.0/?target=esnext';
-// import hljs from 'https://esm.sh/highlight.js@11.9.0/lib/core.js';
-// import xml from 'https://esm.sh/highlight.js@11.9.0/lib/languages/xml.js';
-// import javascript from 'https://esm.sh/highlight.js@11.9.0/lib/languages/javascript.js';
-import hljs from '@lib/hljs-core.min.js';
-import xml from '@lib/hljs-xml.min.js';
-import javascript from '@lib/hljs-javascript.min.js';
-import svelte from '@lib/hljs-svelte.min.js';
+import hljs from 'https://esm.sh/highlight.js@11.9.0/lib/core.js?target=esnext';
+import xml from 'https://esm.sh/highlight.js@11.9.0/lib/languages/xml.js?target=esnext';
+import javascript from 'https://esm.sh/highlight.js@11.9.0/lib/languages/javascript.js?target=esnext';
+/* esm.sh - esbuild bundle(highlightjs-svelte@1.0.6) es2022 production */
+function svelte(e){return{subLanguage:"xml",contains:[e.COMMENT("<!--","-->",{relevance:10}),{begin:/^(\s*)(<script(\s*context="module")?>)/gm,end:/^(\s*)(<\/script>)/gm,subLanguage:"javascript",excludeBegin:!0,excludeEnd:!0,contains:[{begin:/^(\s*)(\$:)/gm,end:/(\s*)/gm,className:"keyword"}]},{begin:/^(\s*)(<style.*>)/gm,end:/^(\s*)(<\/style>)/gm,subLanguage:"css",excludeBegin:!0,excludeEnd:!0},{begin:/\{/gm,end:/\}/gm,subLanguage:"javascript",contains:[{begin:/[\{]/,end:/[\}]/,skip:!0},{begin:/([#:\/@])(if|else|each|await|then|catch|debug|html)/gm,className:"keyword",relevance:10}]}]}}
 
 hljs.registerLanguage('xml', xml);
 hljs.registerLanguage('javascript', javascript);

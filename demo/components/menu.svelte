@@ -4,6 +4,7 @@
 
   const url = getContext('url');
 
+  /** @type Array<{name: string, href: string, current?: boolean}> */
   export let items = [];
 
   for (const item of items) {

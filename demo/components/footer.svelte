@@ -1,11 +1,19 @@
+<script>
+  /** @type Array<{name: string, href: string, target?: string}> */
+  export let menu = [];
+</script>
+
 <footer class="Grid | Footer">
   <div class="Footer__main">
     <p>
       <small>
         <span>Copyright &copy; {new Date().getFullYear()}</span>
-        <a href="https://dbushell.com" target="_blank">David Bushell</a>
-        <span> • </span>
-        <a href="https://github.com/dbushell/dinossr/">GitHub</a>
+        {#each menu as item, i}
+          {#if i > 0}<span> • </span>{/if}
+          <a href={item.href} target={item.target}>
+            <span>{item.name}</span>
+          </a>
+        {/each}
       </small>
     </p>
   </div>
