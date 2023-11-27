@@ -16,5 +16,5 @@
       <slot />
     </main>
   </Container>
-  <Footer links={footer.menu} />
+  <Footer menu={footer.menu} />
 </div>
