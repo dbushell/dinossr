@@ -19,6 +19,7 @@ export const getDeployHash = async (): Promise<string> => {
   if (!Deno.env.has('DINOSSR_DEPLOY_ID')) {
     if (await fs.exists(deployHashPath)) {
       deployHash = await Deno.readTextFile(deployHashPath);
+      console.log(`Prebuild hash: ${deployHash}`);
     }
   }
   // Otherwise generate deploy hash
@@ -29,6 +30,7 @@ export const getDeployHash = async (): Promise<string> => {
         Date.now().toString(),
       'SHA-1'
     );
+    console.log(`Deploy hash: ${deployHash}`);
   }
   return deployHash;
 };
