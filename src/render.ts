@@ -84,7 +84,7 @@ export const importModule = async (
           (i) => i.original === '@dinossr/island'
         );
         if (!found) continue;
-        islandEntries.push(key);
+        islandEntries.push(path.join(dir, key));
       }
     }
 
