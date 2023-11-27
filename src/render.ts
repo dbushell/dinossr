@@ -89,7 +89,8 @@ export const importModule = async (
     }
 
     for (const entry of islandEntries) {
-      const hash = await encodeHash(bumbler.deployHash + entry, 'SHA-1');
+      const rel = path.relative(dir, entry) + '-dom';
+      const hash = await encodeHash(rel + bumbler.deployHash, 'SHA-1');
       const href = `/_/immutable/${hash}.js`;
       islandMeta.push({hash, href});
       if (islandHashes.has(hash)) {

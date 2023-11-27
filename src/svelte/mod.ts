@@ -1,4 +1,4 @@
-import {bumble, svelte} from '../deps.ts';
+import {path, bumble, svelte} from '../deps.ts';
 import {encodeHash} from '../utils.ts';
 
 const url = new URL('./', import.meta.url);
@@ -65,7 +65,8 @@ export const sveltePreprocess = (dir: string, deployHash: string) => {
           return {code};
         }
         // Add island hash prop to component
-        const hash = await encodeHash(deployHash + params.filename, 'SHA-1');
+        const rel = path.relative(dir, params.filename!) + '-dom';
+        const hash = await encodeHash(rel + deployHash, 'SHA-1');
         code = params.content.replace(tag, `<$1 $2 _island="${hash}">`);
         islandMap.set(params.filename!, hash);
         // Look for module script
