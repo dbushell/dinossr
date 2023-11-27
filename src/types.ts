@@ -9,6 +9,7 @@ export type Router = velocirouter.Router<Platform>;
 export type Bumbler = bumble.Bumbler<RenderModule>;
 
 export interface ServeOptions {
+  [key: PropertyKey]: unknown;
   origin?: URL;
   serve?: Deno.ServeOptions;
   router?: velocirouter.RouterOptions<Platform>;

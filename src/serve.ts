@@ -32,8 +32,7 @@ export const serve = async (dir?: string, options?: ServeOptions) => {
       deployHash
     }
   };
-  // deno-lint-ignore no-explicit-any
-  options = deepMerge<any>(defaultOptions, options ?? {});
+  options = deepMerge<ServeOptions>(defaultOptions, options ?? {});
 
   // Setup router
   const router: Router = new velocirouter.Router({
@@ -62,9 +61,7 @@ export const serve = async (dir?: string, options?: ServeOptions) => {
   addCacheRoute(router);
   addPolicyRoute(router);
 
-  bumbler.stop();
-
-  if (Deno.env.has('DINOSSR_BUILD')) {
+  if (options?.bumbler?.build) {
     await setDeployHash(deployHash);
     Deno.exit(0);
   }
@@ -73,9 +70,14 @@ export const serve = async (dir?: string, options?: ServeOptions) => {
   const server = Deno.serve(options?.serve ?? {}, (request, info) =>
     router.handle(request, {info, deployHash})
   );
+  server.finished.then(() => {
+    bumbler.stop();
+  });
+
   if (options?.bumbler?.dev) {
     const time = (performance.now() - start).toFixed(2);
     console.log(`🚀 ${time}ms`);
   }
+
   return {router, bumbler, server};
 };
