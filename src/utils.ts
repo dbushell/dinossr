@@ -11,7 +11,7 @@ export const encodeHash = async (value: string, algorithm?: string) =>
 export const encodeHash64 = async (value: string, algorithm?: string) =>
   base64.encodeBase64(await hash(value, algorithm));
 
-const deployHashPath = path.join(Deno.cwd(), '.dinossr/hash.txt');
+const deployHashPath = path.join(Deno.cwd(), '.bumble/hash.txt');
 
 export const getDeployHash = async (): Promise<string> => {
   // Check for prebuilt deployment
