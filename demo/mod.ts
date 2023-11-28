@@ -2,7 +2,7 @@ import {DinoServer} from '../mod.ts';
 
 const dinossr = new DinoServer(new URL('./', import.meta.url).pathname, {
   bumbler: {
-    dev: !Deno.env.has('DENO_REGION')
+    dev: true
   }
 });
 
@@ -15,12 +15,12 @@ dinossr.router.onError = (error) => {
   });
 };
 
-const cssCache = new WeakMap<Deno.HttpServer, string>();
+const cssCache = new WeakMap<DinoServer, string>();
 
 dinossr.router.get('/app.css', () => {
   let css = '';
-  if (cssCache.has(dinossr.server)) {
-    css = cssCache.get(dinossr.server)!;
+  if (cssCache.has(dinossr)) {
+    css = cssCache.get(dinossr)!;
   } else {
     css = Deno.readTextFileSync(
       new URL('./static/app.css', import.meta.url).pathname
@@ -30,7 +30,7 @@ dinossr.router.get('/app.css', () => {
         new URL(`./static/${match[1]}`, import.meta.url).pathname
       );
     });
-    cssCache.set(dinossr.server, css);
+    cssCache.set(dinossr, css);
   }
   return new Response(css, {
     headers: {

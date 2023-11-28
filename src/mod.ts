@@ -97,14 +97,6 @@ export class DinoServer {
       esbuildResolve
     });
 
-    // Setup server
-    this.#server = Deno.serve(this.options.serve ?? {}, (request, info) =>
-      this.router.handle(request, {info, deployHash: this.deployHash})
-    );
-    this.server.finished.then(() => {
-      this.bumbler.stop();
-    });
-
     await this.bumbler.start();
 
     await readTemplate(this.dir);
@@ -116,8 +108,17 @@ export class DinoServer {
         throw new Error('Failed to generate manifest');
       }
       setManifest(manifest);
+      this.bumbler.stop();
       Deno.exit(0);
     }
+
+    // Setup server
+    this.#server = Deno.serve(this.options.serve ?? {}, (request, info) =>
+      this.router.handle(request, {info, deployHash: this.deployHash})
+    );
+    this.server.finished.then(() => {
+      this.bumbler.stop();
+    });
 
     if (this.bumbler.dev) {
       const time = (performance.now() - start).toFixed(2);
@@ -139,7 +140,7 @@ export class DinoServer {
       routes.addPolicyRoute
     ];
     for (const callback of mods) {
-      await callback(this);
+      await Promise.resolve(callback(this));
     }
     if (this.bumbler.dev) {
       const time = (performance.now() - start).toFixed(2);
