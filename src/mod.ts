@@ -2,13 +2,19 @@ import {path, deepMerge, bumble, velocirouter} from './deps.ts';
 import * as routes from './routes/mod.ts';
 import {esbuildResolve, sveltePreprocess} from './svelte/mod.ts';
 import {readTemplate} from './template.ts';
-import {getDeployHash, setDeployHash} from './utils.ts';
-import type {DinoOptions, DinoRouter, DinoBumbler} from './types.ts';
+import {getManifest, setManifest} from './utils.ts';
+import type {
+  DinoOptions,
+  DinoRouter,
+  DinoBumbler,
+  DinoManifest
+} from './types.ts';
 
 export class DinoServer {
   #initialized = false;
   #dir: string;
   #options: DinoOptions;
+  #manifest: DinoManifest;
   #bumbler!: DinoBumbler;
   #router!: DinoRouter;
   #server!: Deno.HttpServer;
@@ -16,6 +22,7 @@ export class DinoServer {
   constructor(dir?: string, options: DinoOptions = {}) {
     dir ??= Deno.cwd();
     this.#dir = path.resolve(dir, './');
+    this.#manifest = getManifest();
     const defaultOptions: DinoOptions = {
       origin: Deno.env.has('ORIGIN')
         ? new URL(Deno.env.get('ORIGIN')!)
@@ -23,7 +30,7 @@ export class DinoServer {
       bumbler: {
         build: Deno.env.has('DINOSSR_BUILD'),
         dynamicImports: Deno.env.has('DENO_REGION') === false,
-        deployHash: getDeployHash()
+        deployHash: this.#manifest.deployHash
       }
     };
     this.#options = deepMerge<DinoOptions>(defaultOptions, options ?? {});
@@ -37,16 +44,16 @@ export class DinoServer {
     return this.#dir;
   }
 
+  get deployHash() {
+    return this.#manifest.deployHash;
+  }
+
   get options() {
     return this.#options;
   }
 
   get origin() {
     return this.options.origin;
-  }
-
-  get deployHash() {
-    return this.options.bumbler!.deployHash!;
   }
 
   get bumbler() {
@@ -98,25 +105,31 @@ export class DinoServer {
 
     await readTemplate(this.dir);
 
-    await this.#addRoutes();
+    const manifest = await this.#addRoutes();
 
     if (this.options.bumbler?.build) {
-      setDeployHash(this.deployHash);
+      if (!manifest) {
+        throw new Error('Failed to generate manifest');
+      }
+      setManifest(manifest);
       Deno.exit(0);
     }
 
     if (this.bumbler.dev) {
       const time = (performance.now() - start).toFixed(2);
-      console.log(`🚀 Server ${time}ms`);
+      console.log(`🚀 Server ${time}ms (${this.deployHash})`);
     }
   }
 
   async #addRoutes() {
     const start = performance.now();
+    let manifest: DinoManifest | undefined;
     const mods = [
       routes.addProxyRoute,
       routes.addStaticRoutes,
-      routes.addRoutes,
+      async () => {
+        manifest = await routes.addRoutes(this);
+      },
       routes.addCacheRoute,
       routes.addPolicyRoute
     ];
@@ -127,5 +140,6 @@ export class DinoServer {
       const time = (performance.now() - start).toFixed(2);
       console.log(`🚀 Routes ${time}ms`);
     }
+    return manifest;
   }
 }

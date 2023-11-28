@@ -43,6 +43,12 @@ export interface DinoRender {
 export interface DinoRoute {
   method: velocirouter.Method;
   pattern: string;
+  modhash: string;
   render: DinoRender;
   order?: number;
+}
+
+export interface DinoManifest {
+  deployHash: string;
+  routes: Array<Pick<DinoRoute, 'method' | 'pattern' | 'modhash' | 'order'>>;
 }

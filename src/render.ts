@@ -48,6 +48,9 @@ export const importModule = async (
   // TODO: fix?
   dir = dir.replace(/\/routes$/, '');
 
+  const rel = path.relative(dir, entry) + '-ssr';
+  const modhash = encodeHash(rel + bumbler.deployHash);
+
   // Append pattern to file path
   if (mod.pattern) {
     if (/^\.\w+$/.test(mod.pattern)) {
@@ -60,15 +63,18 @@ export const importModule = async (
   const routes: DinoRoute[] = [];
 
   const add = (method: DinoRoute['method'], handle: DinoHandle) => {
-    const render: DinoRender = (...args) => ({
-      response: handle(...args)
-    });
-    routes.push({
-      order: mod.order ?? 0,
-      pattern,
+    const route: DinoRoute = {
       method,
-      render
-    });
+      pattern,
+      modhash,
+      render: (...args) => ({
+        response: handle(...args)
+      })
+    };
+    if (mod.order) {
+      route.order = mod.order;
+    }
+    routes.push(route);
   };
 
   // Handle Svelte component
@@ -104,6 +110,7 @@ export const importModule = async (
       routes.push({
         method: 'GET',
         pattern: href,
+        modhash: hash,
         render: () => {
           return {
             response: new Response(code, {
@@ -195,6 +202,7 @@ customElements.define('dinossr-island', DinossrIsland);
     routes.push({
       method: 'GET',
       pattern,
+      modhash,
       render
     });
 

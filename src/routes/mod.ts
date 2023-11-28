@@ -2,7 +2,7 @@ import {path, existsSync} from '../deps.ts';
 import {DinoServer} from '../mod.ts';
 import {createHandle, importModule} from '../render.ts';
 import {addError, addNoMatch} from './errors.ts';
-import type {DinoBumbler, DinoRoute} from '../types.ts';
+import type {DinoBumbler, DinoRoute, DinoManifest} from '../types.ts';
 
 export {addProxyRoute} from './proxy.ts';
 export {addStaticRoutes} from './static.ts';
@@ -88,6 +88,21 @@ export const addRoutes = async (dinossr: DinoServer) => {
   // Generate file-based routes
   const routes = await generate(routesDir, dinossr.bumbler);
   routes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+  const manifest: DinoManifest = {
+    deployHash: dinossr.deployHash,
+    routes: routes.map((route) => ({
+      method: route.method,
+      pattern: route.pattern,
+      modhash: route.modhash,
+      order: route.order
+    }))
+  };
+
+  if (dinossr.options.bumbler?.build) {
+    return manifest;
+  }
+
   for (const route of routes) {
     if (route.pattern === '/_500') {
       addError(dinossr, route);
@@ -143,4 +158,6 @@ export const addRoutes = async (dinossr: DinoServer) => {
       });
     });
   });
+
+  return manifest;
 };
