@@ -30,7 +30,7 @@ export class DinoServer {
       bumbler: {
         build: Deno.env.has('DINOSSR_BUILD'),
         dynamicImports: Deno.env.has('DENO_REGION') === false,
-        deployHash: this.#manifest.deployHash
+        deployHash: this.manifest.deployHash
       }
     };
     this.#options = deepMerge<DinoOptions>(defaultOptions, options ?? {});
@@ -44,8 +44,12 @@ export class DinoServer {
     return this.#dir;
   }
 
+  get manifest() {
+    return this.#manifest;
+  }
+
   get deployHash() {
-    return this.#manifest.deployHash;
+    return this.manifest.deployHash;
   }
 
   get options() {
@@ -123,6 +127,7 @@ export class DinoServer {
 
   async #addRoutes() {
     const start = performance.now();
+    // New manifest for build (optional)
     let manifest: DinoManifest | undefined;
     const mods = [
       routes.addProxyRoute,
