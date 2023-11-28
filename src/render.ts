@@ -1,15 +1,15 @@
 import {path, bumble} from './deps.ts';
-import {encodeHash, encodeHash64} from './utils.ts';
+import {encodeHash, encodeCryptoBase64} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
-import type {Bumbler, Handle, Renderer, RenderCallback} from './types.ts';
+import type {DinoBumbler, DinoHandle, DinoRoute, DinoRender} from './types.ts';
 
 const islandHashes = new Set<string>();
 
 // Return a route handle that renders with `app.html`
-export const createHandle = async (renderer: Renderer): Promise<Handle> => {
+export const createHandle = async (route: DinoRoute): Promise<DinoHandle> => {
   const template = await readTemplate();
   return async (...args) => {
-    const render = await renderer.render(...args);
+    const render = await route.render(...args);
     let response = await render.response;
     if (!(response instanceof Response)) {
       response = response?.response;
@@ -17,7 +17,7 @@ export const createHandle = async (renderer: Renderer): Promise<Handle> => {
     if (response?.headers.get('content-type')?.startsWith('text/html')) {
       return response;
     }
-    if (renderer.method === 'GET' && hasTemplate(response)) {
+    if (route.method === 'GET' && hasTemplate(response)) {
       response = response as Response;
       let body = await response.text();
       if (!template) {
@@ -39,8 +39,8 @@ export const importModule = async (
   entry: string,
   dir: string,
   pattern: string,
-  bumbler: Bumbler
-): Promise<Renderer[]> => {
+  bumbler: DinoBumbler
+): Promise<DinoRoute[]> => {
   const {metafile, mod} = await bumbler.bumbleSSR(entry, {
     filterExports: ['default', 'pattern', 'order', 'get', 'post', 'load']
   });
@@ -57,13 +57,13 @@ export const importModule = async (
     }
   }
 
-  const renderers: Renderer[] = [];
+  const routes: DinoRoute[] = [];
 
-  const add = (method: Renderer['method'], handle: Handle) => {
-    const render: RenderCallback = (...args) => ({
+  const add = (method: DinoRoute['method'], handle: DinoHandle) => {
+    const render: DinoRender = (...args) => ({
       response: handle(...args)
     });
-    renderers.push({
+    routes.push({
       order: mod.order ?? 0,
       pattern,
       method,
@@ -90,7 +90,7 @@ export const importModule = async (
 
     for (const entry of islandEntries) {
       const rel = path.relative(dir, entry) + '-dom';
-      const hash = await encodeHash(rel + bumbler.deployHash, 'SHA-1');
+      const hash = encodeHash(rel + bumbler.deployHash);
       const href = `/_/immutable/${hash}.js`;
       islandMeta.push({hash, href});
       if (islandHashes.has(hash)) {
@@ -101,7 +101,7 @@ export const importModule = async (
       const code = await bumbler.bumbleDOM(entry, {
         filterExports: ['default']
       });
-      renderers.push({
+      routes.push({
         method: 'GET',
         pattern: href,
         render: () => {
@@ -114,7 +114,7 @@ export const importModule = async (
       });
     }
 
-    const render: RenderCallback = async (request, _response, {match}) => {
+    const render: DinoRender = async (request, _response, {match}) => {
       // Setup context and props
       const url = new URL(request.url);
       const params = match?.pathname?.groups;
@@ -171,7 +171,7 @@ class DinossrIsland extends HTMLElement {
 }
 customElements.define('dinossr-island', DinossrIsland);
 `;
-        const scriptHash = await encodeHash64(script, 'SHA-256');
+        const scriptHash = await encodeCryptoBase64(script, 'SHA-256');
         headers.append('x-script-src', `'sha256-${scriptHash}'`);
         render.head += `\n`;
         islandMeta.forEach(({href}) => {
@@ -179,7 +179,7 @@ customElements.define('dinossr-island', DinossrIsland);
         });
         render.html += `\n<script defer type="module" data-hash="${scriptHash}">${script}</script>\n`;
       }
-      const styleHash = await encodeHash64(style, 'SHA-256');
+      const styleHash = await encodeCryptoBase64(style, 'SHA-256');
       headers.append('x-style-src', `'sha256-${styleHash}'`);
       render.head += `<style data-hash="${styleHash}">${style}</style>\n`;
       const response = new Response(render.html, {
@@ -192,7 +192,7 @@ customElements.define('dinossr-island', DinossrIsland);
       };
     };
 
-    renderers.push({
+    routes.push({
       method: 'GET',
       pattern,
       render
@@ -200,24 +200,24 @@ customElements.define('dinossr-island', DinossrIsland);
 
     // Allow additional GET handle
     if (typeof mod.get === 'function') {
-      add('GET', mod.get as Handle);
+      add('GET', mod.get as DinoHandle);
     }
   }
 
   // Use default function as GET handle
   else if (typeof mod.default === 'function') {
-    add('GET', mod.default as Handle);
+    add('GET', mod.default as DinoHandle);
   }
 
   // Look for named GET handle
   else if (typeof mod.get === 'function') {
-    add('GET', mod.get as Handle);
+    add('GET', mod.get as DinoHandle);
   }
 
   // Support POST handle
   if (typeof mod.post === 'function') {
-    add('POST', mod.post as Handle);
+    add('POST', mod.post as DinoHandle);
   }
 
-  return renderers;
+  return routes;
 };

@@ -1,48 +1,48 @@
 import {bumble, velocirouter} from './deps.ts';
 
-export type Platform = {info: Deno.ServeHandlerInfo; deployHash: string};
+export type DinoPlatform = {info: Deno.ServeHandlerInfo; deployHash: string};
 
-export type Handle = velocirouter.Handle<Platform>;
+export type DinoHandle = velocirouter.Handle<DinoPlatform>;
 
-export type Router = velocirouter.Router<Platform>;
+export type DinoRouter = velocirouter.Router<DinoPlatform>;
 
-export type Bumbler = bumble.Bumbler<RenderModule>;
+export type DinoBumbler = bumble.Bumbler<DinoModule>;
 
-export interface ServeOptions {
+export interface DinoOptions {
   [key: PropertyKey]: unknown;
   origin?: URL;
   serve?: Deno.ServeOptions;
-  router?: velocirouter.RouterOptions<Platform>;
+  router?: velocirouter.RouterOptions<DinoPlatform>;
   bumbler?: Pick<
     bumble.BumbleOptions,
     'dev' | 'build' | 'deployHash' | 'dynamicImports'
   >;
 }
 
-export interface RenderModule {
+export interface DinoModule {
   pattern?: string;
   order?: number;
-  get?: Handle;
-  post?: Handle;
+  get?: DinoHandle;
+  post?: DinoHandle;
   load?: (
     request: Request,
     {params}: {params?: Record<string, string | undefined>}
   ) => Promise<Record<string, unknown>>;
 }
 
-export interface RenderResponse {
-  response: ReturnType<Handle>;
+export interface DinoResponse {
+  response: ReturnType<DinoHandle>;
   head?: string;
   css?: string;
 }
 
-export interface RenderCallback {
-  (...args: Parameters<Handle>): RenderResponse | Promise<RenderResponse>;
+export interface DinoRender {
+  (...args: Parameters<DinoHandle>): DinoResponse | Promise<DinoResponse>;
 }
 
-export interface Renderer {
+export interface DinoRoute {
   method: velocirouter.Method;
   pattern: string;
-  render: RenderCallback;
+  render: DinoRender;
   order?: number;
 }

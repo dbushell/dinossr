@@ -27,8 +27,9 @@
       code3: highlight(
         'javascript',
         `
-import {serve} from 'dinossr';
-serve();
+import {DinoServer} from 'dinossr';
+const dinossr = new DinoServer();
+await dinossr.init();
 `
       )
     };

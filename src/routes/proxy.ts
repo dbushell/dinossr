@@ -1,8 +1,8 @@
+import {DinoServer} from '../mod.ts';
 import {requestMap} from './mod.ts';
-import type {Router} from '../types.ts';
 
-export const addProxyRoute = (router: Router, origin?: URL) => {
-  router.use((request, response, {stopPropagation}) => {
+export const addProxyRoute = (dinossr: DinoServer) => {
+  dinossr.router.use((request, response, {stopPropagation}) => {
     if (requestMap.get(request)?.ignore) return;
     if (request.headers.get('upgrade') === 'websocket') {
       requestMap.set(request, {ignore: true});
@@ -17,10 +17,10 @@ export const addProxyRoute = (router: Router, origin?: URL) => {
       base.protocol = request.headers.get('x-forwarded-proto') ?? '';
     }
     // Validate against origin url if specified
-    if (origin) {
+    if (dinossr.origin) {
       if (
-        origin.hostname !== base.hostname ||
-        origin.protocol !== base.protocol
+        dinossr.origin.hostname !== base.hostname ||
+        dinossr.origin.protocol !== base.protocol
       ) {
         stopPropagation();
         // Add redirect for Deno Deploy
@@ -28,7 +28,7 @@ export const addProxyRoute = (router: Router, origin?: URL) => {
           Deno.env.has('DENO_REGION') &&
           base.hostname.endsWith('.deno.dev')
         ) {
-          base.hostname = origin.hostname;
+          base.hostname = dinossr.origin.hostname;
           return new Response(null, {
             status: 308,
             headers: {

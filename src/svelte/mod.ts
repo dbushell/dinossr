@@ -1,4 +1,5 @@
 import {path, bumble, svelte} from '../deps.ts';
+import {DinoServer} from '../mod.ts';
 import {encodeHash} from '../utils.ts';
 
 const url = new URL('./', import.meta.url);
@@ -18,7 +19,7 @@ export const esbuildResolve: bumble.BumbleOptions['esbuildResolve'] = (
   }
 };
 
-export const sveltePreprocess = (dir: string, deployHash: string) => {
+export const sveltePreprocess = (dinossr: DinoServer) => {
   return (entry: string, options?: bumble.BumbleOptions) => {
     // Remove DOM render import statements from module scripts
     const islandDom: svelte.PreprocessorGroup = {
@@ -34,7 +35,7 @@ export const sveltePreprocess = (dir: string, deployHash: string) => {
           return {code};
         }
         // Remove all import/export statements
-        const script = new bumble.Script(code, entry, dir);
+        const script = new bumble.Script(code, entry, dinossr.dir);
         code = script.getCode({
           exports: true,
           filterExports: options.filterExports
@@ -45,7 +46,7 @@ export const sveltePreprocess = (dir: string, deployHash: string) => {
 
     // Island preprocessor
     const islandImport: svelte.PreprocessorGroup = {
-      markup: async (params) => {
+      markup: (params) => {
         let code = params.content;
         // Check for island import statement
         const match = islandMatch.exec(code);
@@ -65,8 +66,8 @@ export const sveltePreprocess = (dir: string, deployHash: string) => {
           return {code};
         }
         // Add island hash prop to component
-        const rel = path.relative(dir, params.filename!) + '-dom';
-        const hash = await encodeHash(rel + deployHash, 'SHA-1');
+        const rel = path.relative(dinossr.dir, params.filename!) + '-dom';
+        const hash = encodeHash(rel + dinossr.deployHash);
         code = params.content.replace(tag, `<$1 $2 _island="${hash}">`);
         islandMap.set(params.filename!, hash);
         // Look for module script

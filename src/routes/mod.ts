@@ -1,7 +1,8 @@
 import {path, existsSync} from '../deps.ts';
-import {addError, addNoMatch} from './errors.ts';
+import {DinoServer} from '../mod.ts';
 import {createHandle, importModule} from '../render.ts';
-import type {Bumbler, Router, Renderer} from '../types.ts';
+import {addError, addNoMatch} from './errors.ts';
+import type {DinoBumbler, DinoRoute} from '../types.ts';
 
 export {addProxyRoute} from './proxy.ts';
 export {addStaticRoutes} from './static.ts';
@@ -16,10 +17,10 @@ const traverse = async (dir: string, depth = 0): Promise<string[]> => {
   if (depth >= 10) {
     throw new Error('Exceeded maximum depth for route directory');
   }
-  let routes: string[] = [];
+  let paths: string[] = [];
   for await (const entry of Deno.readDir(dir)) {
     if (entry.isDirectory) {
-      routes = routes.concat(
+      paths = paths.concat(
         await traverse(path.join(dir, entry.name), depth + 1)
       );
       continue;
@@ -28,15 +29,18 @@ const traverse = async (dir: string, depth = 0): Promise<string[]> => {
       continue;
     }
     if (/\.(js|ts|svelte)$/.test(entry.name)) {
-      routes.push(path.join(dir, entry.name));
+      paths.push(path.join(dir, entry.name));
     }
   }
-  return routes;
+  return paths;
 };
 
-// Generate route renderer for directory
-const generate = async (dir: string, bumbler: Bumbler): Promise<Renderer[]> => {
-  const renderers: Renderer[] = [];
+// Generate routes for directory
+const generate = async (
+  dir: string,
+  bumbler: DinoBumbler
+): Promise<DinoRoute[]> => {
+  const routes: DinoRoute[] = [];
   for (const entry of await traverse(dir)) {
     let pattern = '/' + path.relative(dir, entry);
     // Replace non-capturing groups
@@ -58,26 +62,22 @@ const generate = async (dir: string, bumbler: Bumbler): Promise<Renderer[]> => {
       console.warn(`Invalid route: (${entry})`);
       continue;
     }
-    for (const renderer of mod) {
-      // Allow renderer to modify pattern
-      if (renderer.pattern) {
-        pattern = renderer.pattern;
+    for (const route of mod) {
+      // Allow route to modify pattern
+      if (route.pattern) {
+        pattern = route.pattern;
       }
-      renderers.push({
-        ...renderer,
+      routes.push({
+        ...route,
         pattern
       });
     }
   }
-  return renderers;
+  return routes;
 };
 
-export const addRoutes = async (
-  router: Router,
-  bumbler: Bumbler,
-  dir: string
-) => {
-  const routesDir = path.resolve(dir, './routes');
+export const addRoutes = async (dinossr: DinoServer) => {
+  const routesDir = path.resolve(dinossr.dir, './routes');
   if (!existsSync(routesDir)) {
     return;
   }
@@ -86,26 +86,26 @@ export const addRoutes = async (
   const redirects = new Set<string>();
 
   // Generate file-based routes
-  const routes = await generate(routesDir, bumbler);
+  const routes = await generate(routesDir, dinossr.bumbler);
   routes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  for (const renderer of routes) {
-    if (renderer.pattern === '/_500') {
-      addError(router, renderer);
+  for (const route of routes) {
+    if (route.pattern === '/_500') {
+      addError(dinossr, route);
       continue;
     }
-    if (renderer.pattern === '/_404') {
-      addNoMatch(router, renderer);
+    if (route.pattern === '/_404') {
+      addNoMatch(dinossr, route);
       continue;
     }
-    if (bumbler.dev) {
-      console.log(`🪄 ${renderer.method} → ${renderer.pattern}`);
+    if (dinossr.bumbler.dev) {
+      console.log(`🪄 ${route.method} → ${route.pattern}`);
     }
-    const key = renderer.method.toLowerCase() as Lowercase<Renderer['method']>;
-    router[key]({pathname: renderer.pattern}, await createHandle(renderer));
-    if (renderer.method === 'GET') {
+    const key = route.method.toLowerCase() as Lowercase<DinoRoute['method']>;
+    dinossr.router[key]({pathname: route.pattern}, await createHandle(route));
+    if (route.method === 'GET') {
       // TODO: better way to determine redirect routes
-      if (!/\.[\w]+$|\*/.test(renderer.pattern)) {
-        redirects.add(renderer.pattern);
+      if (!/\.[\w]+$|\*/.test(route.pattern)) {
+        redirects.add(route.pattern);
       }
     }
   }
@@ -120,15 +120,15 @@ export const addRoutes = async (
       alt += '/';
     }
     if (redirects.has(alt)) {
-      if (bumbler.dev) {
+      if (dinossr.bumbler.dev) {
         console.log(`⚠️ ${alt} + ${pattern}`);
       }
       return;
     }
-    if (bumbler.dev) {
+    if (dinossr.bumbler.dev) {
       console.log(`🪄 308 ${alt} → ${pattern}`);
     }
-    router.get(alt, (request) => {
+    dinossr.router.get(alt, (request) => {
       const url = new URL(request.url);
       if (url.pathname.at(-1) === '/') {
         url.pathname = url.pathname.slice(0, -1);

@@ -8,19 +8,17 @@
       code1: highlight(
         'javascript',
         `
-import {serve} from 'dinossr';
+import {DinoServer} from 'dinossr';
 
 const dir = new URL('./', import.meta.url).pathname;
-
-serve(dir);
+const dinossr = new DinoServer(dir);
+await dinossr.init();
 `
       ),
       code2: highlight(
         'javascript',
         `
-const {router, server} = await serve(dir);
-
-router.use((request, response) => {
+dinossr.router.use((request, response) => {
   if (response) {
     response.headers.set('x-powered-by', 'DinoSsr');
   }
@@ -58,13 +56,9 @@ router.use((request, response) => {
   <Code language="javascript" code={code1} />
   <p>This is started with: <code>deno run -A mod.ts</code>.</p>
   <p>
-    The <code>serve</code> function returns the internal instances of
+    The <code>DinoServer</code> class provides access an instance of
     <a href="https://github.com/dbushell/velocirouter" target="_blank"
       >VelociRouter</a
-    >
-    and
-    <a href="https://deno.land/api?s=Deno.HttpServer" target="_blank"
-      >Deno.HttpServer</a
     >.
   </p>
   <Code language="javascript" code={code2} />

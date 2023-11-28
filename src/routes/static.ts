@@ -1,5 +1,5 @@
 import {path, existsSync, serveFile} from '../deps.ts';
-import type {Router} from '../types.ts';
+import {DinoServer} from '../mod.ts';
 
 // Generate list of static files
 const traverse = async (dir: string, depth = 0): Promise<string[]> => {
@@ -27,14 +27,14 @@ const traverse = async (dir: string, depth = 0): Promise<string[]> => {
   return routes;
 };
 
-export const addStaticRoutes = async (router: Router, dir: string) => {
-  const staticDir = path.resolve(dir, './static');
+export const addStaticRoutes = async (dinossr: DinoServer) => {
+  const staticDir = path.resolve(dinossr.dir, './static');
   if (!existsSync(staticDir)) {
     return;
   }
   for (const entry of await traverse(staticDir)) {
     const pattern = '/' + path.relative(staticDir, entry);
-    router.get({pathname: pattern}, (request: Request) => {
+    dinossr.router.get({pathname: pattern}, (request: Request) => {
       return serveFile(request, entry);
     });
   }
