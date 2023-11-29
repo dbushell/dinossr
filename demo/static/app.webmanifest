@@ -3,13 +3,13 @@
   "short_name": "DinoSsr",
   "icons": [
     {
-      "src": "/512x512.png",
-      "sizes": "512x512",
+      "src": "/180x180.png",
+      "sizes": "180x180",
       "type": "image/png"
     },
     {
-      "src": "/apple-touch-icon.png",
-      "sizes": "180x180",
+      "src": "/512x512.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ],
