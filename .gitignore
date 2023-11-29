@@ -6,8 +6,8 @@
 !mod.ts
 !src
 src/*
-!src/routes
-src/routes/*
+!src/middleware
+src/middleware/*
 !src/svelte
 src/svelte/*
 !src/**/*.ts

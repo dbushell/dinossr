@@ -1,9 +1,9 @@
 import {DinoServer} from '../mod.ts';
-import {requestMap} from './mod.ts';
+import {requestMap} from './shared.ts';
 
-export const addProxyRoute = (dinossr: DinoServer) => {
+export default (dinossr: DinoServer) => {
   dinossr.router.use((request, response, {stopPropagation}) => {
-    if (requestMap.get(request)?.ignore) return;
+    if (requestMap.get(request)?.ignore) return response;
     if (request.headers.get('upgrade') === 'websocket') {
       requestMap.set(request, {ignore: true});
       return response;

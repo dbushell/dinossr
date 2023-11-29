@@ -1,7 +1,8 @@
 import {path, bumble} from './deps.ts';
 import {encodeHash, encodeCryptoBase64} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
-import type {DinoBumbler, DinoHandle, DinoRoute, DinoRender} from './types.ts';
+import {DinoServer} from '../mod.ts';
+import type {DinoHandle, DinoRoute, DinoRender} from './types.ts';
 
 const islandHashes = new Set<string>();
 
@@ -35,21 +36,22 @@ export const createHandle = async (route: DinoRoute): Promise<DinoHandle> => {
   };
 };
 
+// TODO: move this to Bumble / avoid duplicate implementation?
+const modHash = (entry: string, suffix: string, dinossr: DinoServer) => {
+  const rel = path.relative(dinossr.dir, entry) + '-' + suffix;
+  return encodeHash(rel + dinossr.deployHash);
+};
+
 export const importModule = async (
   entry: string,
-  dir: string,
   pattern: string,
-  bumbler: DinoBumbler
+  dinossr: DinoServer
 ): Promise<DinoRoute[]> => {
-  const {metafile, mod} = await bumbler.bumbleSSR(entry, {
+  const {metafile, mod} = await dinossr.bumbler.bumbleSSR(entry, {
     filterExports: ['default', 'pattern', 'order', 'get', 'post', 'load']
   });
 
-  // TODO: fix?
-  dir = dir.replace(/\/routes$/, '');
-
-  const rel = path.relative(dir, entry) + '-ssr';
-  const modhash = encodeHash(rel + bumbler.deployHash);
+  const modhash = modHash(entry, 'ssr', dinossr);
 
   // Append pattern to file path
   if (mod.pattern) {
@@ -90,27 +92,26 @@ export const importModule = async (
           (i) => i.original === '@dinossr/island'
         );
         if (!found) continue;
-        islandEntries.push(path.join(dir, key));
+        islandEntries.push(path.join(dinossr.dir, key));
       }
     }
 
     for (const entry of islandEntries) {
-      const rel = path.relative(dir, entry) + '-dom';
-      const hash = encodeHash(rel + bumbler.deployHash);
-      const href = `/_/immutable/${hash}.js`;
-      islandMeta.push({hash, href});
-      if (islandHashes.has(hash)) {
+      const domhash = modHash(entry, 'dom', dinossr);
+      const href = `/_/immutable/${domhash}.js`;
+      islandMeta.push({href, hash: domhash});
+      if (islandHashes.has(domhash)) {
         continue;
       }
-      islandHashes.add(hash);
+      islandHashes.add(domhash);
       // Add a route for the island script
-      const code = await bumbler.bumbleDOM(entry, {
+      const code = await dinossr.bumbler.bumbleDOM(entry, {
         filterExports: ['default']
       });
       routes.push({
         method: 'GET',
         pattern: href,
-        modhash: hash,
+        modhash: domhash,
         render: () => {
           return {
             response: new Response(code, {

@@ -28,6 +28,7 @@ export const getManifest = (): DinoManifest => {
 };
 
 export const setManifest = (manifest: DinoManifest) => {
+  // Render function is automatically ommitted by serialization
   fs.ensureFileSync(manifestPath);
   Deno.writeTextFileSync(manifestPath, JSON.stringify(manifest, null, 2));
 };

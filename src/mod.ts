@@ -1,5 +1,5 @@
 import {path, deepMerge, bumble, velocirouter} from './deps.ts';
-import * as routes from './routes/mod.ts';
+import * as middleware from './middleware/mod.ts';
 import {esbuildResolve, sveltePreprocess} from './svelte/mod.ts';
 import {readTemplate} from './template.ts';
 import {getManifest, setManifest} from './utils.ts';
@@ -97,17 +97,12 @@ export class DinoServer {
       esbuildResolve
     });
 
-    await this.bumbler.start();
+    await Promise.all([this.bumbler.start(), readTemplate(this.dir)]);
 
-    await readTemplate(this.dir);
-
-    const manifest = await this.#addRoutes();
+    await this.#setup();
 
     if (this.options.bumbler?.build) {
-      if (!manifest) {
-        throw new Error('Failed to generate manifest');
-      }
-      setManifest(manifest);
+      setManifest(this.manifest);
       this.bumbler.stop();
       Deno.exit(0);
     }
@@ -126,26 +121,28 @@ export class DinoServer {
     }
   }
 
-  async #addRoutes() {
+  async #setup() {
     const start = performance.now();
-    // New manifest for build (optional)
-    let manifest: DinoManifest | undefined;
-    const mods = [
-      routes.addProxyRoute,
-      routes.addStaticRoutes,
+    let manifest: DinoManifest;
+    const builtin = [
+      middleware.proxy,
+      middleware.static,
       async () => {
-        manifest = await routes.addRoutes(this);
+        manifest = await middleware.manifest(this);
+        if (this.manifest !== manifest) {
+          this.#manifest = manifest;
+        }
       },
-      routes.addCacheRoute,
-      routes.addPolicyRoute
+      middleware.redirect,
+      middleware.cache,
+      middleware.policy
     ];
-    for (const callback of mods) {
+    for (const callback of builtin) {
       await Promise.resolve(callback(this));
     }
     if (this.bumbler.dev) {
       const time = (performance.now() - start).toFixed(2);
       console.log(`🚀 Routes ${time}ms`);
     }
-    return manifest;
   }
 }

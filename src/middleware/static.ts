@@ -3,7 +3,6 @@ import {DinoServer} from '../mod.ts';
 
 // Generate list of static files
 const traverse = async (dir: string, depth = 0): Promise<string[]> => {
-  // TODO: provide option to override?
   if (depth >= 10) {
     throw new Error('Exceeded maximum depth for static directory');
   }
@@ -27,7 +26,7 @@ const traverse = async (dir: string, depth = 0): Promise<string[]> => {
   return routes;
 };
 
-export const addStaticRoutes = async (dinossr: DinoServer) => {
+export default async (dinossr: DinoServer) => {
   const staticDir = path.resolve(dinossr.dir, './static');
   if (!existsSync(staticDir)) {
     return;

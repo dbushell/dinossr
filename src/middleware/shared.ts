@@ -2,12 +2,30 @@ import {DinoServer} from '../mod.ts';
 import {createHandle} from '../render.ts';
 import type {DinoRoute} from '../types.ts';
 
+export const requestMap = new WeakMap<Request, {ignore?: boolean}>();
+
 // Only return body content for GET requests
 const sendBody = (request: Request) =>
   request.method === 'GET' &&
   request.headers.get('accept')?.includes('text/html');
 
-export const addError = async (dinossr: DinoServer, route: DinoRoute) => {
+export const addRoute = async (route: DinoRoute, dinossr: DinoServer) => {
+  if (route.pattern === '/_500') {
+    addError(route, dinossr);
+    return;
+  }
+  if (route.pattern === '/_404') {
+    addNoMatch(route, dinossr);
+    return;
+  }
+  if (dinossr.bumbler.dev) {
+    console.log(`🪄 ${route.method} → ${route.pattern}`);
+  }
+  const key = route.method.toLowerCase() as Lowercase<DinoRoute['method']>;
+  dinossr.router[key]({pathname: route.pattern}, await createHandle(route));
+};
+
+export const addError = async (route: DinoRoute, dinossr: DinoServer) => {
   const handle = await createHandle(route);
   dinossr.router.onError = async (error, request, platform) => {
     console.error(error);
@@ -25,7 +43,7 @@ export const addError = async (dinossr: DinoServer, route: DinoRoute) => {
   };
 };
 
-export const addNoMatch = async (dinossr: DinoServer, route: DinoRoute) => {
+export const addNoMatch = async (route: DinoRoute, dinossr: DinoServer) => {
   const handle = await createHandle(route);
   dinossr.router.onNoMatch = async (request, platform) => {
     if (!sendBody(request)) {

@@ -1,5 +1,5 @@
 import {DinoServer} from '../mod.ts';
-import {requestMap} from './mod.ts';
+import {requestMap} from './shared.ts';
 
 const defaultPolicies = {
   'child-src': ["'self'"],
@@ -36,9 +36,9 @@ const getPolicies = (response: Response) => {
   return csp;
 };
 
-export const addPolicyRoute = (dinossr: DinoServer) => {
+export default (dinossr: DinoServer) => {
   dinossr.router.use((request, response) => {
-    if (requestMap.get(request)?.ignore) return;
+    if (requestMap.get(request)?.ignore) return response;
     if (!response) return;
     const csp = getPolicies(response);
     // Remove redundant policies
