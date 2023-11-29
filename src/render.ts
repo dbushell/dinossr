@@ -146,12 +146,6 @@ dinossr-island {
 }
 `;
         const script = `
-const context = new Map();
-context.set('url', new URL('${url.pathname}', window.location.href));
-context.set('pattern', '${pattern}');
-context.set('params', ${JSON.stringify(params)});
-context.set('data', ${JSON.stringify(data)});
-context.set('browser', true);
 const islands = new WeakSet();
 const islandIds = new Set();
 class DinossrIsland extends HTMLElement {
@@ -159,6 +153,12 @@ class DinossrIsland extends HTMLElement {
     super();
   }
   async connectedCallback() {
+    const context = new Map();
+    context.set('url', new URL('${url.pathname}', window.location.href));
+    context.set('pattern', '${pattern}');
+    context.set('params', ${JSON.stringify(params)});
+    context.set('data', ${JSON.stringify(data)});
+    context.set('browser', true);
     const uuid = this.dataset.uuid;
     if (islands.has(this) || islandIds.has(uuid)) return;
     islands.add(this);
