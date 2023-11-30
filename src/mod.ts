@@ -97,7 +97,7 @@ export class DinoServer {
       esbuildResolve
     });
 
-    await Promise.all([this.bumbler.start(), readTemplate(this.dir)]);
+    await readTemplate(this.dir);
 
     await this.#setup();
 

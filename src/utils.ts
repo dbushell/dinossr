@@ -1,4 +1,4 @@
-import {fs, path, base64, MurmurHash3} from './deps.ts';
+import {path, base64, MurmurHash3, existsSync, ensureFileSync} from './deps.ts';
 import type {DinoManifest} from './types.ts';
 
 export const encodeHash = (value: string) =>
@@ -16,7 +16,7 @@ const manifestPath = path.join(Deno.cwd(), '.bumble/manifest.json');
 
 export const getManifest = (): DinoManifest => {
   // Generate new manifest if new build or not found
-  if (Deno.env.get('DINOSSR_BUILD') || !fs.existsSync(manifestPath)) {
+  if (Deno.env.get('DINOSSR_BUILD') || !existsSync(manifestPath)) {
     const deployHash = encodeHash(
       Deno.env.get('DINOSSR_DEPLOY_ID') ??
         Deno.env.get('DENO_DEPLOYMENT_ID') ??
@@ -29,6 +29,6 @@ export const getManifest = (): DinoManifest => {
 
 export const setManifest = (manifest: DinoManifest) => {
   // Render function is automatically ommitted by serialization
-  fs.ensureFileSync(manifestPath);
+  ensureFileSync(manifestPath);
   Deno.writeTextFileSync(manifestPath, JSON.stringify(manifest, null, 2));
 };
