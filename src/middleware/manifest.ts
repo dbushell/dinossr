@@ -3,14 +3,8 @@ import {DinoServer} from '../mod.ts';
 import {importModule} from '../render.ts';
 import {addRoute} from './shared.ts';
 import {modHash} from '../utils.ts';
-import type {
-  DinoRoute,
-  DinoBundle,
-  DinoManifest,
-  DinoManifestModule
-} from '../types.ts';
+import type {DinoRoute, DinoBundle, DinoManifest} from '../types.ts';
 
-// @ts-ignore TODO: types
 import {modules, islands} from '../build.ts';
 
 // Recursively find routes within directory
@@ -39,7 +33,7 @@ const traverse = async (dir: string, depth = 0): Promise<string[]> => {
 // Generate routes for directory
 const generate = async function* (
   dinossr: DinoServer
-): AsyncGenerator<DinoManifestModule> {
+): AsyncGenerator<DinoManifest['modules'][number]> {
   const dir = path.join(dinossr.dir, './routes');
   if (!existsSync(dir)) {
     throw new Error(`No routes directory`);
@@ -104,7 +98,6 @@ const generateManifest = async (dinossr: DinoServer) => {
 
 const importManifest = async (dinossr: DinoServer) => {
   const routes: DinoRoute[] = [];
-  // console.log(modules, islands);
   for (const mod of islands) {
     routes.push({
       method: 'GET',

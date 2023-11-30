@@ -2,11 +2,13 @@ import {path, existsSync, ensureFileSync} from './deps.ts';
 import {encodeHash} from './utils.ts';
 import type {DinoManifest} from './types.ts';
 
-const manifestPath = path.join(Deno.cwd(), '.bumble/manifest.json');
+export const buildDir = path.join(Deno.cwd(), '.bumble');
+export const manifestJSON = path.join(buildDir, 'manifest.json');
+export const manifestImport = path.join(buildDir, 'manifest.js');
 
 export const getManifest = (deployHash?: string): DinoManifest => {
   // Generate new manifest if new build or not found
-  if (Deno.env.get('DINOSSR_BUILD') || !existsSync(manifestPath)) {
+  if (Deno.env.get('DINOSSR_BUILD') || !existsSync(manifestJSON)) {
     deployHash = encodeHash(
       deployHash ??
         Deno.env.get('DINOSSR_DEPLOY_ID') ??
@@ -15,15 +17,14 @@ export const getManifest = (deployHash?: string): DinoManifest => {
     );
     return {deployHash, modules: [], islands: []};
   }
-  return JSON.parse(Deno.readTextFileSync(manifestPath));
+  return JSON.parse(Deno.readTextFileSync(manifestJSON));
 };
 
 export const setManifest = (manifest: DinoManifest) => {
   // Write manifest
-  ensureFileSync(manifestPath);
-  Deno.writeTextFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+  ensureFileSync(manifestJSON);
+  Deno.writeTextFileSync(manifestJSON, JSON.stringify(manifest, null, 2));
   // Write importable manifest module
-  const manifestModule = manifestPath.replace('.json', '.js');
   const code: string[] = [
     `const dir = new URL(import.meta.resolve('./')).pathname;`,
     `const modules = [];`,
@@ -34,7 +35,9 @@ export const setManifest = (manifest: DinoManifest) => {
     code.push(`import * as mod_${mod.hash} from './${mod.hash}.js';`);
     code.push(`modules.push({`);
     code.push(`mod: mod_${mod.hash},`);
-    code.push(`metafile: JSON.parse(Deno.readTextFileSync(\`\${dir}${mod.hash}.json\`)),`);
+    code.push(
+      `metafile: JSON.parse(Deno.readTextFileSync(\`\${dir}${mod.hash}.json\`)),`
+    );
     code.push(`manifest: ${JSON.stringify(mod)},`);
     code.push(`});`);
   });
@@ -45,5 +48,5 @@ export const setManifest = (manifest: DinoManifest) => {
     code.push(`});`);
   });
   code.push(`export {modules, islands};`);
-  Deno.writeTextFileSync(manifestModule, code.join('\n'));
+  Deno.writeTextFileSync(manifestImport, code.join('\n'));
 };

@@ -55,21 +55,29 @@ export interface DinoRoute {
   order?: number;
 }
 
-export interface DinoManifestModule {
-  entry: string;
-  hash: string;
-  pattern: string;
-  routes: DinoRoute[];
-}
-
-export interface DinoManifestIsland {
-  hash: string;
-  pattern: string;
-  code: string;
-}
-
 export interface DinoManifest {
   deployHash: string;
-  modules: Array<DinoManifestModule>;
-  islands: Array<DinoManifestIsland>;
+  modules: Array<{
+    entry: string;
+    hash: string;
+    pattern: string;
+    routes: DinoRoute[];
+  }>;
+  islands: Array<{
+    hash: string;
+    pattern: string;
+    code: string;
+  }>;
+}
+
+export interface DinoBuild {
+  modules: Array<
+    DinoBundle & {
+      manifest: DinoManifest['modules'][number];
+    }
+  >;
+  islands: Array<{
+    code: string;
+    manifest: DinoManifest['islands'][number];
+  }>;
 }
