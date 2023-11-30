@@ -15,7 +15,7 @@ let modules: DinoBuild['modules'] = [];
 let islands: DinoBuild['islands'] = [];
 
 if (existsSync(manifestImport)) {
-  ({modules, islands} = await import(manifestImport));
+  ({modules, islands} = await import(`file://${manifestImport}`));
 }
 
 export {modules, islands};
