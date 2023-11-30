@@ -2,7 +2,16 @@ import {path, existsSync} from '../deps.ts';
 import {DinoServer} from '../mod.ts';
 import {importModule} from '../render.ts';
 import {addRoute} from './shared.ts';
-import type {Deferred, DinoRoute, DinoManifest} from '../types.ts';
+import {modHash} from '../utils.ts';
+import type {
+  DinoRoute,
+  DinoBundle,
+  DinoManifest,
+  DinoManifestModule
+} from '../types.ts';
+
+// @ts-ignore TODO: types
+import {modules, islands} from '../build.ts';
 
 // Recursively find routes within directory
 const traverse = async (dir: string, depth = 0): Promise<string[]> => {
@@ -29,9 +38,12 @@ const traverse = async (dir: string, depth = 0): Promise<string[]> => {
 
 // Generate routes for directory
 const generate = async function* (
-  dir: string,
   dinossr: DinoServer
-): AsyncGenerator<DinoRoute[]> {
+): AsyncGenerator<DinoManifestModule> {
+  const dir = path.join(dinossr.dir, './routes');
+  if (!existsSync(dir)) {
+    throw new Error(`No routes directory`);
+  }
   for (const entry of await traverse(dir)) {
     let pattern = '/' + path.relative(dir, entry);
     // Replace non-capturing groups
@@ -48,61 +60,84 @@ const generate = async function* (
       pattern += path.basename(entry, path.extname(entry));
     }
     // Import module
-    const mod: DinoRoute[] = await importModule(entry, pattern, dinossr);
-    if (!mod.length) {
+    const routes: DinoRoute[] = await importModule(
+      entry,
+      pattern,
+      null,
+      true,
+      dinossr
+    );
+    if (!routes.length) {
       console.warn(`Invalid route: (${entry})`);
       continue;
     }
-    yield mod;
+    const hash = modHash(entry, 'ssr', dinossr);
+    yield {entry, hash, pattern, routes};
   }
 };
 
-export default async (dinossr: DinoServer) => {
-  const routesDir = path.resolve(dinossr.dir, './routes');
-  if (!existsSync(routesDir)) {
-    throw new Error(`No routes directory`);
-  }
-
-  // Create deferred render functions for prebuilt routes
-  if (dinossr.manifest.routes.length) {
-    const start = performance.now();
-    const deferredMap = new Map<string, Deferred<DinoRoute>>();
-    for (let route of dinossr.manifest.routes) {
-      const deferred = Promise.withResolvers<DinoRoute>();
-      deferredMap.set(route.pattern, deferred);
-      deferred.promise.then(() => deferredMap.delete(route.pattern));
-      route = {
-        ...route,
-        render: async (...args) => {
-          return (await deferred.promise).render(...args);
-        }
-      };
-      await addRoute(route, dinossr);
-    }
-    // Resolve deferred routes after module import
-    (async () => {
-      for await (const routes of generate(routesDir, dinossr)) {
-        for (const route of routes) {
-          const deferred = deferredMap.get(route.pattern);
-          if (deferred) deferred.resolve(route);
-        }
-      }
-      const time = (performance.now() - start).toFixed(2);
-      console.log(`🚀 Deferred routes ${time}ms`);
-    })();
-    return dinossr.manifest;
-  }
-
+const generateManifest = async (dinossr: DinoServer) => {
   // Create new routes and new manifest
   const routes: DinoRoute[] = [];
-  for await (const route of generate(routesDir, dinossr)) {
-    routes.push(...route);
+  const manifest: DinoManifest = {
+    deployHash: dinossr.deployHash,
+    modules: [],
+    islands: []
+  };
+  for await (const mod of generate(dinossr)) {
+    manifest.modules.push(mod);
+    for (const route of mod.routes) {
+      if (/^\/_\/immutable\/[^\\]+\.js/.test(route.pattern)) {
+        manifest.islands.push({
+          hash: route.modhash,
+          pattern: route.pattern,
+          code: ''
+        });
+      }
+      routes.push(route);
+    }
   }
   routes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   routes.map((route) => addRoute(route, dinossr));
-  const manifest: DinoManifest = {
-    deployHash: dinossr.deployHash,
-    routes
-  };
   return manifest;
+};
+
+const importManifest = async (dinossr: DinoServer) => {
+  const routes: DinoRoute[] = [];
+  // console.log(modules, islands);
+  for (const mod of islands) {
+    routes.push({
+      method: 'GET',
+      pattern: mod.manifest.pattern,
+      modhash: mod.manifest.hash,
+      render: () => {
+        return {
+          response: new Response(mod.code, {
+            headers: {'content-type': 'text/javascript; charset=utf-8'}
+          })
+        };
+      }
+    });
+  }
+  for (const mod of modules) {
+    routes.push(
+      ...(await importModule(
+        mod.manifest.entry,
+        mod.manifest.pattern,
+        mod as DinoBundle,
+        false,
+        dinossr
+      ))
+    );
+  }
+  routes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  routes.map((route) => addRoute(route, dinossr));
+  return dinossr.manifest;
+};
+
+export default (dinossr: DinoServer): Promise<DinoManifest> => {
+  if (dinossr.manifest.modules.length) {
+    return importManifest(dinossr);
+  }
+  return generateManifest(dinossr);
 };

@@ -2,7 +2,7 @@ import {path, deepMerge, bumble, velocirouter} from './deps.ts';
 import * as middleware from './middleware/mod.ts';
 import {esbuildResolve, sveltePreprocess} from './svelte/mod.ts';
 import {readTemplate} from './template.ts';
-import {getManifest, setManifest} from './utils.ts';
+import {getManifest, setManifest} from './manifest.ts';
 import type {
   DinoOptions,
   DinoRouter,
@@ -18,10 +18,12 @@ export class DinoServer {
   #bumbler!: DinoBumbler;
   #router!: DinoRouter;
   #server!: Deno.HttpServer;
+  islandHashes = new Set<string>();
 
   constructor(dir?: string, options: DinoOptions = {}) {
     dir ??= Deno.cwd();
     this.#dir = path.resolve(dir, './');
+    // TODO: tidy up deployHash config
     this.#manifest = getManifest(options.bumbler?.deployHash);
     const defaultOptions: DinoOptions = {
       origin: Deno.env.has('ORIGIN')
@@ -34,6 +36,7 @@ export class DinoServer {
       }
     };
     this.#options = deepMerge<DinoOptions>(defaultOptions, options ?? {});
+    this.#options.bumbler!.deployHash = this.manifest.deployHash;
   }
 
   get initialized() {

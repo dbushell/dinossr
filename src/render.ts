@@ -1,10 +1,8 @@
 import {path, bumble} from './deps.ts';
-import {encodeHash, encodeCryptoBase64} from './utils.ts';
+import {modHash, encodeCryptoBase64} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
 import {DinoServer} from '../mod.ts';
-import type {DinoHandle, DinoRoute, DinoRender} from './types.ts';
-
-const islandHashes = new Set<string>();
+import type {DinoHandle, DinoBundle, DinoRoute, DinoRender} from './types.ts';
 
 // Return a route handle that renders with `app.html`
 export const createHandle = async (route: DinoRoute): Promise<DinoHandle> => {
@@ -36,25 +34,33 @@ export const createHandle = async (route: DinoRoute): Promise<DinoHandle> => {
   };
 };
 
-// TODO: move this to Bumble / avoid duplicate implementation?
-const modHash = (entry: string, suffix: string, dinossr: DinoServer) => {
-  const rel = path.relative(dinossr.dir, entry) + '-' + suffix;
-  return encodeHash(rel + dinossr.deployHash);
+export const importBundle = (
+  entry: string,
+  dinossr: DinoServer
+): Promise<DinoBundle> => {
+  return dinossr.bumbler.bumbleSSR(entry, {
+    filterExports: ['default', 'pattern', 'order', 'get', 'post', 'load']
+  });
 };
 
+// TODO: clean up parameters
 export const importModule = async (
   entry: string,
   pattern: string,
+  bundle: DinoBundle | null,
+  islands: boolean,
   dinossr: DinoServer
 ): Promise<DinoRoute[]> => {
-  const {metafile, mod} = await dinossr.bumbler.bumbleSSR(entry, {
-    filterExports: ['default', 'pattern', 'order', 'get', 'post', 'load']
-  });
+  if (bundle === null) {
+    bundle = await importBundle(entry, dinossr);
+  }
+
+  const {mod, metafile} = bundle;
 
   const modhash = modHash(entry, 'ssr', dinossr);
 
   // Append pattern to file path
-  if (mod.pattern) {
+  if (mod?.pattern) {
     if (/^\.\w+$/.test(mod.pattern)) {
       pattern += mod.pattern;
     } else {
@@ -100,10 +106,13 @@ export const importModule = async (
       const domhash = modHash(entry, 'dom', dinossr);
       const href = `/_/immutable/${domhash}.js`;
       islandMeta.push({href, hash: domhash});
-      if (islandHashes.has(domhash)) {
+      if (dinossr.islandHashes.has(domhash)) {
         continue;
       }
-      islandHashes.add(domhash);
+      dinossr.islandHashes.add(domhash);
+
+      if (!islands) break;
+
       // Add a route for the island script
       const code = await dinossr.bumbler.bumbleDOM(entry, {
         filterExports: ['default']

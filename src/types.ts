@@ -10,6 +10,11 @@ export type DinoRouter = velocirouter.Router<DinoPlatform>;
 
 export type DinoBumbler = bumble.Bumbler<DinoModule>;
 
+export interface DinoBundle {
+  mod: bumble.BumbleModule<DinoModule>;
+  metafile: bumble.esbuildType.Metafile;
+}
+
 export interface DinoOptions {
   [key: PropertyKey]: unknown;
   origin?: URL;
@@ -50,7 +55,21 @@ export interface DinoRoute {
   order?: number;
 }
 
+export interface DinoManifestModule {
+  entry: string;
+  hash: string;
+  pattern: string;
+  routes: DinoRoute[];
+}
+
+export interface DinoManifestIsland {
+  hash: string;
+  pattern: string;
+  code: string;
+}
+
 export interface DinoManifest {
   deployHash: string;
-  routes: Array<DinoRoute>;
+  modules: Array<DinoManifestModule>;
+  islands: Array<DinoManifestIsland>;
 }

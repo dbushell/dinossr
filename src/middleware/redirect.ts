@@ -6,12 +6,14 @@ const ignore = new Set(['/', '/_404', '/_500']);
 export default (dinossr: DinoServer) => {
   // Possible routes for auto redirects
   const redirects = new Set<string>();
-  for (const route of dinossr.manifest.routes) {
-    if (route.method !== 'GET') continue;
-    if (ignore.has(route.pattern)) continue;
-    // TODO: better way to determine redirect routes
-    if (!/\.[\w]+$|\*/.test(route.pattern)) {
-      redirects.add(route.pattern);
+  for (const mod of dinossr.manifest.modules) {
+    for (const route of mod.routes) {
+      if (route.method !== 'GET') continue;
+      if (ignore.has(route.pattern)) continue;
+      // TODO: better way to determine redirect routes
+      if (!/\.[\w]+$|\*/.test(route.pattern)) {
+        redirects.add(route.pattern);
+      }
     }
   }
   for (const pattern of redirects) {
