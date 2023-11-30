@@ -1,4 +1,4 @@
-import {path, bumble, svelte} from '../deps.ts';
+import {path, bumble} from '../deps.ts';
 import {DinoServer} from '../mod.ts';
 import {encodeHash} from '../utils.ts';
 
@@ -22,7 +22,7 @@ export const esbuildResolve: bumble.BumbleOptions['esbuildResolve'] = (
 export const sveltePreprocess = (dinossr: DinoServer) => {
   return (entry: string, options?: bumble.BumbleOptions) => {
     // Remove DOM render import statements from module scripts
-    const islandDom: svelte.PreprocessorGroup = {
+    const islandDom: bumble.BumbleOptions['sveltePreprocess'] = {
       script: (params) => {
         let code = params.content;
         if (options?.svelteCompile?.generate !== 'dom') {
@@ -45,7 +45,7 @@ export const sveltePreprocess = (dinossr: DinoServer) => {
     };
 
     // Island preprocessor
-    const islandImport: svelte.PreprocessorGroup = {
+    const islandImport: bumble.BumbleOptions['sveltePreprocess'] = {
       markup: (params) => {
         let code = params.content;
         // Check for island import statement
@@ -87,7 +87,7 @@ export const sveltePreprocess = (dinossr: DinoServer) => {
       }
     };
 
-    const islandId: svelte.PreprocessorGroup = {
+    const islandId: bumble.BumbleOptions['sveltePreprocess'] = {
       script: (params) => {
         let code = params.content;
         // Append island hash export to module script
