@@ -22,7 +22,7 @@ export class DinoServer {
   constructor(dir?: string, options: DinoOptions = {}) {
     dir ??= Deno.cwd();
     this.#dir = path.resolve(dir, './');
-    this.#manifest = getManifest();
+    this.#manifest = getManifest(options.bumbler?.deployHash);
     const defaultOptions: DinoOptions = {
       origin: Deno.env.has('ORIGIN')
         ? new URL(Deno.env.get('ORIGIN')!)
