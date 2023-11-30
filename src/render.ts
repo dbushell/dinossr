@@ -111,7 +111,7 @@ export const importModule = async (
       }
       dinossr.islandHashes.add(domhash);
 
-      if (!islands) break;
+      if (!islands) continue;
 
       // Add a route for the island script
       const code = await dinossr.bumbler.bumbleDOM(entry, {
