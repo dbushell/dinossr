@@ -5,6 +5,8 @@ import {esbuildResolve, sveltePreprocess} from './svelte/mod.ts';
 import {DinoServer} from '../mod.ts';
 import type {DinoHandle, DinoBundle, DinoRoute, DinoRender} from './types.ts';
 
+const islandHashes: WeakMap<DinoServer, Set<string>> = new WeakMap();
+
 // Return a route handle that renders with `app.html`
 export const createHandle = async (route: DinoRoute): Promise<DinoHandle> => {
   const template = await readTemplate();
@@ -101,10 +103,13 @@ export const importModule = async (
       const domhash = modHash(entry, 'dom', dinossr);
       const href = `/_/immutable/${domhash}.js`;
       islandMeta.push({href, hash: domhash});
-      if (dinossr.islandHashes.has(domhash)) {
-        continue;
-      }
-      dinossr.islandHashes.add(domhash);
+
+      // Track found islands and skip already bundled
+      const hashes =
+        islandHashes.get(dinossr) ??
+        islandHashes.set(dinossr, new Set()).get(dinossr)!;
+      if (hashes.has(domhash)) continue;
+      hashes.add(domhash);
 
       if (!islands) continue;
 

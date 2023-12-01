@@ -17,7 +17,6 @@ export class DinoServer {
   #bumbler!: DinoBumbler;
   #router!: DinoRouter;
   #server!: Deno.HttpServer;
-  islandHashes = new Set<string>();
 
   constructor(dir?: string, options: DinoOptions = {}) {
     // Ensure absolute path
