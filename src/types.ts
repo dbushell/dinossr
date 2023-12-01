@@ -1,7 +1,5 @@
 import {bumble, velocirouter} from './deps.ts';
 
-export type Deferred<T> = ReturnType<typeof Promise.withResolvers<T>>;
-
 export type DinoPlatform = {info: Deno.ServeHandlerInfo; deployHash: string};
 
 export type DinoOptions = {
