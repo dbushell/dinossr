@@ -2,28 +2,34 @@ import {path, existsSync, ensureFileSync} from './deps.ts';
 import {encodeHash} from './utils.ts';
 import type {DinoManifest} from './types.ts';
 
-export const buildDir = path.join(Deno.cwd(), '.bumble');
-export const manifestJSON = path.join(buildDir, 'manifest.json');
-export const manifestImport = path.join(buildDir, 'manifest.js');
+export const manifestDir = path.join(Deno.cwd(), '.dinossr');
+export const manifestMeta = path.join(manifestDir, 'manifest.json');
+export const manifestImport = path.join(manifestDir, 'manifest.js');
 
 export const getManifest = (deployHash?: string): DinoManifest => {
   // Generate new manifest if new build or not found
-  if (Deno.env.get('DINOSSR_BUILD') || !existsSync(manifestJSON)) {
+  if (Deno.env.get('DINOSSR_BUILD') || !existsSync(manifestMeta)) {
     deployHash = encodeHash(
+      // Use specified option
       deployHash ??
+        // Use build environment variable
         Deno.env.get('DINOSSR_DEPLOY_ID') ??
+        // Use Deno Deploy environment variable
         Deno.env.get('DENO_DEPLOYMENT_ID') ??
+        // Use unique per startup
         Date.now().toString()
     );
+    // Return empty manifest
     return {deployHash, modules: [], islands: []};
   }
-  return JSON.parse(Deno.readTextFileSync(manifestJSON));
+  // Return existing manifest
+  return JSON.parse(Deno.readTextFileSync(manifestMeta));
 };
 
 export const setManifest = (manifest: DinoManifest) => {
   // Write manifest
-  ensureFileSync(manifestJSON);
-  Deno.writeTextFileSync(manifestJSON, JSON.stringify(manifest, null, 2));
+  ensureFileSync(manifestMeta);
+  Deno.writeTextFileSync(manifestMeta, JSON.stringify(manifest, null, 2));
   // Write importable manifest module
   const code: string[] = [
     `const dir = new URL(import.meta.resolve('./')).pathname;`,

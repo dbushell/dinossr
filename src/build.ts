@@ -3,7 +3,7 @@
 // Only when building for Deno Deploy
 if (Deno.env.get('DINOSSR_BUILD') === 'DENO_DEPLOY') {
   const path = new URL(import.meta.url).pathname;
-  const script = `export * from '/src/.bumble/manifest.js';`;
+  const script = `export * from '/src/.dinossr/manifest.js';`;
   Deno.writeTextFileSync(path, script);
 }
 

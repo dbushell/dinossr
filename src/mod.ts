@@ -1,8 +1,7 @@
 import {path, deepMerge, bumble, velocirouter} from './deps.ts';
 import * as middleware from './middleware/mod.ts';
-import {esbuildResolve, sveltePreprocess} from './svelte/mod.ts';
 import {readTemplate} from './template.ts';
-import {getManifest, setManifest} from './manifest.ts';
+import {manifestDir, getManifest, setManifest} from './manifest.ts';
 import type {
   DinoOptions,
   DinoRouter,
@@ -21,22 +20,22 @@ export class DinoServer {
   islandHashes = new Set<string>();
 
   constructor(dir?: string, options: DinoOptions = {}) {
+    // Ensure absolute path
     dir ??= Deno.cwd();
     this.#dir = path.resolve(dir, './');
-    // TODO: tidy up deployHash config
-    this.#manifest = getManifest(options.bumbler?.deployHash);
+    // Get new or prebuilt manifest
+    this.#manifest = getManifest(options.deployHash);
+    // Setup options
     const defaultOptions: DinoOptions = {
       origin: Deno.env.has('ORIGIN')
         ? new URL(Deno.env.get('ORIGIN')!)
         : undefined,
       bumbler: {
         build: Deno.env.has('DINOSSR_BUILD'),
-        dynamicImports: Deno.env.has('DENO_REGION') === false,
-        deployHash: this.manifest.deployHash
+        buildDir: manifestDir
       }
     };
     this.#options = deepMerge<DinoOptions>(defaultOptions, options ?? {});
-    this.#options.bumbler!.deployHash = this.manifest.deployHash;
   }
 
   get initialized() {
@@ -95,9 +94,7 @@ export class DinoServer {
 
     // Setup bundler
     this.#bumbler = new bumble.Bumbler(this.dir, {
-      ...this.options.bumbler,
-      sveltePreprocess: sveltePreprocess(this),
-      esbuildResolve
+      ...this.options.bumbler
     });
 
     await readTemplate(this.dir);

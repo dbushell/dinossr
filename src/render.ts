@@ -1,6 +1,7 @@
 import {path, bumble} from './deps.ts';
 import {modHash, encodeCryptoBase64} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
+import {esbuildResolve, sveltePreprocess} from './svelte/mod.ts';
 import {DinoServer} from '../mod.ts';
 import type {DinoHandle, DinoBundle, DinoRoute, DinoRender} from './types.ts';
 
@@ -34,15 +35,6 @@ export const createHandle = async (route: DinoRoute): Promise<DinoHandle> => {
   };
 };
 
-export const importBundle = (
-  entry: string,
-  dinossr: DinoServer
-): Promise<DinoBundle> => {
-  return dinossr.bumbler.bumbleSSR(entry, {
-    filterExports: ['default', 'pattern', 'order', 'get', 'post', 'load']
-  });
-};
-
 // TODO: clean up parameters
 export const importModule = async (
   entry: string,
@@ -51,13 +43,16 @@ export const importModule = async (
   islands: boolean,
   dinossr: DinoServer
 ): Promise<DinoRoute[]> => {
+  const modhash = modHash(entry, 'ssr', dinossr);
   if (bundle === null) {
-    bundle = await importBundle(entry, dinossr);
+    bundle = await dinossr.bumbler.bumbleSSR(entry, modhash, {
+      esbuildResolve,
+      sveltePreprocess: sveltePreprocess(dinossr),
+      filterExports: ['default', 'pattern', 'order', 'get', 'post', 'load']
+    });
   }
 
   const {mod, metafile} = bundle;
-
-  const modhash = modHash(entry, 'ssr', dinossr);
 
   // Append pattern to file path
   if (mod?.pattern) {
@@ -114,7 +109,9 @@ export const importModule = async (
       if (!islands) continue;
 
       // Add a route for the island script
-      const code = await dinossr.bumbler.bumbleDOM(entry, {
+      const code = await dinossr.bumbler.bumbleDOM(entry, domhash, {
+        esbuildResolve,
+        sveltePreprocess: sveltePreprocess(dinossr),
         filterExports: ['default']
       });
       routes.push({

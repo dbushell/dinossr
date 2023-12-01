@@ -15,16 +15,13 @@ export interface DinoBundle {
   metafile: bumble.esbuildType.Metafile;
 }
 
-export interface DinoOptions {
-  [key: PropertyKey]: unknown;
+export type DinoOptions = {
   origin?: URL;
+  deployHash?: string;
   serve?: Deno.ServeOptions;
   router?: velocirouter.RouterOptions<DinoPlatform>;
-  bumbler?: Pick<
-    bumble.BumbleOptions,
-    'dev' | 'build' | 'deployHash' | 'dynamicImports'
-  >;
-}
+  bumbler?: bumble.BumbleOptions;
+};
 
 export interface DinoModule {
   pattern?: string;
