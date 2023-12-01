@@ -3,7 +3,8 @@ import {DinoServer} from '../mod.ts';
 import {importModule} from '../render.ts';
 import {addRoute} from './shared.ts';
 import {modHash} from '../utils.ts';
-import type {DinoRoute, DinoBundle, DinoManifest} from '../types.ts';
+import {esbuildResolve, sveltePreprocess} from '../svelte/mod.ts';
+import type {DinoRoute, DinoSSRBundle, DinoManifest} from '../types.ts';
 
 import {modules, islands} from '../build.ts';
 
@@ -54,18 +55,20 @@ const generate = async function* (
       pattern += path.basename(entry, path.extname(entry));
     }
     // Import module
-    const routes: DinoRoute[] = await importModule(
-      entry,
+    const hash = modHash(entry, 'ssr', dinossr);
+    const bundle: DinoSSRBundle = {
       pattern,
-      null,
-      true,
-      dinossr
-    );
+      ...(await dinossr.bumbler.bumbleSSR(entry, hash, {
+        esbuildResolve,
+        sveltePreprocess: sveltePreprocess(dinossr),
+        filterExports: ['default', 'pattern', 'order', 'get', 'post', 'load']
+      }))
+    };
+    const routes: DinoRoute[] = await importModule(bundle, true, dinossr);
     if (!routes.length) {
       console.warn(`Invalid route: (${entry})`);
       continue;
     }
-    const hash = modHash(entry, 'ssr', dinossr);
     yield {entry, hash, pattern, routes};
   }
 };
@@ -80,12 +83,12 @@ const generateManifest = async (dinossr: DinoServer) => {
   };
   for await (const mod of generate(dinossr)) {
     manifest.modules.push(mod);
-    for (const route of mod.routes) {
+    for (const route of mod.routes ?? []) {
       if (/^\/_\/immutable\/[^\\]+\.js/.test(route.pattern)) {
         manifest.islands.push({
-          hash: route.modhash,
+          entry: mod.entry,
           pattern: route.pattern,
-          code: ''
+          hash: route.hash
         });
       }
       routes.push(route);
@@ -101,8 +104,8 @@ const importManifest = async (dinossr: DinoServer) => {
   for (const mod of islands) {
     routes.push({
       method: 'GET',
-      pattern: mod.manifest.pattern,
-      modhash: mod.manifest.hash,
+      pattern: mod.pattern,
+      hash: mod.hash,
       render: () => {
         return {
           response: new Response(mod.code, {
@@ -113,15 +116,7 @@ const importManifest = async (dinossr: DinoServer) => {
     });
   }
   for (const mod of modules) {
-    routes.push(
-      ...(await importModule(
-        mod.manifest.entry,
-        mod.manifest.pattern,
-        mod as DinoBundle,
-        false,
-        dinossr
-      ))
-    );
+    routes.push(...(await importModule(mod as DinoSSRBundle, false, dinossr)));
   }
   routes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   routes.map((route) => addRoute(route, dinossr));

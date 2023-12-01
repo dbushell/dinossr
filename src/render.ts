@@ -3,7 +3,12 @@ import {modHash, encodeCryptoBase64} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
 import {esbuildResolve, sveltePreprocess} from './svelte/mod.ts';
 import {DinoServer} from '../mod.ts';
-import type {DinoHandle, DinoBundle, DinoRoute, DinoRender} from './types.ts';
+import type {
+  DinoHandle,
+  DinoSSRBundle,
+  DinoRoute,
+  DinoRender
+} from './types.ts';
 
 const islandHashes: WeakMap<DinoServer, Set<string>> = new WeakMap();
 
@@ -39,25 +44,15 @@ export const createHandle = async (route: DinoRoute): Promise<DinoHandle> => {
 
 // TODO: clean up parameters
 export const importModule = async (
-  entry: string,
-  pattern: string,
-  bundle: DinoBundle | null,
+  bundle: DinoSSRBundle,
   islands: boolean,
   dinossr: DinoServer
 ): Promise<DinoRoute[]> => {
-  const modhash = modHash(entry, 'ssr', dinossr);
-  if (bundle === null) {
-    bundle = await dinossr.bumbler.bumbleSSR(entry, modhash, {
-      esbuildResolve,
-      sveltePreprocess: sveltePreprocess(dinossr),
-      filterExports: ['default', 'pattern', 'order', 'get', 'post', 'load']
-    });
-  }
-
-  const {mod, metafile} = bundle;
+  const {hash, mod, metafile} = bundle;
+  let {pattern} = bundle;
 
   // Append pattern to file path
-  if (mod?.pattern) {
+  if (mod.pattern) {
     if (/^\.\w+$/.test(mod.pattern)) {
       pattern += mod.pattern;
     } else {
@@ -71,7 +66,7 @@ export const importModule = async (
     const route: DinoRoute = {
       method,
       pattern,
-      modhash,
+      hash,
       render: (...args) => ({
         response: handle(...args)
       })
@@ -114,7 +109,7 @@ export const importModule = async (
       if (!islands) continue;
 
       // Add a route for the island script
-      const code = await dinossr.bumbler.bumbleDOM(entry, domhash, {
+      const {code} = await dinossr.bumbler.bumbleDOM(entry, domhash, {
         esbuildResolve,
         sveltePreprocess: sveltePreprocess(dinossr),
         filterExports: ['default']
@@ -122,7 +117,7 @@ export const importModule = async (
       routes.push({
         method: 'GET',
         pattern: href,
-        modhash: domhash,
+        hash: domhash,
         render: () => {
           return {
             response: new Response(code, {
@@ -214,7 +209,7 @@ customElements.define('dinossr-island', DinossrIsland);
     routes.push({
       method: 'GET',
       pattern,
-      modhash,
+      hash,
       render
     });
 

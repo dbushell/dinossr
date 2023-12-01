@@ -4,17 +4,6 @@ export type Deferred<T> = ReturnType<typeof Promise.withResolvers<T>>;
 
 export type DinoPlatform = {info: Deno.ServeHandlerInfo; deployHash: string};
 
-export type DinoHandle = velocirouter.Handle<DinoPlatform>;
-
-export type DinoRouter = velocirouter.Router<DinoPlatform>;
-
-export type DinoBumbler = bumble.Bumbler<DinoModule>;
-
-export interface DinoBundle {
-  mod: bumble.BumbleModule<DinoModule>;
-  metafile: bumble.esbuildType.Metafile;
-}
-
 export type DinoOptions = {
   origin?: URL;
   deployHash?: string;
@@ -23,7 +12,21 @@ export type DinoOptions = {
   bumbler?: bumble.BumbleOptions;
 };
 
-export interface DinoModule {
+export type DinoHandle = velocirouter.Handle<DinoPlatform>;
+
+export type DinoRouter = velocirouter.Router<DinoPlatform>;
+
+export type DinoBumbler = bumble.Bumbler<DinoModule>;
+
+export type DinoDOMBundle = bumble.BumbleDOMBundle & {
+  pattern: string;
+};
+
+export type DinoSSRBundle = bumble.BumbleSSRBundle<DinoModule> & {
+  pattern: string;
+};
+
+export type DinoModule = {
   pattern?: string;
   order?: number;
   get?: DinoHandle;
@@ -32,7 +35,7 @@ export interface DinoModule {
     request: Request,
     {params}: {params?: Record<string, string | undefined>}
   ) => Promise<Record<string, unknown>>;
-}
+};
 
 export interface DinoResponse {
   response: ReturnType<DinoHandle>;
@@ -47,7 +50,7 @@ export interface DinoRender {
 export interface DinoRoute {
   method: velocirouter.Method;
   pattern: string;
-  modhash: string;
+  hash: string;
   render: DinoRender;
   order?: number;
 }
@@ -58,23 +61,16 @@ export interface DinoManifest {
     entry: string;
     hash: string;
     pattern: string;
-    routes: DinoRoute[];
+    routes?: DinoRoute[];
   }>;
   islands: Array<{
+    entry: string;
     hash: string;
     pattern: string;
-    code: string;
   }>;
 }
 
 export interface DinoBuild {
-  modules: Array<
-    DinoBundle & {
-      manifest: DinoManifest['modules'][number];
-    }
-  >;
-  islands: Array<{
-    code: string;
-    manifest: DinoManifest['islands'][number];
-  }>;
+  modules: Array<DinoSSRBundle>;
+  islands: Array<DinoDOMBundle>;
 }

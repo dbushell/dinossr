@@ -40,17 +40,25 @@ export const setManifest = (manifest: DinoManifest) => {
   manifest.modules.forEach((mod) => {
     code.push(`import * as mod_${mod.hash} from './${mod.hash}.js';`);
     code.push(`modules.push({`);
+    code.push(`entry: "${mod.entry}",`);
+    code.push(`hash: "${mod.hash}",`);
+    code.push(`pattern: "${mod.pattern}",`);
     code.push(`mod: mod_${mod.hash},`);
     code.push(
       `metafile: JSON.parse(Deno.readTextFileSync(\`\${dir}${mod.hash}.json\`)),`
     );
-    code.push(`manifest: ${JSON.stringify(mod)},`);
+    // code.push(`manifest: ${JSON.stringify(mod)},`);
     code.push(`});`);
   });
   manifest.islands.forEach((island) => {
     code.push(`islands.push({`);
+    code.push(`entry: "${island.entry}",`);
+    code.push(`hash: "${island.hash}",`);
+    code.push(`pattern: "${island.pattern}",`);
     code.push(`code: Deno.readTextFileSync(\`\${dir}${island.hash}.js\`),`);
-    code.push(`manifest: ${JSON.stringify(island)},`);
+    code.push(
+      `metafile: JSON.parse(Deno.readTextFileSync(\`\${dir}${island.hash}.json\`)),`
+    );
     code.push(`});`);
   });
   code.push(`export {modules, islands};`);
