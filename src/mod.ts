@@ -117,6 +117,7 @@ export class DinoServer {
     if (this.bumbler.dev) {
       const time = (performance.now() - start).toFixed(2);
       console.log(`🚀 Server ${time}ms (${this.deployHash})`);
+      if (this.origin) console.log(this.origin.href);
     }
   }
 
