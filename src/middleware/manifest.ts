@@ -5,6 +5,7 @@ import {addRoute} from './shared.ts';
 import {modHash} from '../utils.ts';
 import {esbuildResolve, sveltePreprocess} from '../svelte/mod.ts';
 import type {
+  Deferred,
   DinoRoute,
   DinoIsland,
   DinoSSRBundle,
@@ -132,10 +133,48 @@ const importManifest = (dinossr: DinoServer) => {
       }
     });
   }
-  for (const mod of MODULES) {
-    const {routes: modRoutes} = importModule(mod as DinoSSRBundle, dinossr);
-    routes.push(...modRoutes);
+  // for (const mod of MODULES) {
+  //   const {routes: modRoutes} = importModule(mod as DinoSSRBundle, dinossr);
+  //   routes.push(...modRoutes);
+  // }
+  const deferMap = new Map<string, Array<[DinoRoute, Deferred<DinoRoute>]>>();
+  for (const mod of dinossr.manifest.modules) {
+    const defers: Array<[DinoRoute, Deferred<DinoRoute>]> = [];
+    deferMap.set(mod.hash, defers);
+    for (const route of mod.routes) {
+      const deferred = Promise.withResolvers<DinoRoute>();
+      defers.push([route, deferred]);
+      routes.push({
+        ...route,
+        render: async (...args) => {
+          return (await deferred.promise).render(...args);
+        }
+      });
+    }
   }
+  setTimeout(() => {
+    const start = performance.now();
+    for (const mod of MODULES) {
+      const {routes} = importModule(mod as DinoSSRBundle, dinossr);
+      const defers = deferMap.get(mod.hash);
+      if (!defers || defers.length !== routes.length) {
+        throw new Error('Module mismatch');
+      }
+      for (const route of routes) {
+        const [deferredRoute, deferred] = defers.shift()!;
+        if (
+          route.hash !== deferredRoute.hash ||
+          route.method !== deferredRoute.method ||
+          route.pattern !== deferredRoute.pattern
+        ) {
+          throw new Error('Route mismatch');
+        }
+        deferred.resolve(route);
+      }
+    }
+    const time = (performance.now() - start).toFixed(2);
+    console.log(`🚀 Deferred routes ${time}ms`);
+  }, 0);
   routes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   routes.map((route) => addRoute(route, dinossr));
   return dinossr.manifest;
