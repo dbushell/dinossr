@@ -1,16 +1,14 @@
 import {path, bumble} from './deps.ts';
 import {modHash, encodeCryptoBase64} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
-import {esbuildResolve, sveltePreprocess} from './svelte/mod.ts';
 import {DinoServer} from '../mod.ts';
 import type {
   DinoHandle,
-  DinoSSRBundle,
   DinoRoute,
-  DinoRender
+  DinoRender,
+  DinoIsland,
+  DinoSSRBundle
 } from './types.ts';
-
-const islandHashes: WeakMap<DinoServer, Set<string>> = new WeakMap();
 
 // Return a route handle that renders with `app.html`
 export const createHandle = async (route: DinoRoute): Promise<DinoHandle> => {
@@ -42,16 +40,16 @@ export const createHandle = async (route: DinoRoute): Promise<DinoHandle> => {
   };
 };
 
-// TODO: clean up parameters
-export const importModule = async (
+export const importModule = (
   bundle: DinoSSRBundle,
-  islands: boolean,
   dinossr: DinoServer
-): Promise<DinoRoute[]> => {
+): {routes: DinoRoute[]; islands: DinoIsland[]} => {
   const {hash, mod, metafile} = bundle;
-  let {pattern} = bundle;
+  const routes: DinoRoute[] = [];
+  const islands: DinoIsland[] = [];
 
   // Append pattern to file path
+  let {pattern} = bundle;
   if (mod.pattern) {
     if (/^\.\w+$/.test(mod.pattern)) {
       pattern += mod.pattern;
@@ -60,8 +58,7 @@ export const importModule = async (
     }
   }
 
-  const routes: DinoRoute[] = [];
-
+  // Helper function for non-Svelte components
   const add = (method: DinoRoute['method'], handle: DinoHandle) => {
     const route: DinoRoute = {
       method,
@@ -81,53 +78,24 @@ export const importModule = async (
   if (typeof (mod?.default as bumble.BumbleComponent)?.render === 'function') {
     const component = mod.default as bumble.BumbleComponent;
 
-    const islandMeta: Array<{hash: string; href: string}> = [];
-    const islandEntries: string[] = [];
-
+    // Find island dependencies
     if (metafile) {
       for (const [key, input] of Object.entries(metafile.inputs)) {
         const found = input.imports.find(
           (i) => i.original === '@dinossr/island'
         );
         if (!found) continue;
-        islandEntries.push(path.join(dinossr.dir, key));
+        const entry = path.join(dinossr.dir, key);
+        const hash = modHash(entry, 'dom', dinossr);
+        islands.push({
+          entry,
+          hash,
+          pattern: `/_/immutable/${hash}.js`
+        });
       }
     }
 
-    for (const entry of islandEntries) {
-      const domhash = modHash(entry, 'dom', dinossr);
-      const href = `/_/immutable/${domhash}.js`;
-      islandMeta.push({href, hash: domhash});
-
-      // Track found islands and skip already bundled
-      const hashes =
-        islandHashes.get(dinossr) ??
-        islandHashes.set(dinossr, new Set()).get(dinossr)!;
-      if (hashes.has(domhash)) continue;
-      hashes.add(domhash);
-
-      if (!islands) continue;
-
-      // Add a route for the island script
-      const {code} = await dinossr.bumbler.bumbleDOM(entry, domhash, {
-        esbuildResolve,
-        sveltePreprocess: sveltePreprocess(dinossr),
-        filterExports: ['default']
-      });
-      routes.push({
-        method: 'GET',
-        pattern: href,
-        hash: domhash,
-        render: () => {
-          return {
-            response: new Response(code, {
-              headers: {'content-type': 'text/javascript; charset=utf-8'}
-            })
-          };
-        }
-      });
-    }
-
+    // Create render callback
     const render: DinoRender = async (request, _response, {match}) => {
       // Setup context and props
       const url = new URL(request.url);
@@ -145,7 +113,7 @@ dinossr-root {
   display: contents;
 }
 `;
-      if (islandMeta.length) {
+      if (islands.length) {
         style += `
 dinossr-island {
   display: contents;
@@ -188,21 +156,23 @@ customElements.define('dinossr-island', DinossrIsland);
         const scriptHash = await encodeCryptoBase64(script, 'SHA-256');
         headers.append('x-script-src', `'sha256-${scriptHash}'`);
         render.head += `\n`;
-        islandMeta.forEach(({href}) => {
-          render.head += `<link rel="modulepreload" href="${href}">\n`;
+        islands.forEach(({pattern}) => {
+          render.head += `<link rel="modulepreload" href="${pattern}">\n`;
         });
         render.html += `\n<script defer type="module" data-hash="${scriptHash}">${script}</script>\n`;
       }
+
+      style = style.replaceAll(/\s+/g, ' ').trim();
       const styleHash = await encodeCryptoBase64(style, 'SHA-256');
       headers.append('x-style-src', `'sha256-${styleHash}'`);
       render.head += `<style data-hash="${styleHash}">${style}</style>\n`;
-      const response = new Response(render.html, {
-        headers
-      });
+
       return {
-        response,
         head: render.head,
-        css: render.css?.code
+        css: render.css?.code,
+        response: new Response(render.html, {
+          headers
+        })
       };
     };
 
@@ -234,5 +204,5 @@ customElements.define('dinossr-island', DinossrIsland);
     add('POST', mod.post as DinoHandle);
   }
 
-  return routes;
+  return {routes, islands};
 };

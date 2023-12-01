@@ -33,13 +33,13 @@ export const setManifest = (manifest: DinoManifest) => {
   // Write importable manifest module
   const code: string[] = [
     `const dir = new URL(import.meta.resolve('./')).pathname;`,
-    `const modules = [];`,
-    `const islands = [];`
+    `const MODULES = [];`,
+    `const ISLANDS = [];`
   ];
   code.push();
   manifest.modules.forEach((mod) => {
     code.push(`import * as mod_${mod.hash} from './${mod.hash}.js';`);
-    code.push(`modules.push({`);
+    code.push(`MODULES.push({`);
     code.push(`entry: "${mod.entry}",`);
     code.push(`hash: "${mod.hash}",`);
     code.push(`pattern: "${mod.pattern}",`);
@@ -47,20 +47,19 @@ export const setManifest = (manifest: DinoManifest) => {
     code.push(
       `metafile: JSON.parse(Deno.readTextFileSync(\`\${dir}${mod.hash}.json\`)),`
     );
-    // code.push(`manifest: ${JSON.stringify(mod)},`);
     code.push(`});`);
   });
-  manifest.islands.forEach((island) => {
-    code.push(`islands.push({`);
-    code.push(`entry: "${island.entry}",`);
-    code.push(`hash: "${island.hash}",`);
-    code.push(`pattern: "${island.pattern}",`);
-    code.push(`code: Deno.readTextFileSync(\`\${dir}${island.hash}.js\`),`);
+  manifest.islands.forEach((dom) => {
+    code.push(`ISLANDS.push({`);
+    code.push(`entry: "${dom.entry}",`);
+    code.push(`hash: "${dom.hash}",`);
+    code.push(`pattern: "${dom.pattern}",`);
+    code.push(`code: Deno.readTextFileSync(\`\${dir}${dom.hash}.js\`),`);
     code.push(
-      `metafile: JSON.parse(Deno.readTextFileSync(\`\${dir}${island.hash}.json\`)),`
+      `metafile: JSON.parse(Deno.readTextFileSync(\`\${dir}${dom.hash}.json\`)),`
     );
     code.push(`});`);
   });
-  code.push(`export {modules, islands};`);
+  code.push(`export {MODULES, ISLANDS};`);
   Deno.writeTextFileSync(manifestImport, code.join('\n'));
 };

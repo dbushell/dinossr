@@ -4,9 +4,13 @@ import {importModule} from '../render.ts';
 import {addRoute} from './shared.ts';
 import {modHash} from '../utils.ts';
 import {esbuildResolve, sveltePreprocess} from '../svelte/mod.ts';
-import type {DinoRoute, DinoSSRBundle, DinoManifest} from '../types.ts';
-
-import {modules, islands} from '../build.ts';
+import type {
+  DinoRoute,
+  DinoIsland,
+  DinoSSRBundle,
+  DinoManifest
+} from '../types.ts';
+import {MODULES, ISLANDS} from '../build.ts';
 
 // Recursively find routes within directory
 const traverse = async (dir: string, depth = 0): Promise<string[]> => {
@@ -64,12 +68,12 @@ const generate = async function* (
         filterExports: ['default', 'pattern', 'order', 'get', 'post', 'load']
       }))
     };
-    const routes: DinoRoute[] = await importModule(bundle, true, dinossr);
+    const {routes, islands} = importModule(bundle, dinossr);
     if (!routes.length) {
       console.warn(`Invalid route: (${entry})`);
       continue;
     }
-    yield {entry, hash, pattern, routes};
+    yield {entry, hash, pattern, routes, islands};
   }
 };
 
@@ -81,42 +85,56 @@ const generateManifest = async (dinossr: DinoServer) => {
     modules: [],
     islands: []
   };
+  const islands: Map<string, DinoIsland> = new Map();
   for await (const mod of generate(dinossr)) {
     manifest.modules.push(mod);
-    for (const route of mod.routes ?? []) {
-      if (/^\/_\/immutable\/[^\\]+\.js/.test(route.pattern)) {
-        manifest.islands.push({
-          entry: mod.entry,
-          pattern: route.pattern,
-          hash: route.hash
-        });
-      }
-      routes.push(route);
-    }
+    routes.push(...mod.routes);
+    mod.islands?.map((meta) => islands.set(meta.hash, meta));
   }
   routes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  routes.map((route) => addRoute(route, dinossr));
-  return manifest;
-};
-
-const importManifest = async (dinossr: DinoServer) => {
-  const routes: DinoRoute[] = [];
-  for (const mod of islands) {
-    routes.push({
+  for (const dom of [...islands.values()]) {
+    manifest.islands.unshift(dom);
+    const {code} = await dinossr.bumbler.bumbleDOM(dom.entry, dom.hash, {
+      esbuildResolve,
+      sveltePreprocess: sveltePreprocess(dinossr),
+      filterExports: ['default']
+    });
+    routes.unshift({
       method: 'GET',
-      pattern: mod.pattern,
-      hash: mod.hash,
+      pattern: dom.pattern,
+      hash: dom.hash,
       render: () => {
         return {
-          response: new Response(mod.code, {
+          response: new Response(code, {
             headers: {'content-type': 'text/javascript; charset=utf-8'}
           })
         };
       }
     });
   }
-  for (const mod of modules) {
-    routes.push(...(await importModule(mod as DinoSSRBundle, false, dinossr)));
+  routes.map((route) => addRoute(route, dinossr));
+  return manifest;
+};
+
+const importManifest = (dinossr: DinoServer) => {
+  const routes: DinoRoute[] = [];
+  for (const dom of ISLANDS) {
+    routes.push({
+      method: 'GET',
+      pattern: dom.pattern,
+      hash: dom.hash,
+      render: () => {
+        return {
+          response: new Response(dom.code, {
+            headers: {'content-type': 'text/javascript; charset=utf-8'}
+          })
+        };
+      }
+    });
+  }
+  for (const mod of MODULES) {
+    const {routes: modRoutes} = importModule(mod as DinoSSRBundle, dinossr);
+    routes.push(...modRoutes);
   }
   routes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   routes.map((route) => addRoute(route, dinossr));
@@ -125,7 +143,7 @@ const importManifest = async (dinossr: DinoServer) => {
 
 export default (dinossr: DinoServer): Promise<DinoManifest> => {
   if (dinossr.manifest.modules.length) {
-    return importManifest(dinossr);
+    return Promise.resolve(importManifest(dinossr));
   }
   return generateManifest(dinossr);
 };

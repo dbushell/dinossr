@@ -11,11 +11,11 @@ import {existsSync} from './deps.ts';
 import {manifestImport} from './manifest.ts';
 import type {DinoBuild} from './types.ts';
 
-let modules: DinoBuild['modules'] = [];
-let islands: DinoBuild['islands'] = [];
+let MODULES: DinoBuild['modules'] = [];
+let ISLANDS: DinoBuild['islands'] = [];
 
 if (existsSync(manifestImport)) {
-  ({modules, islands} = await import(`file://${manifestImport}`));
+  ({MODULES, ISLANDS} = await import(`file://${manifestImport}`));
 }
 
-export {modules, islands};
+export {MODULES, ISLANDS};
