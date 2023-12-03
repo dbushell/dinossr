@@ -1,6 +1,6 @@
 # 🦕 DinoSsr
 
-[dinossr.dbushell.app](https://dinossr.dbushell.app)
+[dinossr.deno.dev](https://dinossr.deno.dev)
 
 A minimal web framework powered by:
 

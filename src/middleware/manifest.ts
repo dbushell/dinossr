@@ -92,7 +92,7 @@ const generateManifest = async (dinossr: DinoServer) => {
     mod.islands?.map((meta) => islands.set(meta.hash, meta));
   }
   routes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  for (const dom of [...islands.values()]) {
+  for (const dom of islands.values()) {
     manifest.islands.unshift(dom);
     const {code} = await dinossr.bumbler.bumbleDOM(dom.entry, dom.hash, {
       esbuildResolve,
