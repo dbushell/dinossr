@@ -29,5 +29,5 @@ jobs:
       - name: Deploy
         uses: denoland/deployctl@v1
         with:
-          project: dinossr
+          project: dinossr-demo
           entrypoint: demo/mod.ts
