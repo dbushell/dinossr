@@ -62,4 +62,5 @@ export const setManifest = (manifest: DinoManifest) => {
   });
   code.push(`export {MODULES, ISLANDS};`);
   Deno.writeTextFileSync(manifestImport, code.join('\n'));
+  console.log(`Write manifest: ${manifestImport}`);
 };

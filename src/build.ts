@@ -6,9 +6,8 @@ let MODULES: DinoBuild['modules'] = [];
 let ISLANDS: DinoBuild['islands'] = [];
 
 // Check Deno Deploy build location
-const buildpath = 'file:///src/.dinossr/manifest.js';
-if (existsSync(buildpath)) {
-  ({MODULES, ISLANDS} = await import(buildpath));
+if (existsSync('/src/.dinossr/manifest.js')) {
+  ({MODULES, ISLANDS} = await import('file:///src/.dinossr/manifest.js'));
 } else if (!Deno.env.has('DENO_REGION')) {
   if (existsSync(manifestImport)) {
     ({MODULES, ISLANDS} = await import(`file://${manifestImport}`));
