@@ -96,11 +96,12 @@ export const importModule = (
     }
 
     // Create render callback
-    const render: DinoRender = async (request, _response, {match}) => {
+    const render: DinoRender = async (request, _response, props) => {
       // Setup context and props
       const url = new URL(request.url);
-      const params = match?.pathname?.groups;
-      const data = mod.load ? await mod.load(request, {params}) : {};
+      const params = props.match?.pathname?.groups;
+      const loadProps = {params, ...props.platform};
+      const data = mod.load ? await mod.load(request, loadProps) : {};
       const context = new Map<string, unknown>();
       context.set('url', url);
       context.set('pattern', pattern);

@@ -2,6 +2,7 @@ import {path, deepMerge, bumble, velocirouter} from './deps.ts';
 import * as middleware from './middleware/mod.ts';
 import {readTemplate} from './template.ts';
 import {manifestDir, getManifest, setManifest} from './manifest.ts';
+import Cookies from './cookies.ts';
 import type {
   DinoOptions,
   DinoRouter,
@@ -107,8 +108,20 @@ export class DinoServer {
     }
 
     // Setup server
-    this.#server = Deno.serve(this.options.serve ?? {}, (request, info) =>
-      this.router.handle(request, {info, deployHash: this.deployHash})
+    this.#server = Deno.serve(
+      this.options.serve ?? {},
+      async (request, info) => {
+        const cookies = new Cookies(request.headers.get('cookie') ?? '');
+        const response = await this.router.handle(request, {
+          info,
+          cookies,
+          deployHash: this.deployHash
+        });
+        for (const [key, value] of cookies.headers()) {
+          response.headers.append(key, value);
+        }
+        return response;
+      }
     );
     this.server.finished.then(() => {
       this.bumbler.stop();

@@ -1,6 +1,24 @@
 import {bumble, velocirouter} from './deps.ts';
 
-export type DinoPlatform = {info: Deno.ServeHandlerInfo; deployHash: string};
+export interface CookieOptions {
+  domain?: string;
+  expires?: Date | number;
+  httpOnly?: boolean;
+  maxAge?: number;
+  partitioned?: boolean;
+  path?: string;
+  priority?: 'low' | 'medium' | 'high';
+  sameSite?: true | 'lax' | 'strict' | 'none';
+  secure?: boolean;
+}
+
+export type CookieMap = Map<string, CookieOptions & {value: string}>;
+
+export type DinoPlatform = {
+  info: Deno.ServeHandlerInfo;
+  cookies: CookieMap;
+  deployHash: string;
+};
 
 export type DinoOptions = {
   origin?: URL;
@@ -31,7 +49,9 @@ export type DinoModule = {
   post?: DinoHandle;
   load?: (
     request: Request,
-    {params}: {params?: Record<string, string | undefined>}
+    props: Partial<DinoPlatform> & {
+      params?: Record<string, string | undefined>;
+    }
   ) => Promise<Record<string, unknown>>;
 };
 
