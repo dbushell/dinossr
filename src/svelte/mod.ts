@@ -1,4 +1,4 @@
-import {bumble} from '../deps.ts';
+import {path, bumble} from '../deps.ts';
 import {DinoServer} from '../mod.ts';
 import {modHash} from '../utils.ts';
 
@@ -22,25 +22,26 @@ export const esbuildResolve: Resolver = (args) => {
 
 export const sveltePreprocess = (dinossr: DinoServer) => {
   return (entry: string, options: bumble.BumbleBundleOptions) => {
-    // Remove DOM render import statements from module scripts
     const islandDom: Preprocessor = {
       script: (params) => {
-        let code = params.content;
-        if (options.svelteCompile?.generate !== 'dom') {
+        const code = params.content;
+        // Ignore server-side render and non-module scripts
+        if (
+          options.svelteCompile?.generate !== 'dom' ||
+          params.attributes.context !== 'module'
+        ) {
           return {code};
         }
-        if (params.attributes.context !== 'module') {
-          return {code};
-        }
+        // Ignore built-in components
         if (params.filename!.startsWith(url.pathname)) {
           return {code};
         }
-        // Remove all import/export statements
-        const script = new bumble.Script(code, entry, dinossr.dir);
-        code = script.getCode({
-          exports: true,
-          filterExports: options.filterExports
-        });
+        if (
+          params.filename === entry &&
+          entry.startsWith(path.join(dinossr.dir, './routes'))
+        ) {
+          throw new Error('Top-level routes cannot be islands');
+        }
         return {code};
       }
     };
