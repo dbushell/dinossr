@@ -1,22 +1,10 @@
-import {bumble, velocirouter} from './deps.ts';
+import {cookie, bumble, velocirouter} from './deps.ts';
 
-export interface CookieOptions {
-  domain?: string;
-  expires?: Date | number;
-  httpOnly?: boolean;
-  maxAge?: number;
-  partitioned?: boolean;
-  path?: string;
-  priority?: 'low' | 'medium' | 'high';
-  sameSite?: true | 'lax' | 'strict' | 'none';
-  secure?: boolean;
-}
-
-export type CookieMap = Map<string, CookieOptions & {value: string}>;
+export type DinoCookies = Map<string, cookie.Cookie>;
 
 export type DinoPlatform = {
   info: Deno.ServeHandlerInfo;
-  cookies: CookieMap;
+  cookies: DinoCookies;
   deployHash: string;
 };
 

@@ -120,15 +120,13 @@ export class DinoServer {
     this.#server = Deno.serve(
       this.options.serve ?? {},
       async (request, info) => {
-        const cookies = new Cookies(request.headers.get('cookie') ?? '');
+        const cookies = new Cookies(request.headers);
         const response = await this.router.handle(request, {
           info,
           cookies,
           deployHash: this.deployHash
         });
-        for (const [key, value] of cookies.headers()) {
-          response.headers.append(key, value);
-        }
+        cookies.headers(response);
         return response;
       }
     );
