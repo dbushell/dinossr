@@ -30,6 +30,10 @@ export class DinoServer {
       origin: Deno.env.has('ORIGIN')
         ? new URL(Deno.env.get('ORIGIN')!)
         : undefined,
+      unhandledRejection: (error: PromiseRejectionEvent) => {
+        error.preventDefault();
+        console.error(error.reason);
+      },
       bumbler: {
         build: Deno.env.has('DINOSSR_BUILD'),
         buildDir: manifestDir
@@ -107,6 +111,11 @@ export class DinoServer {
       Deno.exit(0);
     }
 
+    globalThis.addEventListener(
+      'unhandledrejection',
+      this.options.unhandledRejection!
+    );
+
     // Setup server
     this.#server = Deno.serve(
       this.options.serve ?? {},
@@ -123,8 +132,13 @@ export class DinoServer {
         return response;
       }
     );
+
     this.server.finished.then(() => {
       this.bumbler.stop();
+      globalThis.removeEventListener(
+        'unhandledrejection',
+        this.options.unhandledRejection!
+      );
     });
 
     if (this.bumbler.dev) {
