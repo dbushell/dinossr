@@ -1,6 +1,6 @@
 # 🦕 DinoSsr
 
-[dinossr.deno.dev](https://dinossr.deno.dev)
+[ssr.dinoear.com](https://ssr.dinoear.com)
 
 A minimal web framework powered by:
 
