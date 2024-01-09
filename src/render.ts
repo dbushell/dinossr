@@ -1,6 +1,7 @@
 import {path, bumble} from './deps.ts';
 import {modHash, encodeCryptoBase64} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
+import {serverFetch} from './fetch.ts';
 import {DinoServer} from '../mod.ts';
 import type {
   DinoHandle,
@@ -100,7 +101,11 @@ export const importModule = (
       // Setup context and props
       const url = new URL(request.url);
       const params = props.match?.pathname?.groups;
-      const loadProps = {params, ...props.platform};
+      const loadProps = {
+        ...props.platform,
+        fetch: serverFetch(request, dinossr.router, props.platform),
+        params
+      };
       const data = mod.load ? await mod.load(request, loadProps) : {};
       const context = new Map<string, unknown>();
       context.set('url', url);

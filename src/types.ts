@@ -39,6 +39,7 @@ export type DinoModule = {
   load?: (
     request: Request,
     props: Partial<DinoPlatform> & {
+      fetch: typeof fetch;
       params?: Record<string, string | undefined>;
     }
   ) => Promise<Record<string, unknown>>;
