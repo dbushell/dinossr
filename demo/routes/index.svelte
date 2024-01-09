@@ -16,3 +16,16 @@
     <li><a href="/cookies">Cookies</a></li>
   </ul>
 </Layout>
+
+<style>
+  p {
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin: 0 0 1rem 0;
+  }
+
+  li {
+    font-size: 1rem;
+    margin: 0 0 0.5rem 0;
+  }
+</style>

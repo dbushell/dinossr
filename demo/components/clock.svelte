@@ -43,3 +43,11 @@
 <Island props={$$props}>
   <time {title} {datetime}>{emoji} <code>{time}</code></time>
 </Island>
+
+<style>
+  time {
+    display: block;
+    font-size: 1.5rem;
+    margin: 2rem 0;
+  }
+</style>

@@ -15,3 +15,10 @@
     </small>
   </p>
 </footer>
+
+<style>
+  footer {
+    padding-inline: 1rem;
+    margin-block-end: 1rem;
+  }
+</style>

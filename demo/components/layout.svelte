@@ -27,3 +27,14 @@
   <slot />
 </Main>
 <Footer menu={footerItems} />
+
+<style>
+  :global(html) {
+    font-family: sans-serif;
+  }
+
+  :global(body) {
+    margin: 0;
+    padding: 0;
+  }
+</style>
