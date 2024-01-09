@@ -164,13 +164,15 @@ customElements.define('dinossr-island', DinossrIsland);
       }
 
       style = style.replaceAll(/\s+/g, ' ').trim();
+      if (render.css?.code) {
+        style += `\n${render.css.code}`;
+      }
       const styleHash = await encodeCryptoBase64(style, 'SHA-256');
       headers.append('x-style-src', `'sha256-${styleHash}'`);
       render.head += `<style data-hash="${styleHash}">${style}</style>\n`;
 
       return {
         head: render.head,
-        css: render.css?.code,
         response: new Response(render.html, {
           headers
         })

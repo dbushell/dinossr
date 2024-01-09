@@ -63,6 +63,9 @@ const generate = async function* (
     const bundle: DinoSSRBundle = {
       pattern,
       ...(await dinossr.bumbler.bumbleSSR(entry, hash, {
+        svelteCompile: {
+          css: 'external'
+        },
         esbuildResolve,
         sveltePreprocess: sveltePreprocess(dinossr),
         filterExports: ['default', 'pattern', 'order', 'get', 'post', 'load']
@@ -95,6 +98,9 @@ const generateManifest = async (dinossr: DinoServer) => {
   for (const dom of islands.values()) {
     manifest.islands.unshift(dom);
     const {code} = await dinossr.bumbler.bumbleDOM(dom.entry, dom.hash, {
+      svelteCompile: {
+        css: 'external'
+      },
       esbuildResolve,
       sveltePreprocess: sveltePreprocess(dinossr),
       filterExports: ['default']

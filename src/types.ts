@@ -47,7 +47,6 @@ export type DinoModule = {
 export interface DinoResponse {
   response: ReturnType<DinoHandle>;
   head?: string;
-  css?: string;
 }
 
 export interface DinoRender {
