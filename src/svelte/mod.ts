@@ -25,11 +25,8 @@ export const sveltePreprocess = (dinossr: DinoServer) => {
     const islandDom: Preprocessor = {
       script: (params) => {
         const code = params.content;
-        // Ignore server-side render and non-module scripts
-        if (
-          options.svelteCompile?.generate !== 'dom' ||
-          params.attributes.context !== 'module'
-        ) {
+        // Ignore server-side render
+        if (options.svelteCompile?.generate !== 'dom') {
           return {code};
         }
         // Ignore built-in components

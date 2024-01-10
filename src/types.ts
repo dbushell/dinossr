@@ -42,7 +42,7 @@ export type DinoModule = {
       fetch: typeof fetch;
       params?: Record<string, string | undefined>;
     }
-  ) => Promise<Record<string, unknown>>;
+  ) => Promise<Response | Record<string, unknown>>;
 };
 
 export interface DinoResponse {

@@ -100,13 +100,18 @@ export const importModule = (
     const render: DinoRender = async (request, _response, props) => {
       // Setup context and props
       const url = new URL(request.url);
-      const params = props.match?.pathname?.groups;
+      const params = props.match?.pathname?.groups ?? {};
       const loadProps = {
         ...props.platform,
         fetch: serverFetch(request, dinossr.router, props.platform),
         params
       };
       const data = mod.load ? await mod.load(request, loadProps) : {};
+      if (data instanceof Response) {
+        return {
+          response: data
+        };
+      }
       const context = new Map<string, unknown>();
       context.set('url', url);
       context.set('pattern', pattern);
