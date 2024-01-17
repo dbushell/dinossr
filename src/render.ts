@@ -23,7 +23,7 @@ export const createHandle = async (route: DinoRoute): Promise<DinoHandle> => {
     if (response?.headers.get('content-type')?.startsWith('text/html')) {
       return response;
     }
-    if (route.method === 'GET' && hasTemplate(response)) {
+    if (route.method === 'GET' && hasTemplate(args[0], response)) {
       response = response as Response;
       let body = await response.text();
       if (!template) {
