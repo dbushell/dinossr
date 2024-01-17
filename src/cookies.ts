@@ -29,8 +29,13 @@ export default class Cookies implements DinoCookies {
   }
 
   delete(name: string) {
-    this.#set.delete(name);
-    return this.#map.delete(name);
+    this.set(name, {
+      name,
+      value: '',
+      path: '/',
+      expires: new Date(0)
+    });
+    return true;
   }
 
   entries() {
