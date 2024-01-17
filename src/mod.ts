@@ -7,7 +7,8 @@ import type {
   DinoOptions,
   DinoRouter,
   DinoBumbler,
-  DinoManifest
+  DinoManifest,
+  DinoPlatform
 } from './types.ts';
 
 export class DinoServer {
@@ -121,11 +122,14 @@ export class DinoServer {
       this.options.serve ?? {},
       async (request, info) => {
         const cookies = new Cookies(request.headers);
-        const response = await this.router.handle(request, {
+        const platform: DinoPlatform = {
           info,
           cookies,
+          locals: {},
           deployHash: this.deployHash
-        });
+        };
+        Object.freeze(platform);
+        const response = await this.router.handle(request, platform);
         cookies.headers(response);
         return response;
       }

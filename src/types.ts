@@ -4,6 +4,7 @@ export type DinoCookies = Map<string, cookie.Cookie>;
 
 export type DinoPlatform = {
   info: Deno.ServeHandlerInfo;
+  locals: Record<string, unknown>;
   cookies: DinoCookies;
   deployHash: string;
 };

@@ -117,6 +117,7 @@ export const importModule = (
       context.set('pattern', pattern);
       context.set('params', params);
       context.set('data', data);
+      context.set('locals', props.platform.locals ?? {});
       const render = component.render({}, {context});
       const headers = new Headers();
       let style = `

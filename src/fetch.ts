@@ -3,7 +3,7 @@ import type {DinoRouter, DinoPlatform} from './types.ts';
 export const serverFetch = (
   request: Request,
   router: DinoRouter,
-  platform?: DinoPlatform
+  platform: DinoPlatform
 ) => {
   return (...args: Parameters<typeof fetch>): ReturnType<typeof fetch> => {
     // Prevent infinite redirects
