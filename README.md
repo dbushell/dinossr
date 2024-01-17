@@ -9,4 +9,4 @@ A minimal web framework powered by:
 
 * * *
 
-[MIT License](/LICENSE) | Copyright © 2023 [David Bushell](https://dbushell.com)
+[MIT License](/LICENSE) | Copyright © 2024 [David Bushell](https://dbushell.com)
