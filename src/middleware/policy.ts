@@ -37,7 +37,7 @@ const getPolicies = (response: Response) => {
 };
 
 export default (dinossr: DinoServer) => {
-  dinossr.router.use((request, response) => {
+  dinossr.router.all({}, (request, response) => {
     if (requestMap.get(request)?.ignore) return response;
     if (!response) return;
     const csp = getPolicies(response);
