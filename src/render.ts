@@ -25,15 +25,16 @@ export const createHandle = async (route: DinoRoute): Promise<DinoHandle> => {
     }
     if (route.method === 'GET' && hasTemplate(args[0], response)) {
       response = response as Response;
-      let body = await response.text();
+      const html = await response.text();
       if (!template) {
-        if (/<([^>]+)(\s[^>]+)?>(.*?)<\/\1>/.test(body)) {
+        if (/<([^>]+)(\s[^>]+)?>(.*?)<\/\1>/.test(html)) {
           response.headers.set('content-type', 'text/html; charset=utf-8');
         }
         return response;
       }
-      body = template.replace('%BODY%', `<dinossr-root>${body}</dinossr-root>`);
-      body = body.replace('%HEAD%', render.head || '');
+      let body = template.replace('%HEAD%', render.head || '');
+      body = body.replaceAll('%DEPLOY_HASH%', args[2].platform.deployHash);
+      body = body.replace('%BODY%', `<dinossr-root>${html}</dinossr-root>`);
       response = new Response(body, response);
       response.headers.set('content-type', 'text/html; charset=utf-8');
     }
