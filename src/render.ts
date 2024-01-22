@@ -1,5 +1,5 @@
 import {path, bumble} from './deps.ts';
-import {modHash, encodeCryptoBase64} from './utils.ts';
+import {replace, modHash, encodeCryptoBase64} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
 import {serverFetch} from './fetch.ts';
 import {DinoServer} from '../mod.ts';
@@ -32,9 +32,9 @@ export const createHandle = async (route: DinoRoute): Promise<DinoHandle> => {
         }
         return response;
       }
-      let body = template.replace('%HEAD%', render.head || '');
-      body = body.replaceAll('%DEPLOY_HASH%', args[2].platform.deployHash);
-      body = body.replace('%BODY%', `<dinossr-root>${html}</dinossr-root>`);
+      let body = replace(template, '%HEAD%', render.head || '');
+      body = replace(body, '%DEPLOY_HASH%', args[2].platform.deployHash, true);
+      body = replace(body, '%BODY%', html);
       response = new Response(body, response);
       response.headers.set('content-type', 'text/html; charset=utf-8');
     }

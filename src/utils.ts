@@ -16,3 +16,24 @@ export const modHash = (entry: string, suffix: string, dinossr: DinoServer) => {
   const rel = path.relative(dinossr.dir, entry) + '-' + suffix;
   return encodeHash(rel + dinossr.deployHash);
 };
+
+/**
+ * Replace text in a string without special replacement patterns
+ * Avoid replacement string patterns in native `String.replace`
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_the_replacement
+ */
+export const replace = (
+  subject: string,
+  search: string,
+  replace = '',
+  all = false
+) => {
+  let parts = subject.split(search);
+  if (parts.length === 1) {
+    return subject;
+  }
+  if (!all) {
+    parts = [parts.shift()!, parts.join(search)];
+  }
+  return parts.join(replace);
+};
