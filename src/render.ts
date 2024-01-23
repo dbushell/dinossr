@@ -34,7 +34,7 @@ export const createHandle = async (route: DinoRoute): Promise<DinoHandle> => {
       }
       let body = replace(template, '%HEAD%', render.head || '');
       body = replace(body, '%DEPLOY_HASH%', args[2].platform.deployHash, true);
-      body = replace(body, '%BODY%', html);
+      body = replace(body, '%BODY%', `<dinossr-root>${html}</dinossr-root>`);
       response = new Response(body, response);
       response.headers.set('content-type', 'text/html; charset=utf-8');
     }
