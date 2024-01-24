@@ -38,26 +38,30 @@ const getPolicies = (response: Response) => {
 
 export default (dinossr: DinoServer) => {
   dinossr.router.all({}, (request, response) => {
-    if (requestMap.get(request)?.ignore) return response;
-    if (!response) return;
-    const csp = getPolicies(response);
-    // Remove redundant policies
-    if (csp['default-src'].includes("'self'")) {
-      for (const [k, v] of Object.entries(csp)) {
-        if (k === 'default-src' || !k.endsWith('-src')) continue;
-        if (v.length === 1 && v[0] === "'self'") {
-          delete csp[k as keyof typeof csp];
+    try {
+      if (requestMap.get(request)?.ignore) return response;
+      if (!response) return;
+      const csp = getPolicies(response);
+      // Remove redundant policies
+      if (csp['default-src'].includes("'self'")) {
+        for (const [k, v] of Object.entries(csp)) {
+          if (k === 'default-src' || !k.endsWith('-src')) continue;
+          if (v.length === 1 && v[0] === "'self'") {
+            delete csp[k as keyof typeof csp];
+          }
         }
       }
+      response.headers.set('x-content-type-options', 'nosniff');
+      response.headers.set('referrer-policy', 'same-origin');
+      response.headers.set(
+        'content-security-policy',
+        Object.entries(csp)
+          .map(([k, v]) => `${k} ${v.join(' ')}`)
+          .join('; ')
+      );
+    } catch {
+      // Headers probably immutable
     }
-    response.headers.set('x-content-type-options', 'nosniff');
-    response.headers.set('referrer-policy', 'same-origin');
-    response.headers.set(
-      'content-security-policy',
-      Object.entries(csp)
-        .map(([k, v]) => `${k} ${v.join(' ')}`)
-        .join('; ')
-    );
     return response;
   });
 };
