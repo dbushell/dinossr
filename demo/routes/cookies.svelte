@@ -21,10 +21,8 @@
     });
   };
 
-  export const load = (request, props) => {
-    return {
-      color: props.cookies.get('color')?.value ?? 'not selected'
-    };
+  export const load = ({cookies, publicData}) => {
+    publicData.color = cookies.get('color')?.value ?? 'not selected'
   };
 </script>
 
@@ -32,7 +30,7 @@
   import {getContext} from 'svelte';
   import Layout from '@components/layout.svelte';
 
-  const {color} = getContext('data');
+  const {color} = getContext('publicData');
 
   const title = 'Cookies - DinoSsr Demo';
   const heading = 'Cookies';

@@ -105,20 +105,22 @@ export const importModule = (
       const loadProps = {
         ...props.platform,
         fetch: serverFetch(request, dinossr.router, props.platform),
-        params
+        params: structuredClone(params),
+        request
       };
-      const data = mod.load ? await mod.load(request, loadProps) : {};
-      if (data instanceof Response) {
+      Object.freeze(loadProps);
+      const loadResponse = mod.load ? await mod.load( loadProps) : {};
+      if (loadResponse instanceof Response) {
         return {
-          response: data
+          response: loadResponse
         };
       }
       const context = new Map<string, unknown>();
       context.set('url', url);
       context.set('pattern', pattern);
-      context.set('params', params);
-      context.set('data', data);
-      context.set('locals', props.platform.locals ?? {});
+      context.set('params', structuredClone(params));
+      context.set('publicData', props.platform.publicData ?? {});
+      context.set('serverData', props.platform.serverData ?? {});
       const render = component.render({}, {context});
       const headers = new Headers();
       let style = `
@@ -144,7 +146,9 @@ class DinossrIsland extends HTMLElement {
     context.set('url', new URL('${url.pathname}', window.location.href));
     context.set('pattern', '${pattern}');
     context.set('params', ${JSON.stringify(params)});
-    context.set('data', ${JSON.stringify(data)});
+    context.set('publicData', ${JSON.stringify(
+      props.platform.publicData ?? {}
+    )});
     context.set('browser', true);
     const uuid = this.dataset.uuid;
     if (islands.has(this) || islandIds.has(uuid)) return;

@@ -2,11 +2,14 @@ import {cookie, bumble, velocirouter} from './deps.ts';
 
 export type DinoCookies = Map<string, cookie.Cookie>;
 
+export type DinoData = Record<string, unknown>;
+
 export type DinoPlatform = {
   info: Deno.ServeHandlerInfo;
-  locals: Record<string, unknown>;
   cookies: DinoCookies;
   deployHash: string;
+  publicData: DinoData;
+  serverData: DinoData;
 };
 
 export type DinoOptions = {
@@ -38,8 +41,8 @@ export type DinoModule = {
   get?: DinoHandle;
   post?: DinoHandle;
   load?: (
-    request: Request,
     props: Partial<DinoPlatform> & {
+      request: Request;
       fetch: typeof fetch;
       params?: Record<string, string | undefined>;
     }

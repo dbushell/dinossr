@@ -125,8 +125,9 @@ export class DinoServer {
         const platform: DinoPlatform = {
           info,
           cookies,
-          locals: {},
-          deployHash: this.deployHash
+          deployHash: this.deployHash,
+          publicData: {},
+          serverData: {}
         };
         Object.freeze(platform);
         const response = await this.router.handle(request, platform);
