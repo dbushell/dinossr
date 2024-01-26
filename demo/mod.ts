@@ -1,4 +1,4 @@
-import {DinoServer} from 'https://raw.githubusercontent.com/dbushell/dinossr/v0.12.0/mod.ts';
+import {DinoServer} from 'https://raw.githubusercontent.com/dbushell/dinossr/v0.12.1/mod.ts';
 
 const dir = new URL('./', import.meta.url).pathname;
 
