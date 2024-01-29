@@ -16,6 +16,7 @@ export type DinoOptions = {
   origin?: URL;
   deployHash?: string;
   unhandledRejection?: (error: PromiseRejectionEvent) => void;
+  rejectionHandled?: (error: PromiseRejectionEvent) => void;
   serve?: Deno.ServeOptions;
   router?: velocirouter.RouterOptions<DinoPlatform>;
   bumbler?: bumble.BumbleOptions;

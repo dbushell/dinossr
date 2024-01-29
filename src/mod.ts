@@ -35,6 +35,10 @@ export class DinoServer {
         error.preventDefault();
         console.error(error.reason);
       },
+      rejectionHandled: (error: PromiseRejectionEvent) => {
+        error.preventDefault();
+        console.error(error.reason);
+      },
       bumbler: {
         build: Deno.env.has('DINOSSR_BUILD'),
         buildDir: manifestDir
@@ -117,6 +121,11 @@ export class DinoServer {
       this.options.unhandledRejection!
     );
 
+    globalThis.addEventListener(
+      'rejectionhandled',
+      this.options.rejectionHandled!
+    );
+
     // Setup server
     this.#server = Deno.serve(
       this.options.serve ?? {},
@@ -141,6 +150,10 @@ export class DinoServer {
       globalThis.removeEventListener(
         'unhandledrejection',
         this.options.unhandledRejection!
+      );
+      globalThis.removeEventListener(
+        'rejectionhandled',
+        this.options.rejectionHandled!
       );
     });
 
