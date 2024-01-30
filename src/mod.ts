@@ -106,10 +106,12 @@ export class DinoServer {
     });
 
     // Setup bundler
-    this.#bumbler = new bumble.Bumbler(this.dir, {
-      dev: this.dev,
-      ...this.options.bumbler
-    });
+    if (this.manifest.modules.length === 0) {
+      this.#bumbler = new bumble.Bumbler(this.dir, {
+        dev: this.dev,
+        ...this.options.bumbler
+      });
+    }
 
     await readTemplate(this.dir);
 
@@ -151,7 +153,9 @@ export class DinoServer {
     );
 
     this.server.finished.then(() => {
-      this.bumbler.stop();
+      if (this.bumbler) {
+        this.bumbler.stop();
+      }
       globalThis.removeEventListener(
         'unhandledrejection',
         this.options.unhandledRejection!
