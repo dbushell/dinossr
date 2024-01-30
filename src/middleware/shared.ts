@@ -18,7 +18,7 @@ export const addRoute = async (route: DinoRoute, dinossr: DinoServer) => {
     addNoMatch(route, dinossr);
     return;
   }
-  if (dinossr.bumbler.dev) {
+  if (dinossr.dev) {
     console.log(`🪄 ${route.method} → ${route.pattern}`);
   }
   const key = route.method.toLowerCase() as Lowercase<DinoRoute['method']>;

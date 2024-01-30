@@ -13,6 +13,7 @@ export type DinoPlatform = {
 };
 
 export type DinoOptions = {
+  dev?: boolean;
   origin?: URL;
   deployHash?: string;
   unhandledRejection?: (error: PromiseRejectionEvent) => void;

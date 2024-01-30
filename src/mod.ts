@@ -51,6 +51,10 @@ export class DinoServer {
     return this.#initialized;
   }
 
+  get dev() {
+    return this.options.dev ?? false;
+  }
+
   get dir() {
     return this.#dir;
   }
@@ -103,6 +107,7 @@ export class DinoServer {
 
     // Setup bundler
     this.#bumbler = new bumble.Bumbler(this.dir, {
+      dev: this.dev,
       ...this.options.bumbler
     });
 
@@ -157,7 +162,7 @@ export class DinoServer {
       );
     });
 
-    if (this.bumbler.dev) {
+    if (this.dev) {
       const time = (performance.now() - start).toFixed(2);
       console.log(`🚀 Server ${time}ms (${this.deployHash})`);
       if (this.origin) console.log(this.origin.href);
@@ -183,7 +188,7 @@ export class DinoServer {
     for (const callback of builtin) {
       await Promise.resolve(callback(this));
     }
-    if (this.bumbler.dev) {
+    if (this.dev) {
       const time = (performance.now() - start).toFixed(2);
       console.log(`🚀 Routes ${time}ms`);
     }

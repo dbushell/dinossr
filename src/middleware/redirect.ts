@@ -25,12 +25,12 @@ export default (dinossr: DinoServer) => {
     }
     // Check for conflicts e.g. /about/index.svelte & /about.svelte
     if (redirects.has(alt)) {
-      if (dinossr.bumbler.dev) {
+      if (dinossr.dev) {
         console.log(`⚠️ Possible conflict: ${alt} + ${pattern}`);
       }
       continue;
     }
-    if (dinossr.bumbler.dev) {
+    if (dinossr.dev) {
       console.log(`🪄 308 ${alt} → ${pattern}`);
     }
     dinossr.router.get(alt, (request, response) => {
