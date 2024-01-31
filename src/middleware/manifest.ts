@@ -71,7 +71,7 @@ const generate = async function* (
         pattern,
         entry,
         hash,
-        mod: await import(entry),
+        mod: await import(`file://${entry}`),
         metafile: {inputs: {}, outputs: {}}
       };
       if (dinossr.dev) {
