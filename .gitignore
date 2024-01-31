@@ -3,9 +3,11 @@
 !.github
 !LICENSE
 !README.md
+!deps.ts
 !mod.ts
 !src
 src/*
+!src/bundle
 !src/middleware
 src/middleware/*
 !src/svelte

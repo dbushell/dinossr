@@ -1,4 +1,4 @@
-import {path, existsSync, serveFile} from '../deps.ts';
+import {path, existsSync, serveFile} from '../../deps.ts';
 import {DinoServer} from '../mod.ts';
 
 // Generate list of static files

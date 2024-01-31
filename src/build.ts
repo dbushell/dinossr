@@ -1,4 +1,4 @@
-import {existsSync} from './deps.ts';
+import {existsSync} from '../deps.ts';
 import {manifestImport} from './manifest.ts';
 import type {DinoBuild} from './types.ts';
 

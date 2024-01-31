@@ -1,16 +1,16 @@
-import {path, existsSync} from '../deps.ts';
+import {path, existsSync} from '../../deps.ts';
 import {DinoServer} from '../mod.ts';
 import {importModule} from '../render.ts';
 import {addRoute} from './shared.ts';
 import {modHash} from '../utils.ts';
-import {esbuildResolve, sveltePreprocess} from '../svelte/mod.ts';
+import {bumbleDOM, bumbleSSR} from '../bundle/mod.ts';
+import {MODULES, ISLANDS} from '../build.ts';
 import type {
   DinoRoute,
   DinoIsland,
   DinoSSRBundle,
   DinoManifest
 } from '../types.ts';
-import {MODULES, ISLANDS} from '../build.ts';
 
 // Recursively find routes within directory
 const traverse = async (dir: string, depth = 0): Promise<string[]> => {
@@ -59,16 +59,11 @@ const generate = async function* (
       pattern += path.basename(entry, path.extname(entry));
     }
     // Import module
-    const hash = modHash(entry, 'ssr', dinossr);
+    const hash = modHash(dinossr.dir, entry, 'ssr', dinossr.deployHash);
     const bundle: DinoSSRBundle = {
       pattern,
-      ...(await dinossr.bumbler.bumbleSSR(entry, hash, {
-        svelteCompile: {
-          css: 'external'
-        },
-        esbuildResolve,
-        sveltePreprocess: sveltePreprocess(dinossr),
-        filterExports: ['default', 'pattern', 'order', 'get', 'post', 'load']
+      ...(await bumbleSSR(dinossr, entry, hash, {
+        exports: ['default', 'pattern', 'order', 'get', 'post', 'load']
       }))
     };
     const {routes, islands} = importModule(bundle, dinossr);
@@ -97,13 +92,8 @@ const generateManifest = async (dinossr: DinoServer) => {
   routes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   for (const dom of islands.values()) {
     manifest.islands.unshift(dom);
-    const {code} = await dinossr.bumbler.bumbleDOM(dom.entry, dom.hash, {
-      svelteCompile: {
-        css: 'external'
-      },
-      esbuildResolve,
-      sveltePreprocess: sveltePreprocess(dinossr),
-      filterExports: ['default']
+    const {code} = await bumbleDOM(dinossr, dom.entry, dom.hash, {
+      exports: ['default']
     });
     routes.unshift({
       method: 'GET',

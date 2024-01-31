@@ -1,4 +1,4 @@
-import {path, existsSync, ensureFileSync} from './deps.ts';
+import {path, existsSync, ensureFileSync} from '../deps.ts';
 import {encodeHash} from './utils.ts';
 import type {DinoManifest} from './types.ts';
 

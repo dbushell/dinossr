@@ -1,9 +1,10 @@
-import {path, bumble} from './deps.ts';
+import {path} from '../deps.ts';
 import {replace, modHash, encodeCryptoBase64} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
 import {serverFetch} from './fetch.ts';
 import {DinoServer} from '../mod.ts';
 import type {
+  BumbleComponent,
   DinoHandle,
   DinoRoute,
   DinoRender,
@@ -77,8 +78,8 @@ export const importModule = (
   };
 
   // Handle Svelte component
-  if (typeof (mod?.default as bumble.BumbleComponent)?.render === 'function') {
-    const component = mod.default as bumble.BumbleComponent;
+  if (typeof (mod?.default as BumbleComponent)?.render === 'function') {
+    const component = mod.default as BumbleComponent;
 
     // Find island dependencies
     if (metafile) {
@@ -88,7 +89,7 @@ export const importModule = (
         );
         if (!found) continue;
         const entry = path.join(dinossr.dir, key);
-        const hash = modHash(entry, 'dom', dinossr);
+        const hash = modHash(dinossr.dir, entry, 'dom', dinossr.deployHash);
         islands.push({
           entry,
           hash,
@@ -109,7 +110,7 @@ export const importModule = (
         request
       };
       Object.freeze(loadProps);
-      const loadResponse = mod.load ? await mod.load( loadProps) : {};
+      const loadResponse = mod.load ? await mod.load(loadProps) : {};
       if (loadResponse instanceof Response) {
         return {
           response: loadResponse
@@ -136,12 +137,14 @@ dinossr-island {
 `;
         const script = `
 const islands = new WeakSet();
-const islandIds = new Set();
+const islandCount = new Map();
 class DinossrIsland extends HTMLElement {
   constructor() {
     super();
   }
   async connectedCallback() {
+    if (islands.has(this)) return;
+    islands.add(this);
     const context = new Map();
     context.set('url', new URL('${url.pathname}', window.location.href));
     context.set('pattern', '${pattern}');
@@ -150,16 +153,14 @@ class DinossrIsland extends HTMLElement {
       props.platform.publicData ?? {}
     )});
     context.set('browser', true);
-    const uuid = this.dataset.uuid;
-    if (islands.has(this) || islandIds.has(uuid)) return;
-    islands.add(this);
-    islandIds.add(uuid);
+    const {island} = this.dataset;
+    islandCount.set(island, (islandCount.get(island) ?? 0) + 1);
     if (this.parentNode.closest('dinossr-island')) return;
-    const [hash, id] = uuid.split(':');
-    const json = document.head.querySelector(\`[data-uuid="\${uuid}"][type*="/json"]\`);
+    const count = islandCount.get(island);
+    const selector = \`[data-island="\${island}"][type*="/json"]\`;
+    const json = document.head.querySelectorAll(selector).item(count - 1);
     const props = json ? JSON.parse(json.textContent) : {};
-    context.set('_islandId', id);
-    const mod = await import(\`/_/immutable/\${hash}.js\`);
+    const mod = await import(\`/_/immutable/\${island}.js\`);
     const target = document.createDocumentFragment();
     const div = document.createElement('div');
     this.replaceWith(div);

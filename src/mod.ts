@@ -1,12 +1,18 @@
-import {path, deepMerge, bumble, velocirouter} from './deps.ts';
+import {
+  path,
+  deepMerge,
+  velocirouter,
+  ensureDirSync,
+  existsSync
+} from '../deps.ts';
 import * as middleware from './middleware/mod.ts';
 import {readTemplate} from './template.ts';
 import {manifestDir, getManifest, setManifest} from './manifest.ts';
 import Cookies from './cookies.ts';
+
 import type {
   DinoOptions,
   DinoRouter,
-  DinoBumbler,
   DinoManifest,
   DinoPlatform
 } from './types.ts';
@@ -16,7 +22,6 @@ export class DinoServer {
   #dir: string;
   #options: DinoOptions;
   #manifest: DinoManifest;
-  #bumbler!: DinoBumbler;
   #router!: DinoRouter;
   #server!: Deno.HttpServer;
 
@@ -38,10 +43,6 @@ export class DinoServer {
       rejectionHandled: (error: PromiseRejectionEvent) => {
         error.preventDefault();
         console.error(error.reason);
-      },
-      bumbler: {
-        build: Deno.env.has('DINOSSR_BUILD'),
-        buildDir: manifestDir
       }
     };
     this.#options = deepMerge<DinoOptions>(defaultOptions, options ?? {});
@@ -75,11 +76,6 @@ export class DinoServer {
     return this.options.origin;
   }
 
-  get bumbler() {
-    if (!this.initialized) throw new Error('Not initialized');
-    return this.#bumbler;
-  }
-
   get router() {
     if (!this.initialized) throw new Error('Not initialized');
     return this.#router;
@@ -101,25 +97,23 @@ export class DinoServer {
       onError: (error) => {
         console.error(error);
         return new Response(null, {status: 500});
-      },
-      ...this.options.router
+      }
     });
-
-    // Setup bundler
-    if (this.manifest.modules.length === 0) {
-      this.#bumbler = new bumble.Bumbler(this.dir, {
-        dev: this.dev,
-        ...this.options.bumbler
-      });
-    }
 
     await readTemplate(this.dir);
 
+    if (Deno.env.has('DINOSSR_BUILD')) {
+      if (existsSync(manifestDir)) {
+        Deno.removeSync(manifestDir, {recursive: true});
+      }
+      ensureDirSync(manifestDir);
+    }
+
     await this.#setup();
 
-    if (this.options.bumbler?.build) {
+    if (Deno.env.has('DINOSSR_BUILD')) {
       setManifest(this.manifest);
-      this.bumbler.stop();
+      // stop esbuild?
       Deno.exit(0);
     }
 
@@ -153,9 +147,7 @@ export class DinoServer {
     );
 
     this.server.finished.then(() => {
-      if (this.bumbler) {
-        this.bumbler.stop();
-      }
+      // stop esbuild?
       globalThis.removeEventListener(
         'unhandledrejection',
         this.options.unhandledRejection!

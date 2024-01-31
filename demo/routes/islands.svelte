@@ -12,6 +12,7 @@
 
 <Layout {title} {heading}>
   <p>This is a live island demo.</p>
-  <Clock title="Your local time" />
+  <Clock title="Time +1" offset={1} />
+  <Clock />
   <p><a href="/">return home</a></p>
 </Layout>

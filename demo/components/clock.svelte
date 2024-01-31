@@ -1,4 +1,6 @@
 <script context="module">
+  export const island = true;
+
   const unicode = [
     '🕐',
     '🕑',
@@ -17,9 +19,9 @@
 
 <script lang="ts">
   import {onMount} from 'svelte';
-  import Island from '@dinossr/island';
 
-  export let title: string;
+  export let title: string = '';
+  export let offset: number = 0;
 
   let datetime: string;
   let emoji: string;
@@ -28,6 +30,9 @@
   const update = () => {
     const now = new Date();
     now.setMilliseconds(0);
+    if (offset) {
+      now.setHours(now.getHours() + offset);
+    }
     datetime = now.toISOString();
     time = now.toLocaleTimeString('en-GB');
     emoji = unicode[(now.getHours() % 12 || 12) - 1];
@@ -40,9 +45,7 @@
   });
 </script>
 
-<Island props={$$props}>
-  <time {title} {datetime}>{emoji} <code>{time}</code></time>
-</Island>
+<time {title} {datetime}>{emoji} <code>{time}</code></time>
 
 <style>
   time {

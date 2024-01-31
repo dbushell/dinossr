@@ -1,4 +1,7 @@
-import {cookie, bumble, velocirouter} from './deps.ts';
+import {cookie, velocirouter} from '../deps.ts';
+import type {BumbleDOMBundle, BumbleSSRBundle} from './bundle/types.ts';
+
+export type * from './bundle/types.ts';
 
 export type DinoCookies = Map<string, cookie.Cookie>;
 
@@ -19,21 +22,17 @@ export type DinoOptions = {
   unhandledRejection?: (error: PromiseRejectionEvent) => void;
   rejectionHandled?: (error: PromiseRejectionEvent) => void;
   serve?: Deno.ServeOptions;
-  router?: velocirouter.RouterOptions<DinoPlatform>;
-  bumbler?: bumble.BumbleOptions;
 };
 
 export type DinoHandle = velocirouter.Handle<DinoPlatform>;
 
 export type DinoRouter = velocirouter.Router<DinoPlatform>;
 
-export type DinoBumbler = bumble.Bumbler<DinoModule>;
-
-export type DinoDOMBundle = bumble.BumbleDOMBundle & {
+export type DinoDOMBundle = BumbleDOMBundle & {
   pattern: string;
 };
 
-export type DinoSSRBundle = bumble.BumbleSSRBundle<DinoModule> & {
+export type DinoSSRBundle = BumbleSSRBundle<DinoModule> & {
   pattern: string;
 };
 
