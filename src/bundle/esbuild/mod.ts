@@ -90,6 +90,8 @@ export const esbuildBundle = async (
     name: 'svelte',
     setup(build) {
       build.onResolve({filter: /.*/}, async (args) => {
+        if (args.path.startsWith('npm:')) return;
+        if (args.path.startsWith('node:')) return;
         let result = await svelteResolver(args);
         if (result) return result;
         result = await resolver(args);
@@ -149,6 +151,7 @@ export const esbuildBundle = async (
   const esbuildOptions: EsbuildType.BuildOptions = {
     entryPoints: [entry],
     plugins: [sveltePlugin],
+    external: ['npm:*', 'node:*'],
     format: 'esm',
     target: 'esnext',
     bundle: true,

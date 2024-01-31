@@ -8,7 +8,7 @@ export const manifestImport = path.join(manifestDir, 'manifest.js');
 
 export const getManifest = (deployHash?: string): DinoManifest => {
   // Generate new manifest if new build or not found
-  if (Deno.env.get('DINOSSR_BUILD') || !existsSync(manifestMeta)) {
+  if (Deno.env.has('DINOSSR_BUILD') || !existsSync(manifestMeta)) {
     deployHash = encodeHash(
       // Use specified option
       deployHash ??

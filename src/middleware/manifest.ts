@@ -35,6 +35,9 @@ const traverse = async (dir: string, depth = 0): Promise<string[]> => {
   return paths;
 };
 
+const DINOSSR_DENO =
+  !Deno.env.has('DINOSSR_BUILD') && !Deno.env.has('DINOSSR_DEPLOY_ID');
+
 // Generate routes for directory
 const generate = async function* (
   dinossr: DinoServer
@@ -60,12 +63,30 @@ const generate = async function* (
     }
     // Import module
     const hash = modHash(dinossr.dir, entry, 'ssr', dinossr.deployHash);
-    const bundle: DinoSSRBundle = {
-      pattern,
-      ...(await bumbleSSR(dinossr, entry, hash, {
-        exports: ['default', 'pattern', 'order', 'get', 'post', 'load']
-      }))
-    };
+    let bundle: DinoSSRBundle;
+    if (DINOSSR_DENO && /\.(js|ts)$/.test(entry)) {
+      // Skip bundler if not building or deploying
+      const s1 = performance.now();
+      bundle = {
+        pattern,
+        entry,
+        hash,
+        mod: await import(entry),
+        metafile: {inputs: {}, outputs: {}}
+      };
+      if (dinossr.dev) {
+        const t1 = (performance.now() - s1).toFixed(2).padStart(7, ' ');
+        const rel = path.relative(dinossr.dir, entry);
+        console.log(`⚡ ${t1}ms [ssr] ${rel}`);
+      }
+    } else {
+      bundle = {
+        pattern,
+        ...(await bumbleSSR(dinossr, entry, hash, {
+          exports: ['default', 'pattern', 'order', 'get', 'post', 'load']
+        }))
+      };
+    }
     const {routes, islands} = importModule(bundle, dinossr);
     if (!routes.length) {
       console.warn(`Invalid route: (${entry})`);
