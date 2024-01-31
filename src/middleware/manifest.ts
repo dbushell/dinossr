@@ -36,7 +36,7 @@ const traverse = async (dir: string, depth = 0): Promise<string[]> => {
 };
 
 const DINOSSR_DENO =
-  !Deno.env.has('DINOSSR_BUILD') && !Deno.env.has('DINOSSR_DEPLOY_ID');
+  !Deno.env.has('DINOSSR_BUILD') && !Deno.env.has('DENO_DEPLOYMENT_ID');
 
 // Generate routes for directory
 const generate = async function* (
