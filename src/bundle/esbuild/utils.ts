@@ -11,6 +11,9 @@ export const componentName = (entry: string) => {
       .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
       .join('');
   }
+  if (/^[0-9]+$/.test(name)) {
+    name = `Component${name}`;
+  }
   return name;
 };
 

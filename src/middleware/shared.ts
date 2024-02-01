@@ -9,11 +9,11 @@ const sendBody = (request: Request) =>
   request.headers.get('accept')?.includes('text/html');
 
 export const addRoute = async (route: DinoRoute, server: DinoServer) => {
-  if (route.pattern === '/_500') {
+  if (route.pattern === '/500') {
     addError(route, server);
     return;
   }
-  if (route.pattern === '/_404') {
+  if (route.pattern === '/404') {
     addNoMatch(route, server);
     return;
   }

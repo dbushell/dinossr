@@ -1,7 +1,7 @@
 import {requestMap} from './shared.ts';
 import type {DinoServer} from '../types.ts';
 
-const ignore = new Set(['/', '/_404', '/_500']);
+const ignore = new Set(['/', '/404', '/500']);
 
 export default (server: DinoServer) => {
   // Possible routes for auto redirects
