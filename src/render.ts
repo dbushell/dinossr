@@ -94,7 +94,7 @@ export const importRoutes = (
       const loadResponse = mod.load ? await mod.load(loadProps) : {};
       if (loadResponse instanceof Response) {
         return {
-          response: loadResponse
+          response: loadResponse.status === 404 ? undefined : loadResponse
         };
       }
       const context = new Map<string, unknown>();
