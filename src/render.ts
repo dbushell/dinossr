@@ -1,14 +1,13 @@
 import {path} from '../deps.ts';
-import {replace, modHash, encodeCryptoBase64} from './utils.ts';
+import {replace, encodeCryptoBase64} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
 import {serverFetch} from './fetch.ts';
-import {DinoServer} from '../mod.ts';
 import type {
   BumbleComponent,
+  DinoServer,
   DinoHandle,
   DinoRoute,
   DinoRender,
-  DinoIsland,
   DinoSSRBundle
 } from './types.ts';
 
@@ -43,13 +42,12 @@ export const createHandle = async (route: DinoRoute): Promise<DinoHandle> => {
   };
 };
 
-export const importModule = (
+export const importRoutes = (
   bundle: DinoSSRBundle,
-  dinossr: DinoServer
-): {routes: DinoRoute[]; islands: DinoIsland[]} => {
-  const {hash, mod, metafile} = bundle;
-  const routes: DinoRoute[] = [];
-  const islands: DinoIsland[] = [];
+  server: DinoServer
+): {routes: Array<DinoRoute>} => {
+  const {hash, mod, islands} = bundle;
+  const routes: Array<DinoRoute> = [];
 
   // Append pattern to file path
   let {pattern} = bundle;
@@ -81,23 +79,6 @@ export const importModule = (
   if (typeof (mod?.default as BumbleComponent)?.render === 'function') {
     const component = mod.default as BumbleComponent;
 
-    // Find island dependencies
-    if (metafile) {
-      for (const [key, input] of Object.entries(metafile.inputs)) {
-        const found = input.imports.find(
-          (i) => i.original === '@dinossr/island'
-        );
-        if (!found) continue;
-        const entry = path.join(dinossr.dir, key);
-        const hash = modHash(dinossr.dir, entry, 'dom', dinossr.deployHash);
-        islands.push({
-          entry,
-          hash,
-          pattern: `/_/immutable/${hash}.js`
-        });
-      }
-    }
-
     // Create render callback
     const render: DinoRender = async (request, _response, props) => {
       // Setup context and props
@@ -105,7 +86,7 @@ export const importModule = (
       const params = props.match?.pathname?.groups ?? {};
       const loadProps = {
         ...props.platform,
-        fetch: serverFetch(request, dinossr.router, props.platform),
+        fetch: serverFetch(request, server.router, props.platform),
         params: structuredClone(params),
         request
       };
@@ -174,8 +155,8 @@ customElements.define('dinossr-island', DinossrIsland);
         const scriptHash = await encodeCryptoBase64(script, 'SHA-256');
         headers.append('x-script-src', `'sha256-${scriptHash}'`);
         render.head += `\n`;
-        islands.forEach(({pattern}) => {
-          render.head += `<link rel="modulepreload" href="${pattern}">\n`;
+        islands.forEach(({hash}) => {
+          render.head += `<link rel="modulepreload" href="/_/immutable/${hash}.js">\n`;
         });
         render.html += `\n<script defer type="module" data-hash="${scriptHash}">${script}</script>\n`;
       }
@@ -224,5 +205,5 @@ customElements.define('dinossr-island', DinossrIsland);
     add('POST', mod.post as DinoHandle);
   }
 
-  return {routes, islands};
+  return {routes};
 };

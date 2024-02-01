@@ -6,7 +6,7 @@ type Resolver = (args: EsbuildType.OnResolveArgs) => EsbuildResolve;
 const url = new URL('../svelte/', import.meta.url);
 
 export const svelteResolver: Resolver = (args) => {
-  // Resolve DinoSsr built-in components
+  // Resolve built-in components
   if (args.path.startsWith('@dinossr/')) {
     return {
       path: new URL(`./${args.path.slice(9)}.svelte`, url).href,

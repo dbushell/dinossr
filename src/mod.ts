@@ -6,18 +6,20 @@ import {
   existsSync
 } from '../deps.ts';
 import * as middleware from './middleware/mod.ts';
+import {encodeHash} from './utils.ts';
 import {readTemplate} from './template.ts';
 import {manifestDir, getManifest, setManifest} from './manifest.ts';
 import Cookies from './cookies.ts';
 
 import type {
+  DinoServer,
   DinoOptions,
   DinoRouter,
   DinoManifest,
   DinoPlatform
 } from './types.ts';
 
-export class DinoServer {
+export class DinoSsr implements DinoServer {
   #initialized = false;
   #dir: string;
   #options: DinoOptions;
@@ -48,40 +50,40 @@ export class DinoServer {
     this.#options = deepMerge<DinoOptions>(defaultOptions, options ?? {});
   }
 
-  get initialized() {
-    return this.#initialized;
-  }
-
-  get dev() {
-    return this.options.dev ?? false;
-  }
-
-  get dir() {
-    return this.#dir;
-  }
-
-  get manifest() {
-    return this.#manifest;
-  }
-
-  get deployHash() {
-    return this.manifest.deployHash;
-  }
-
-  get options() {
+  get options(): DinoOptions {
     return this.#options;
   }
 
-  get origin() {
+  get initialized(): boolean {
+    return this.#initialized;
+  }
+
+  get dev(): boolean {
+    return this.options.dev ?? false;
+  }
+
+  get dir(): string {
+    return this.#dir;
+  }
+
+  get deployHash(): string {
+    return this.manifest.deployHash;
+  }
+
+  get origin(): URL | undefined {
     return this.options.origin;
   }
 
-  get router() {
+  get manifest(): DinoManifest {
+    return this.#manifest;
+  }
+
+  get router(): DinoRouter {
     if (!this.initialized) throw new Error('Not initialized');
     return this.#router;
   }
 
-  get server() {
+  get server(): Deno.HttpServer {
     if (!this.initialized) throw new Error('Not initialized');
     return this.#server;
   }
@@ -188,5 +190,10 @@ export class DinoServer {
       const time = (performance.now() - start).toFixed(2);
       console.log(`🚀 Routes ${time}ms`);
     }
+  }
+
+  /** Hash a value with the deploy hash */
+  hash(value: string, salt = '') {
+    return encodeHash(value + salt + this.deployHash);
   }
 }

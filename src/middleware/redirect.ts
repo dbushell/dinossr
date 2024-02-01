@@ -1,12 +1,12 @@
-import {DinoServer} from '../mod.ts';
 import {requestMap} from './shared.ts';
+import type {DinoServer} from '../types.ts';
 
 const ignore = new Set(['/', '/_404', '/_500']);
 
-export default (dinossr: DinoServer) => {
+export default (server: DinoServer) => {
   // Possible routes for auto redirects
   const redirects = new Set<string>();
-  for (const mod of dinossr.manifest.modules) {
+  for (const mod of server.manifest.modules) {
     for (const route of mod.routes) {
       if (route.method !== 'GET') continue;
       if (ignore.has(route.pattern)) continue;
@@ -25,15 +25,15 @@ export default (dinossr: DinoServer) => {
     }
     // Check for conflicts e.g. /about/index.svelte & /about.svelte
     if (redirects.has(alt)) {
-      if (dinossr.dev) {
+      if (server.dev) {
         console.log(`⚠️ Possible conflict: ${alt} + ${pattern}`);
       }
       continue;
     }
-    if (dinossr.dev) {
+    if (server.dev) {
       console.log(`🪄 308 ${alt} → ${pattern}`);
     }
-    dinossr.router.get(alt, (request, response) => {
+    server.router.get(alt, (request, response) => {
       if (requestMap.get(request)?.ignore) return response;
       const url = new URL(request.url);
       if (url.pathname.at(-1) === '/') {

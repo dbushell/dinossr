@@ -8,7 +8,7 @@ export type Deferred<T> = ReturnType<typeof Promise.withResolvers<T>>;
 
 export type SveltePreprocess =
   | svelte.PreprocessorGroup
-  | svelte.PreprocessorGroup[];
+  | Array<svelte.PreprocessorGroup>;
 
 export type EsbuildResolve =
   | null
@@ -23,8 +23,10 @@ export type EsbuildMetafile = Exclude<
 >;
 
 export type BumbleOptions = {
-  exports?: boolean | string[];
+  entry: string;
+  hash: string;
   generate?: 'dom' | 'ssr';
+  exports?: boolean | Array<string>;
 };
 
 export interface BumbleBundle {

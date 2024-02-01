@@ -3,7 +3,7 @@ import type {BumbleBundle, BumbleModule} from './types.ts';
 /** Import bundle from a blob URL */
 export const importDynamicBundle = async <M>(
   bundle: BumbleBundle,
-  exports: boolean | string[] = true
+  exports: boolean | Array<string> = true
 ): Promise<BumbleModule<M>> => {
   const {script} = bundle;
   const code = script.serialize({
@@ -20,7 +20,7 @@ export const importDynamicBundle = async <M>(
 /** Evaluate bundle in a function that returns the exports */
 export const importFunctionBundle = <M>(
   bundle: BumbleBundle,
-  exports: boolean | string[] = true
+  exports: boolean | Array<string> = true
 ): Promise<BumbleModule<M>> => {
   const {script} = bundle;
   const code = script.serialize({
@@ -34,7 +34,7 @@ export const importFunctionBundle = <M>(
 export const importBundle = <M>(
   bundle: BumbleBundle,
   dynamicImports: boolean,
-  exports: boolean | string[] = true
+  exports: boolean | Array<string> = true
 ): Promise<BumbleModule<M>> => {
   if (dynamicImports) {
     return importDynamicBundle<M>(bundle, exports);

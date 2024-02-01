@@ -1,8 +1,6 @@
-import {DinoServer} from '../mod.ts';
+import {DinoSsr} from '../mod.ts';
 
-const dir = new URL('./', import.meta.url).pathname;
-
-const dinossr = new DinoServer(dir, {
+const dinossr = new DinoSsr(import.meta.dirname, {
   dev: true
 });
 

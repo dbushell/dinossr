@@ -34,6 +34,7 @@ export type DinoDOMBundle = BumbleDOMBundle & {
 
 export type DinoSSRBundle = BumbleSSRBundle<DinoModule> & {
   pattern: string;
+  islands: Array<DinoIsland>;
 };
 
 export type DinoModule = {
@@ -75,17 +76,29 @@ export interface DinoIsland {
 
 export interface DinoManifest {
   deployHash: string;
-  modules: Array<{
-    entry: string;
-    hash: string;
-    pattern: string;
-    routes: DinoRoute[];
-    islands: Array<DinoIsland>;
-  }>;
+  modules: Array<
+    Omit<DinoSSRBundle, 'mod' | 'metafile'> & {
+      routes: Array<DinoRoute>;
+    }
+  >;
   islands: Array<DinoIsland>;
 }
 
 export interface DinoBuild {
   modules: Array<DinoSSRBundle>;
   islands: Array<DinoDOMBundle>;
+}
+
+export interface DinoServer {
+  readonly options: DinoOptions;
+  readonly initialized: boolean;
+  readonly dev: boolean;
+  readonly dir: string;
+  readonly deployHash: string;
+  readonly origin?: URL;
+  readonly manifest: DinoManifest;
+  readonly router: DinoRouter;
+  readonly server: Deno.HttpServer;
+  init(): Promise<void>;
+  hash(value: string, salt?: string): string;
 }

@@ -14,6 +14,7 @@
   <ul>
     <li><a href="/islands">Islands</a></li>
     <li><a href="/cookies">Cookies</a></li>
+    <li><a href="/test">Test</a></li>
   </ul>
 </Layout>
 

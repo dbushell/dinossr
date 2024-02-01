@@ -1,6 +1,5 @@
-import {DinoServer} from '../mod.ts';
 import {createHandle} from '../render.ts';
-import type {DinoRoute} from '../types.ts';
+import type {DinoServer, DinoRoute} from '../types.ts';
 
 export const requestMap = new WeakMap<Request, {ignore?: boolean}>();
 

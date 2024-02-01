@@ -1,15 +1,15 @@
 import {svelte} from '../../../deps.ts';
 import {path} from '../../../deps.ts';
-import {modHash} from '../../utils.ts';
 import {findExportValue} from '../mod.ts';
 import {tagExtract} from './utils.ts';
+import type {DinoServer} from '../../types.ts';
 
 const islandMap = new Map<string, string>();
 
 const preTags = ['script', 'svelte:window', 'svelte:document', 'svelte:head'];
 const postTags = ['style'];
 
-export const svelteGroup = (dir: string, entry: string, deployHash: string) => {
+export const svelteGroup = (server: DinoServer, entry: string) => {
   // Append _island export to module script
   const islandExport: svelte.PreprocessorGroup = {
     script: (params) => {
@@ -22,11 +22,11 @@ export const svelteGroup = (dir: string, entry: string, deployHash: string) => {
       }
       if (
         params.filename === entry &&
-        entry.startsWith(path.join(dir, './routes'))
+        entry.startsWith(path.join(server.dir, './routes'))
       ) {
         throw new Error('Top-level routes cannot be islands');
       }
-      const hash = modHash(dir, params.filename!, 'dom', deployHash);
+      const hash = server.hash(params.filename!, 'dom');
       code = `\nexport const _$island = '${hash}';\n${code}`;
       islandMap.set(params.filename!, hash);
       return {code};
@@ -53,8 +53,8 @@ export const svelteGroup = (dir: string, entry: string, deployHash: string) => {
       let code = params.content;
       const hash = islandMap.get(params.filename!);
       if (!hash) return {code};
-      let pre: string[] = [];
-      let post: string[] = [];
+      let pre: Array<string> = [];
+      let post: Array<string> = [];
       ({code, out: pre} = tagExtract(code, preTags));
       ({code, out: post} = tagExtract(code, postTags));
       code =

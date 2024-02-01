@@ -6,7 +6,7 @@ import type {ParseExportMap} from '../types.ts';
 export const stripExports = (
   code: string,
   exports: ParseExportMap,
-  allowed: string[]
+  allowed: Array<string>
 ): string => {
   const parsed = parseExports(code);
   code = parsed.code;
@@ -17,7 +17,7 @@ export const stripExports = (
   const localMap = new Map<string, string>();
   exports.forEach((v, k) => localMap.set(v, k));
   for (const node of ast.body) {
-    const locals: string[] = [];
+    const locals: Array<string> = [];
     if (node.type === 'VariableDeclaration') {
       // TODO: handle multiple declarations?
       node.declarations.forEach((d) => {

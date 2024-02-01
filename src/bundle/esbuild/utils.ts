@@ -59,8 +59,8 @@ export const tagMatch = (tag: string) => {
   return new RegExp(`<${tag}(\\b[^>]*)>(.*?)<\\/${tag}>`, 'is');
 };
 
-export const tagExtract = (code: string, tags: string[]) => {
-  const out: string[] = [];
+export const tagExtract = (code: string, tags: Array<string>) => {
+  const out: Array<string> = [];
   for (const tag of tags) {
     while (true) {
       const match = tagMatch(tag).exec(code);

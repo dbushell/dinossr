@@ -1,8 +1,8 @@
-import {DinoServer} from '../mod.ts';
 import {requestMap} from './shared.ts';
+import type {DinoServer} from '../types.ts';
 
-export default (dinossr: DinoServer) => {
-  dinossr.router.use((request, response, {stopPropagation}) => {
+export default (server: DinoServer) => {
+  server.router.use((request, response, {stopPropagation}) => {
     if (requestMap.get(request)?.ignore) return response;
     if (request.headers.get('upgrade') === 'websocket') {
       requestMap.set(request, {ignore: true});
@@ -17,10 +17,10 @@ export default (dinossr: DinoServer) => {
       base.protocol = request.headers.get('x-forwarded-proto') ?? '';
     }
     // Validate against origin url if specified
-    if (dinossr.origin) {
+    if (server.origin) {
       if (
-        dinossr.origin.hostname !== base.hostname ||
-        dinossr.origin.protocol !== base.protocol
+        server.origin.hostname !== base.hostname ||
+        server.origin.protocol !== base.protocol
       ) {
         stopPropagation();
         // Add redirect for Deno Deploy
@@ -28,7 +28,7 @@ export default (dinossr: DinoServer) => {
           Deno.env.has('DENO_REGION') &&
           base.hostname.endsWith('.deno.dev')
         ) {
-          base.hostname = dinossr.origin.hostname;
+          base.hostname = server.origin.hostname;
           return new Response(null, {
             status: 308,
             headers: {

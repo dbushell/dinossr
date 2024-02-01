@@ -1,5 +1,5 @@
-import {DinoServer} from '../mod.ts';
 import {requestMap} from './shared.ts';
+import type {DinoServer} from '../types.ts';
 
 const defaultPolicies = {
   'child-src': ["'self'"],
@@ -36,8 +36,8 @@ const getPolicies = (response: Response) => {
   return csp;
 };
 
-export default (dinossr: DinoServer) => {
-  dinossr.router.all({}, (request, response) => {
+export default (server: DinoServer) => {
+  server.router.all({}, (request, response) => {
     try {
       if (requestMap.get(request)?.ignore) return response;
       if (!response) return;

@@ -5,7 +5,7 @@ import type {ParseExportMap, ParseImportMap} from './types.ts';
 const supportedExtensions = ['.svelte', '.ts', '.js', '.json'];
 
 interface CodeOptions {
-  exports?: boolean | string[];
+  exports?: boolean | Array<string>;
   exportType: 'module' | 'function';
 }
 

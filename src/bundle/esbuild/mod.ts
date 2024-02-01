@@ -6,6 +6,7 @@ import {svelteGroup} from './svelte.ts';
 import {typescriptGroup} from './typescript.ts';
 import {componentName, normalizeMeta} from './utils.ts';
 import type {EsbuildType, Deferred} from '../types.ts';
+import type {DinoServer} from '../../types.ts';
 
 let esbuild: typeof EsbuildType | undefined;
 
@@ -53,9 +54,8 @@ const deferredCode = (
 };
 
 export const esbuildBundle = async (
-  dir: string,
+  server: DinoServer,
   entry: string,
-  buildHash: string,
   generate: 'dom' | 'ssr' = 'ssr'
 ) => {
   const esbuild = await esbuildStart();
@@ -63,7 +63,7 @@ export const esbuildBundle = async (
   // Setup preprocessors
   const group: Array<svelte.PreprocessorGroup> = [
     typescriptGroup(esbuild.transform),
-    ...svelteGroup(dir, entry, buildHash)
+    ...svelteGroup(server, entry)
   ];
 
   const svelteCompile = async (entry: string, src?: string) => {
@@ -84,7 +84,7 @@ export const esbuildBundle = async (
     return result;
   };
 
-  const resolver = createResolver(dir);
+  const resolver = createResolver(server.dir);
 
   const sveltePlugin: EsbuildType.Plugin = {
     name: 'svelte',
@@ -164,7 +164,7 @@ export const esbuildBundle = async (
 
   const results = await esbuild.build(esbuildOptions);
   const script = new Script(results.outputFiles![0].text);
-  const metafile = normalizeMeta(dir, results.metafile!);
+  const metafile = normalizeMeta(server.dir, results.metafile!);
 
   return {script, metafile};
 };

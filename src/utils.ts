@@ -11,13 +11,28 @@ export const encodeCrypto = async (value: string, algorithm = 'SHA-256') =>
 export const encodeCryptoBase64 = async (value: string, algorithm?: string) =>
   base64.encodeBase64(await encodeCrypto(value, algorithm));
 
-export const modHash = (
+// Recursively find routes within directory
+export const traverse = async (
   dir: string,
-  entry: string,
-  generate: string,
-  deployHash: string
+  callback: (dir: string, entry: Deno.DirEntry) => unknown,
+  depth = 0
 ) => {
-  return encodeHash(path.relative(dir, entry) + '-' + generate + deployHash);
+  if (depth >= 10) {
+    throw new Error('Exceeded maximum depth for static directory');
+  }
+  for await (const entry of Deno.readDir(dir)) {
+    // Ignore hidden files
+    if (['.', '_'].includes(entry.name.at(0)!)) {
+      continue;
+    }
+    if (entry.isDirectory) {
+      await traverse(path.join(dir, entry.name), callback, depth + 1);
+      continue;
+    }
+    if (entry.isFile) {
+      callback(dir, entry);
+    }
+  }
 };
 
 /**
