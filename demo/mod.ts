@@ -1,6 +1,8 @@
 import {DinoSsr} from '../mod.ts';
 
-const dinossr = new DinoSsr(import.meta.dirname, {
+const dir = new URL('./', import.meta.url).pathname;
+
+const dinossr = new DinoSsr(dir, {
   dev: true
 });
 
