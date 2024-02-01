@@ -8,25 +8,25 @@ const sendBody = (request: Request) =>
   request.method === 'GET' &&
   request.headers.get('accept')?.includes('text/html');
 
-export const addRoute = async (route: DinoRoute, dinossr: DinoServer) => {
+export const addRoute = async (route: DinoRoute, server: DinoServer) => {
   if (route.pattern === '/_500') {
-    addError(route, dinossr);
+    addError(route, server);
     return;
   }
   if (route.pattern === '/_404') {
-    addNoMatch(route, dinossr);
+    addNoMatch(route, server);
     return;
   }
-  if (dinossr.dev) {
+  if (server.dev) {
     console.log(`🪄 ${route.method} → ${route.pattern}`);
   }
   const key = route.method.toLowerCase() as Lowercase<DinoRoute['method']>;
-  dinossr.router[key]({pathname: route.pattern}, await createHandle(route));
+  server.router[key]({pathname: route.pattern}, await createHandle(route));
 };
 
-export const addError = async (route: DinoRoute, dinossr: DinoServer) => {
+export const addError = async (route: DinoRoute, server: DinoServer) => {
   const handle = await createHandle(route);
-  dinossr.router.onError = async (error, request, platform) => {
+  server.router.onError = async (error, request, platform) => {
     console.error(error);
     if (!sendBody(request)) {
       return new Response(null, {status: 500});
@@ -42,9 +42,9 @@ export const addError = async (route: DinoRoute, dinossr: DinoServer) => {
   };
 };
 
-export const addNoMatch = async (route: DinoRoute, dinossr: DinoServer) => {
+export const addNoMatch = async (route: DinoRoute, server: DinoServer) => {
   const handle = await createHandle(route);
-  dinossr.router.onNoMatch = async (request, platform) => {
+  server.router.onNoMatch = async (request, platform) => {
     if (!sendBody(request)) {
       return new Response(null, {status: 404});
     }
