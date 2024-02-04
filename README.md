@@ -1,10 +1,9 @@
 # 🦕 DinoSsr
 
-[ssr.dinoear.com](https://ssr.dinoear.com)
+Documentation 👉 [ssr.rocks](https://ssr.rocks)
 
 A minimal web framework powered by:
 
-* [Bumble](https://github.com/dbushell/bumble)
 * [VelociRouter](https://github.com/dbushell/velocirouter)
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://dbushell.com/tip/)
