@@ -12,19 +12,23 @@ import type {
 } from './types.ts';
 
 // Return a route handle that renders with `app.html`
-export const createHandle = async (route: DinoRoute): Promise<DinoHandle> => {
+export const createHandle = async (
+  server: DinoServer,
+  route: DinoRoute
+): Promise<DinoHandle> => {
   const template = await readTemplate();
-  return async (...args) => {
-    const render = await route.render(...args);
-    let response = await render.response;
+  return async (props) => {
+    const render = await route.render(props);
+    let {response} = await Promise.resolve(
+      server.router.resolve(props.request, render.response)
+    );
     if (!(response instanceof Response)) {
-      response = response?.response;
-    }
-    if (response?.headers.get('content-type')?.startsWith('text/html')) {
       return response;
     }
-    if (route.method === 'GET' && hasTemplate(args[0], response)) {
-      response = response as Response;
+    if (response.headers.get('content-type')?.startsWith('text/html')) {
+      return response;
+    }
+    if (route.method === 'GET' && hasTemplate(props.request, response)) {
       const html = await response.text();
       if (!template) {
         if (/<([^>]+)(\s[^>]+)?>(.*?)<\/\1>/.test(html)) {
@@ -33,7 +37,7 @@ export const createHandle = async (route: DinoRoute): Promise<DinoHandle> => {
         return response;
       }
       let body = replace(template, '%HEAD%', render.head || '');
-      body = replace(body, '%DEPLOY_HASH%', args[2].platform.deployHash, true);
+      body = replace(body, '%DEPLOY_HASH%', props.platform.deployHash, true);
       body = replace(body, '%BODY%', `<dinossr-root>${html}</dinossr-root>`);
       response = new Response(body, response);
       response.headers.set('content-type', 'text/html; charset=utf-8');
@@ -43,8 +47,8 @@ export const createHandle = async (route: DinoRoute): Promise<DinoHandle> => {
 };
 
 export const importRoutes = (
-  bundle: DinoSSRBundle,
-  server: DinoServer
+  server: DinoServer,
+  bundle: DinoSSRBundle
 ): {routes: Array<DinoRoute>} => {
   const {hash, mod, islands} = bundle;
   const routes: Array<DinoRoute> = [];
@@ -80,13 +84,13 @@ export const importRoutes = (
     const component = mod.default as BumbleComponent;
 
     // Create render callback
-    const render: DinoRender = async (request, _response, props) => {
+    const render: DinoRender = async ({request, match, platform}) => {
       // Setup context and props
       const url = new URL(request.url);
-      const params = props.match?.pathname?.groups ?? {};
+      const params = match?.pathname?.groups ?? {};
       const loadProps = {
-        ...props.platform,
-        fetch: serverFetch(request, server.router, props.platform),
+        ...platform,
+        fetch: serverFetch(request, server.router, platform),
         params: structuredClone(params),
         request
       };
@@ -101,8 +105,8 @@ export const importRoutes = (
       context.set('url', url);
       context.set('pattern', pattern);
       context.set('params', structuredClone(params));
-      context.set('publicData', props.platform.publicData ?? {});
-      context.set('serverData', props.platform.serverData ?? {});
+      context.set('publicData', platform.publicData ?? {});
+      context.set('serverData', platform.serverData ?? {});
       const render = component.render({}, {context});
       const headers = new Headers();
       let style = `
@@ -130,9 +134,7 @@ class DinossrIsland extends HTMLElement {
     context.set('url', new URL('${url.pathname}', window.location.href));
     context.set('pattern', '${pattern}');
     context.set('params', ${JSON.stringify(params)});
-    context.set('publicData', ${JSON.stringify(
-      props.platform.publicData ?? {}
-    )});
+    context.set('publicData', ${JSON.stringify(platform.publicData ?? {})});
     context.set('browser', true);
     const {island} = this.dataset;
     islandCount.set(island, (islandCount.get(island) ?? 0) + 1);

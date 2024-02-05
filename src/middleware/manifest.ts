@@ -87,7 +87,7 @@ const generate = async function* (
         }
       }
     }
-    const {routes} = importRoutes(bundle, server);
+    const {routes} = importRoutes(server, bundle);
     if (!routes.length) {
       console.warn(`Invalid route: (${entry})`);
       continue;
@@ -131,7 +131,7 @@ const generateManifest = async (server: DinoServer) => {
       }
     });
   }
-  routes.map((route) => addRoute(route, server));
+  routes.map((route) => addRoute(server, route));
   return manifest;
 };
 
@@ -152,11 +152,11 @@ const importManifest = (server: DinoServer) => {
     });
   }
   for (const mod of MODULES) {
-    const {routes: modRoutes} = importRoutes(mod as DinoSSRBundle, server);
+    const {routes: modRoutes} = importRoutes(server, mod as DinoSSRBundle);
     routes.push(...modRoutes);
   }
   routes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  routes.map((route) => addRoute(route, server));
+  routes.map((route) => addRoute(server, route));
   return server.manifest;
 };
 

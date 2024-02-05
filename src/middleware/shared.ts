@@ -8,31 +8,45 @@ const sendBody = (request: Request) =>
   request.method === 'GET' &&
   request.headers.get('accept')?.includes('text/html');
 
-export const addRoute = async (route: DinoRoute, server: DinoServer) => {
+export const addRoute = async (server: DinoServer, route: DinoRoute) => {
   if (route.pattern === '/500') {
-    addError(route, server);
+    addError(server, route);
     return;
   }
   if (route.pattern === '/404') {
-    addNoMatch(route, server);
+    addNoMatch(server, route);
     return;
   }
   if (server.dev) {
     console.log(`🪄 ${route.method} → ${route.pattern}`);
   }
   const key = route.method.toLowerCase() as Lowercase<DinoRoute['method']>;
-  server.router[key]({pathname: route.pattern}, await createHandle(route));
+  server.router[key](
+    {pathname: route.pattern},
+    await createHandle(server, route)
+  );
 };
 
-export const addError = async (route: DinoRoute, server: DinoServer) => {
-  const handle = await createHandle(route);
+export const addError = async (server: DinoServer, route: DinoRoute) => {
+  const handle = await createHandle(server, route);
   server.router.onError = async (error, request, platform) => {
     console.error(error);
+    const defaultResponse = new Response(null, {status: 500});
     if (!sendBody(request)) {
-      return new Response(null, {status: 500});
+      return defaultResponse;
     }
-    // @ts-ignore: TODO: fix 3rd argument?
-    const response = (await handle(request, undefined, {platform})) as Response;
+    const {response} = await server.router.resolve(
+      request,
+      handle({
+        request,
+        platform,
+        stopPropagation: () => {},
+        match: new URLPattern({pathname: '*'}).exec(request.url)!
+      })
+    );
+    if (!response) {
+      return defaultResponse;
+    }
     return new Response(await response.text(), {
       status: 500,
       headers: {
@@ -42,14 +56,25 @@ export const addError = async (route: DinoRoute, server: DinoServer) => {
   };
 };
 
-export const addNoMatch = async (route: DinoRoute, server: DinoServer) => {
-  const handle = await createHandle(route);
+export const addNoMatch = async (server: DinoServer, route: DinoRoute) => {
+  const handle = await createHandle(server, route);
   server.router.onNoMatch = async (request, platform) => {
+    const defaultResponse = new Response(null, {status: 404});
     if (!sendBody(request)) {
-      return new Response(null, {status: 404});
+      return defaultResponse;
     }
-    // @ts-ignore: TODO: fix 3rd argument?
-    const response = (await handle(request, undefined, {platform})) as Response;
+    const {response} = await server.router.resolve(
+      request,
+      handle({
+        request,
+        platform,
+        stopPropagation: () => {},
+        match: new URLPattern({pathname: '*'}).exec(request.url)!
+      })
+    );
+    if (!response) {
+      return defaultResponse;
+    }
     return new Response(await response.text(), {
       status: 404,
       headers: {

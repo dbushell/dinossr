@@ -6,7 +6,7 @@ export {ensureFileSync} from 'https://deno.land/std@0.214.0/fs/ensure_file.ts';
 export {ensureDirSync} from 'https://deno.land/std@0.214.0/fs/ensure_dir.ts';
 export {deepMerge} from 'https://deno.land/std@0.214.0/collections/deep_merge.ts';
 export {serveFile} from 'https://deno.land/std@0.214.0/http/file_server.ts';
-export * as velocirouter from 'https://deno.land/x/velocirouter@v0.5.4/mod.ts';
+export * as velocirouter from 'https://deno.land/x/velocirouter@v0.6.1/mod.ts';
 export * as svelte from 'npm:svelte@4.2.9/compiler';
 export * as acorn from 'npm:acorn@8.11.3';
 export {default as MurmurHash3} from 'https://deno.land/x/murmurhash@v1.0.0/mod.ts';

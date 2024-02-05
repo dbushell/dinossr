@@ -17,16 +17,12 @@ export const readTemplate = async (dir?: string): Promise<string> => {
 };
 
 // Return true if response should use `app.html`
-export const hasTemplate = (
-  request: Request,
-  resonse: velocirouter.MaybeResponse
-) => {
-  if (!resonse) return false;
+export const hasTemplate = (request: Request, response: Response) => {
   // Skip static files served by Deno
-  const server = resonse.headers.get('server');
+  const server = response.headers.get('server');
   if (server === 'deno') return false;
   // Check content type
-  const type = resonse.headers.get('content-type');
+  const type = response.headers.get('content-type');
   if (!type) return false;
   const url = new URL(request.url);
   if (type.startsWith('text/html')) return true;

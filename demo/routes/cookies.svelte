@@ -1,7 +1,7 @@
 <script context="module" lang="ts">
   const colors = ['Red', 'Green', 'Blue'];
 
-  export const post = async (request, response, {platform}) => {
+  export const post = async ({request, response, platform}) => {
     const body = await request.formData();
     const color = body.get('color')?.toString() ?? '';
     if (!colors.includes(color)) {

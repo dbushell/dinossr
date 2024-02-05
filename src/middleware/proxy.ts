@@ -2,7 +2,7 @@ import {requestMap} from './shared.ts';
 import type {DinoServer} from '../types.ts';
 
 export default (server: DinoServer) => {
-  server.router.use((request, response, {stopPropagation}) => {
+  server.router.use(({request, response, stopPropagation}) => {
     if (requestMap.get(request)?.ignore) return response;
     if (request.headers.get('upgrade') === 'websocket') {
       requestMap.set(request, {ignore: true});

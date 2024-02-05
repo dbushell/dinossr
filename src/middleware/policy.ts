@@ -37,7 +37,7 @@ const getPolicies = (response: Response) => {
 };
 
 export default (server: DinoServer) => {
-  server.router.all({}, (request, response) => {
+  server.router.all({}, ({request, response}) => {
     try {
       if (requestMap.get(request)?.ignore) return response;
       if (!response) return;

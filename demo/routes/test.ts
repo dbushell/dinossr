@@ -4,7 +4,7 @@ import {default as random} from 'npm:lodash/random.js';
 
 export const pattern = '/';
 
-const get = (request: Request, response: Response) => {
+const get = () => {
   const {version} = Deno;
   return Response.json({
     ...version,

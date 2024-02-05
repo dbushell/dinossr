@@ -13,7 +13,7 @@ export default async (server: DinoServer) => {
   });
   for (const entry of routes) {
     const pattern = '/' + path.relative(staticDir, entry);
-    server.router.get({pathname: pattern}, (request: Request) => {
+    server.router.get({pathname: pattern}, ({request}) => {
       return serveFile(request, entry);
     });
   }

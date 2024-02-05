@@ -2,7 +2,7 @@ import {requestMap} from './shared.ts';
 import type {DinoServer} from '../types.ts';
 
 export default (server: DinoServer) => {
-  server.router.get({pathname: '/_/immutable/*'}, (request, response) => {
+  server.router.get({pathname: '/_/immutable/*'}, ({request, response}) => {
     try {
       if (requestMap.get(request)?.ignore) return response;
       if (response?.ok && response?.status === 200) {
