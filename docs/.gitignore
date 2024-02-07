@@ -1,0 +1,10 @@
+/*
+!.gitignore
+!components
+!lib
+!routes
+!static
+!app.html
+!deno.json
+!mod.ts
+!tsconfig.json

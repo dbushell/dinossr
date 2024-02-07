@@ -5,6 +5,7 @@
 !README.md
 !deps.ts
 !mod.ts
+!docs
 !src
 src/*
 !src/bundle
@@ -16,4 +17,3 @@ src/svelte/*
 !src/**/*.js
 !src/**/*.json
 !src/**/*.svelte
-!demo
