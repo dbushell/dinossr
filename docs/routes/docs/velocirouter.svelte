@@ -96,7 +96,7 @@ const router = new Router({
   <Code
     language="javascript"
     code={`
-router.get('/*', () => {
+router.get({pathname: '*'}, () => {
   return new Response('Hello, World!');
 });
 `}
@@ -114,9 +114,8 @@ router.get('/*', () => {
       href="https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API"
       target="_blank">URL Pattern API</a
     >
-    input. String inputs match the URL pathname. The string <code>'/*'</code> will
-    match all requests. Object inputs are used to match parts of the URL. The second
-    parameter is a handle function.
+    input. Object inputs are used to match parts of the URL. The second parameter
+    is a handle function.
   </p>
   <Code
     language="javascript"
@@ -208,7 +207,7 @@ router.use(({request}) => {
   <Code
     language="javascript"
     code={`
-router.all('/*', ({response}) => {
+router.all({pathname: '*'}, ({response}) => {
   if (response) {
     response.headers.set('x-powered-by', 'velocirouter');
   }

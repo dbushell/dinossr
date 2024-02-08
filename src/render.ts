@@ -95,6 +95,7 @@ export const importRoutes = (
         request
       };
       Object.freeze(loadProps);
+      // TODO: allow load to return `null` for 404?
       const loadResponse = mod.load ? await mod.load(loadProps) : {};
       if (loadResponse instanceof Response) {
         return {
