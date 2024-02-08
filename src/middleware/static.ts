@@ -3,6 +3,9 @@ import {traverse} from '../utils.ts';
 import type {DinoServer} from '../types.ts';
 
 export default async (server: DinoServer) => {
+  if (server.options.static === false) {
+    return;
+  }
   const staticDir = path.resolve(server.dir, './static');
   if (!existsSync(staticDir)) {
     return;
