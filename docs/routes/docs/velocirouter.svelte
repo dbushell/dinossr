@@ -114,8 +114,8 @@ router.get('*', () => {
       href="https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API"
       target="_blank">URL Pattern API</a
     >
-    input. Object inputs are used to match parts of the URL. The second parameter
-    is a handle function.
+    input. String inputs are matched against the URL pathname. Object inputs are
+    used to match parts of the URL. The second parameter is a handle function.
   </p>
   <Code
     language="javascript"
@@ -126,7 +126,9 @@ router.get({pathname: '/hello/:name'}, ({match}) => {
 });
 `}
   />
-  <p>For fastest performance provide a full <code>URLPattern</code> instance:</p>
+  <p>
+    For fastest performance provide a full <code>URLPattern</code> instance:
+  </p>
   <Code
     language="javascript"
     code={`
