@@ -96,7 +96,7 @@ const router = new Router({
   <Code
     language="javascript"
     code={`
-router.get({pathname: '*'}, () => {
+router.get('*', () => {
   return new Response('Hello, World!');
 });
 `}
@@ -126,7 +126,15 @@ router.get({pathname: '/hello/:name'}, ({match}) => {
 });
 `}
   />
-
+  <p>For fastest performance provide a full <code>URLPattern</code> instance:</p>
+  <Code
+    language="javascript"
+    code={`
+router.get(new URLPattern({pathname: '/:slug([\\w-]+)'}), () => {
+  // Pattern matches [a-zA-Z0-9_-]
+});
+`}
+  />
   <h3 id="handle-functions">Handle Functions</h3>
   <p>
     The handle function receives a <code>props</code> object as the only argument.

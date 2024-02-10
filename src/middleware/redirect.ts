@@ -33,7 +33,8 @@ export default (server: DinoServer) => {
     if (server.dev) {
       console.log(`🪄 308 ${alt} → ${pattern}`);
     }
-    server.router.get(alt, ({request, response}) => {
+    const input = new URLPattern({pathname: alt});
+    server.router.get(input, ({request, response}) => {
       if (requestMap.get(request)?.ignore) return response;
       const url = new URL(request.url);
       if (url.pathname.at(-1) === '/') {

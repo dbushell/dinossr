@@ -9,7 +9,7 @@ export default (server: DinoServer) => {
   if (!existsSync(staticDir)) {
     return;
   }
-  server.router.get({pathname: '*'}, async ({request}) => {
+  server.router.get(new URLPattern({}), async ({request}) => {
     const response = await serveDir(request, {
       fsRoot: staticDir,
       quiet: true

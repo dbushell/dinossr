@@ -21,10 +21,8 @@ export const addRoute = async (server: DinoServer, route: DinoRoute) => {
     console.log(`🪄 ${route.method} → ${route.pattern}`);
   }
   const key = route.method.toLowerCase() as Lowercase<DinoRoute['method']>;
-  server.router[key](
-    {pathname: route.pattern},
-    await createHandle(server, route)
-  );
+  const input = new URLPattern({pathname: route.pattern});
+  server.router[key](input, await createHandle(server, route));
 };
 
 export const addError = async (server: DinoServer, route: DinoRoute) => {
