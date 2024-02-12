@@ -38,7 +38,7 @@ export const createHandle = async (
       }
       let body = replace(template, '%HEAD%', render.head || '');
       body = replace(body, '%DEPLOY_HASH%', props.platform.deployHash, true);
-      body = replace(body, '%BODY%', `<dinossr-root>${html}</dinossr-root>`);
+      body = replace(body, '%BODY%', html);
       response = new Response(body, response);
       response.headers.set('content-type', 'text/html; charset=utf-8');
     }
@@ -110,11 +110,7 @@ export const importRoutes = (
       context.set('serverData', platform.serverData ?? {});
       const render = component.render({}, {context});
       const headers = new Headers();
-      let style = `
-dinossr-root {
-  display: contents;
-}
-`;
+      let style = '';
       if (islands.length) {
         style += `
 dinossr-island {
@@ -168,10 +164,11 @@ customElements.define('dinossr-island', DinossrIsland);
       if (render.css?.code) {
         style += `\n${render.css.code}`;
       }
-      const styleHash = await encodeCryptoBase64(style, 'SHA-256');
-      headers.append('x-style-src', `'sha256-${styleHash}'`);
-      render.head += `<style data-hash="${styleHash}">${style}</style>\n`;
-
+      if (style.length) {
+        const styleHash = await encodeCryptoBase64(style, 'SHA-256');
+        headers.append('x-style-src', `'sha256-${styleHash}'`);
+        render.head += `<style data-hash="${styleHash}">${style}</style>\n`;
+      }
       return {
         head: render.head,
         response: new Response(render.html, {
