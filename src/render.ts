@@ -11,6 +11,10 @@ import type {
   DinoSSRBundle
 } from './types.ts';
 
+const islandScript = await Deno.readTextFile(
+  new URL('./bundle/svelte/island.min.js', import.meta.url)
+);
+
 // Return a route handle that renders with `app.html`
 export const createHandle = async (
   server: DinoServer,
@@ -102,55 +106,29 @@ export const importRoutes = (
           response: loadResponse.status === 404 ? undefined : loadResponse
         };
       }
+      // Setup render context
       const context = new Map<string, unknown>();
       context.set('url', url);
       context.set('pattern', pattern);
       context.set('params', structuredClone(params));
-      context.set('publicData', platform.publicData ?? {});
-      context.set('serverData', platform.serverData ?? {});
+      context.set('publicData', platform.publicData);
+      context.set('serverData', platform.serverData);
+
+      // Render server-side component
       const render = component.render({}, {context});
+
+      // Custom headers for content security policy
       const headers = new Headers();
+
+      // Add client-side Islands init script
       let style = '';
       if (islands.length) {
-        style += `
-dinossr-island {
-  display: contents;
-}
-`;
-        const script = `
-const islands = new WeakSet();
-const islandCount = new Map();
-class DinossrIsland extends HTMLElement {
-  constructor() {
-    super();
-  }
-  async connectedCallback() {
-    if (islands.has(this)) return;
-    islands.add(this);
-    const context = new Map();
-    context.set('url', new URL('${url.pathname}', window.location.href));
-    context.set('pattern', '${pattern}');
-    context.set('params', ${JSON.stringify(params)});
-    context.set('publicData', ${JSON.stringify(platform.publicData ?? {})});
-    context.set('browser', true);
-    const {island} = this.dataset;
-    islandCount.set(island, (islandCount.get(island) ?? 0) + 1);
-    if (this.parentNode.closest('dinossr-island')) return;
-    const count = islandCount.get(island);
-    const selector = \`[data-island="\${island}"][type*="/json"]\`;
-    const json = document.head.querySelectorAll(selector).item(count - 1);
-    const props = json ? JSON.parse(json.textContent) : {};
-    const mod = await import(\`/_/immutable/\${island}.js\`);
-    const target = document.createDocumentFragment();
-    const div = document.createElement('div');
-    this.replaceWith(div);
-    target.appendChild(this);
-    new mod.default({context, props, target, hydrate: true});
-    div.replaceWith(target);
-  }
-}
-customElements.define('dinossr-island', DinossrIsland);
-`;
+        style += `dinossr-island { display: contents; }`;
+        let script = islandScript.trim();
+        script = replace(script, '$$1', `'${url.pathname}'`);
+        script = replace(script, '$$2', `'${pattern}'`);
+        script = replace(script, '$$3', JSON.stringify(params));
+        script = replace(script, '$$4', JSON.stringify(platform.publicData));
         const scriptHash = await encodeCryptoBase64(script, 'SHA-256');
         headers.append('x-script-src', `'sha256-${scriptHash}'`);
         render.head += `\n`;
@@ -160,6 +138,7 @@ customElements.define('dinossr-island', DinossrIsland);
         render.html += `\n<script defer type="module" data-hash="${scriptHash}">${script}</script>\n`;
       }
 
+      // Add component styles
       style = style.replaceAll(/\s+/g, ' ').trim();
       if (render.css?.code) {
         style += `\n${render.css.code}`;
@@ -169,6 +148,7 @@ customElements.define('dinossr-island', DinossrIsland);
         headers.append('x-style-src', `'sha256-${styleHash}'`);
         render.head += `<style data-hash="${styleHash}">${style}</style>\n`;
       }
+
       return {
         head: render.head,
         response: new Response(render.html, {
