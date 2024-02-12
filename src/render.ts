@@ -11,9 +11,9 @@ import type {
   DinoSSRBundle
 } from './types.ts';
 
-const islandScript = await Deno.readTextFile(
-  new URL('./bundle/svelte/island.min.js', import.meta.url)
-);
+const islandScript = await (
+  await fetch(new URL('./bundle/svelte/island.min.js', import.meta.url))
+).text();
 
 // Return a route handle that renders with `app.html`
 export const createHandle = async (
