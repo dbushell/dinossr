@@ -123,18 +123,25 @@ export const importRoutes = (
       // Add client-side Islands init script
       let style = '';
       if (islands.length) {
+        const context = {
+          pattern,
+          params,
+          url: url.pathname,
+          publicData: platform.publicData,
+          browser: true
+        };
         style += `dinossr-island { display: contents; }`;
         let script = islandScript.trim();
-        script = replace(script, '$$1', `'${url.pathname}'`);
-        script = replace(script, '$$2', `'${pattern}'`);
-        script = replace(script, '$$3', JSON.stringify(params));
-        script = replace(script, '$$4', JSON.stringify(platform.publicData));
+        script = replace(script, '%DEPLOY_HASH%', server.deployHash);
         const scriptHash = await encodeCryptoBase64(script, 'SHA-256');
         headers.append('x-script-src', `'sha256-${scriptHash}'`);
         render.head += `\n`;
         islands.forEach(({hash}) => {
           render.head += `<link rel="modulepreload" href="/_/immutable/${hash}.js">\n`;
         });
+        render.html += `\n<script data-context="${
+          server.deployHash
+        }" type="application/json">${JSON.stringify(context)}</script>`;
         render.html += `\n<script defer type="module" data-hash="${scriptHash}">${script}</script>\n`;
       }
 

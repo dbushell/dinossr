@@ -1,5 +1,8 @@
 const islands = new WeakSet();
 const islandCount = new Map();
+const contextData = JSON.parse(
+  document.querySelector('[data-context="%DEPLOY_HASH%"]')?.textContent ?? '{}'
+);
 class Island extends HTMLElement {
   constructor() {
     super();
@@ -9,18 +12,14 @@ class Island extends HTMLElement {
       return;
     }
     islands.add(this);
-    const context = new Map();
-    context.set('url', new URL($$1, window.location.href));
-    context.set('pattern', $$2);
-    context.set('params', $$3);
-    context.set('publicData', $$4);
-    context.set('browser', true);
     const {island} = this.dataset;
     const count = islandCount.get(island) ?? 0;
     islandCount.set(island, count + 1);
     if (this.parentNode.closest('dinossr-island')) {
       return;
     }
+    const context = new Map(Object.entries(structuredClone(contextData)));
+    context.set('url', new URL(contextData.url, window.location.href));
     const selector = `[data-island="${island}"][type*="/json"]`;
     const json = document.querySelectorAll(selector).item(count);
     const props = json ? JSON.parse(json.textContent) : {};
