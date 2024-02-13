@@ -38,6 +38,7 @@ export class DinoSsr implements DinoServer {
       origin: Deno.env.has('ORIGIN')
         ? new URL(Deno.env.get('ORIGIN')!)
         : undefined,
+      static: 'static',
       unhandledRejection: (error: PromiseRejectionEvent) => {
         error.preventDefault();
         console.error(error.reason);

@@ -1,4 +1,4 @@
-import {path, velocirouter} from '../deps.ts';
+import {path} from '../deps.ts';
 
 const templateCache = new Map<string, string>();
 

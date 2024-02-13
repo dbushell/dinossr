@@ -2,11 +2,12 @@ import {path, existsSync, serveDir} from '../../deps.ts';
 import type {DinoServer} from '../types.ts';
 
 export default (server: DinoServer) => {
-  if (server.options.static === false) {
+  if (!server.options.static) {
     return;
   }
-  const staticDir = path.resolve(server.dir, './static');
+  const staticDir = path.resolve(server.dir, server.options.static);
   if (!existsSync(staticDir)) {
+    console.warn(`Missing static directory: ${staticDir}`);
     return;
   }
   server.router.get(new URLPattern({}), async ({request}) => {
