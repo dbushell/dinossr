@@ -1,6 +1,5 @@
 export {DinoSsr} from './src/mod.ts';
 export type {
-  DinoBuild,
   DinoCookies,
   DinoData,
   DinoDOMBundle,

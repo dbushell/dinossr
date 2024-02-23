@@ -1,9 +1,8 @@
 import {path, existsSync} from '../../deps.ts';
-import {importRoutes} from '../render.ts';
+import {routeMethods, importRoutes} from '../render.ts';
 import {addRoute} from './shared.ts';
 import {traverse} from '../utils.ts';
 import {bumbleDOM, bumbleSSR} from '../bundle/mod.ts';
-import {MODULES, ISLANDS} from '../build.ts';
 import type {
   DinoServer,
   DinoRoute,
@@ -68,7 +67,7 @@ const generate = async function* (
         ...(await bumbleSSR(server, {
           entry,
           hash,
-          exports: ['default', 'pattern', 'order', 'get', 'post', 'load']
+          exports: ['default', 'pattern', 'order', 'load'].concat(routeMethods)
         }))
       };
       // Use metafile to find islands in Svelte component bundles
@@ -100,20 +99,16 @@ const generate = async function* (
 const generateManifest = async (server: DinoServer) => {
   // Create new routes and new manifest
   const routes: Array<DinoRoute> = [];
-  const manifest: DinoManifest = {
-    deployHash: server.deployHash,
-    modules: [],
-    islands: []
-  };
+  // const manifest: DinoManifest = server.manifest;
   const islands: Map<string, DinoIsland> = new Map();
   for await (const mod of generate(server)) {
-    manifest.modules.push(mod);
+    server.manifest.modules.push(mod);
     routes.push(...mod.routes);
     mod.islands?.map((meta) => islands.set(meta.hash, meta));
   }
   routes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   for (const dom of islands.values()) {
-    manifest.islands.unshift(dom);
+    server.manifest.islands.unshift(dom);
     const {code} = await bumbleDOM(server, {
       entry: dom.entry,
       hash: dom.hash,
@@ -133,12 +128,12 @@ const generateManifest = async (server: DinoServer) => {
     });
   }
   routes.map((route) => addRoute(server, route));
-  return manifest;
+  return server.manifest;
 };
 
 const importManifest = (server: DinoServer) => {
   const routes: Array<DinoRoute> = [];
-  for (const dom of ISLANDS) {
+  for (const dom of server.manifest.ISLANDS) {
     routes.push({
       method: 'GET',
       pattern: dom.pattern,
@@ -152,7 +147,7 @@ const importManifest = (server: DinoServer) => {
       }
     });
   }
-  for (const mod of MODULES) {
+  for (const mod of server.manifest.MODULES) {
     const {routes: modRoutes} = importRoutes(server, mod as DinoSSRBundle);
     routes.push(...modRoutes);
   }
@@ -162,7 +157,7 @@ const importManifest = (server: DinoServer) => {
 };
 
 export default (server: DinoServer): Promise<DinoManifest> => {
-  if (server.manifest.modules.length) {
+  if (server.manifest.MODULES.length) {
     return Promise.resolve(importManifest(server));
   }
   return generateManifest(server);

@@ -20,6 +20,7 @@ export type DinoOptions = {
   origin?: URL;
   static?: string;
   deployHash?: string;
+  manifest?: DinoManifest;
   unhandledRejection?: (error: PromiseRejectionEvent) => void;
   rejectionHandled?: (error: PromiseRejectionEvent) => void;
   serve?: Deno.ServeOptions;
@@ -86,11 +87,8 @@ export interface DinoManifest {
     }
   >;
   islands: Array<DinoIsland>;
-}
-
-export interface DinoBuild {
-  modules: Array<DinoSSRBundle>;
-  islands: Array<DinoDOMBundle>;
+  MODULES: Array<DinoSSRBundle>;
+  ISLANDS: Array<DinoDOMBundle>;
 }
 
 export interface DinoServer {

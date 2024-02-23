@@ -8,7 +8,7 @@ import {
 import * as middleware from './middleware/mod.ts';
 import {encodeHash} from './utils.ts';
 import {readTemplate} from './template.ts';
-import {manifestDir, getManifest, setManifest} from './manifest.ts';
+import {manifestDir, newManifest, setManifest} from './manifest.ts';
 import Cookies from './cookies.ts';
 
 import type {
@@ -32,7 +32,7 @@ export class DinoSsr implements DinoServer {
     dir ??= Deno.cwd();
     this.#dir = path.resolve(dir, './');
     // Get new or prebuilt manifest
-    this.#manifest = getManifest(options.deployHash);
+    this.#manifest = options.manifest ?? newManifest(options.deployHash);
     // Setup options
     const defaultOptions: DinoOptions = {
       origin: Deno.env.has('ORIGIN')
@@ -170,16 +170,10 @@ export class DinoSsr implements DinoServer {
 
   async #setup() {
     const start = performance.now();
-    let manifest: DinoManifest;
     const builtin = [
       middleware.proxy,
       middleware.static,
-      async () => {
-        manifest = await middleware.manifest(this);
-        if (this.manifest !== manifest) {
-          this.#manifest = manifest;
-        }
-      },
+      middleware.manifest,
       middleware.redirect,
       middleware.cache,
       middleware.policy

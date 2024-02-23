@@ -16,8 +16,9 @@ const islandScript = await (
   await fetch(new URL('./bundle/svelte/island.min.js', import.meta.url))
 ).text();
 
-const routeMethods: Array<keyof DinoModule> = [
+export const routeMethods: Array<keyof DinoModule> = [
   'DELETE',
+  'GET',
   'PATCH',
   'POST',
   'PUT'
@@ -178,21 +179,11 @@ export const importRoutes = (
       hash,
       render
     });
-
-    // Allow additional GET handle
-    if (typeof mod.GET === 'function') {
-      add('GET', mod.GET as DinoHandle);
-    }
   }
 
   // Use default function as GET handle
   else if (typeof mod.default === 'function') {
     add('GET', mod.default as DinoHandle);
-  }
-
-  // Look for named GET handle
-  else if (typeof mod.GET === 'function') {
-    add('GET', mod.GET as DinoHandle);
   }
 
   // Support other handles
