@@ -5,8 +5,7 @@ const dir = new URL('./', import.meta.url).pathname;
 
 let manifest: DinoManifest | undefined;
 if (Deno.env.has('DENO_REGION')) {
-  const manifestPath = 'file:///src/.dinossr/manifest.js';
-  manifest = await import(manifestPath);
+  manifest = await import('file:///src/.dinossr/manifest.js');
 }
 
 const dinossr = new DinoSsr(dir, {

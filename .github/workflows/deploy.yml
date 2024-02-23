@@ -1,4 +1,4 @@
-name: Deploy
+name: Publish and Deploy
 
 on:
   push:
@@ -6,9 +6,28 @@ on:
       - main
 
 jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v4
+
+      - name: Install Deno
+        uses: denoland/setup-deno@v1
+
+      - name: Publish Package
+        run: deno publish
+
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
+    needs: publish
 
     permissions:
       id-token: write
