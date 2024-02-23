@@ -89,7 +89,7 @@ export class DinoSsr implements DinoServer {
     return this.#server;
   }
 
-  async init() {
+  async init(): Promise<void> {
     if (this.initialized) return;
     this.#initialized = true;
 
@@ -194,7 +194,7 @@ export class DinoSsr implements DinoServer {
   }
 
   /** Hash a value with the deploy hash */
-  hash(value: string, salt = '') {
+  hash(value: string, salt = ''): string {
     return encodeHash(value + salt + this.deployHash);
   }
 }

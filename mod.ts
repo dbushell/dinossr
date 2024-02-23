@@ -1,2 +1,19 @@
 export {DinoSsr} from './src/mod.ts';
-export type * from './src/types.ts';
+export type {
+  DinoBuild,
+  DinoCookies,
+  DinoData,
+  DinoDOMBundle,
+  DinoHandle,
+  DinoIsland,
+  DinoManifest,
+  DinoModule,
+  DinoOptions,
+  DinoPlatform,
+  DinoRender,
+  DinoResponse,
+  DinoRoute,
+  DinoRouter,
+  DinoServer,
+  DinoSSRBundle
+} from './src/types.ts';

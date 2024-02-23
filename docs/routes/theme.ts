@@ -4,7 +4,7 @@ export const pattern = '/';
 
 const themes = ['light', 'dark'];
 
-export const post: DinoHandle = async ({request, platform}) => {
+export const POST: DinoHandle = async ({request, platform}) => {
   try {
     const data = await request.json();
     if (!themes.includes(data.theme)) {

@@ -41,8 +41,11 @@ export type DinoSSRBundle = BumbleSSRBundle<DinoModule> & {
 export type DinoModule = {
   pattern?: string;
   order?: number;
-  get?: DinoHandle;
-  post?: DinoHandle;
+  DELETE?: DinoHandle;
+  GET?: DinoHandle;
+  PATCH?: DinoHandle;
+  POST?: DinoHandle;
+  PUT?: DinoHandle;
   load?: (
     props: Partial<DinoPlatform> & {
       request: Request;

@@ -21,14 +21,14 @@
   <Alert />
   <p>
     <strong>DinoSsr</strong> is built upon
-    <a href="/docs/velocirouter/">VelociRouter</a>. The
-    <code>request</code> and <code>response</code> are passed through all
-    matching handles. <a href="/docs/routing/">Routes</a> can also be JavaScript
-    or TypeScript files exporting a handle. The same file path and URL pattern matching
-    is applied.
+    <a href="/docs/velocirouter/">VelociRouter</a>. The <code>request</code> and
+    <code>response</code>
+    are passed through all matching handles. <a href="/docs/routing/">Routes</a>
+    can also be JavaScript or TypeScript files exporting a handle. The same file
+    path and URL pattern matching is applied.
   </p>
   <p>
-    JavaScript routes can export a <code>get</code> and or <code>post</code> function.
+    JavaScript routes can export a <code>GET</code> function.
   </p>
   <p><code>routes/(all)/index.js</code></p>
   <Code
@@ -38,13 +38,17 @@ export const pattern = '/*';
 
 export const order = 999;
 
-export const get = async (props) => {
+export const GET = async (props) => {
   if (props.response) {
     props.response.headers.set('x-powered-by', 'DinoSsr');
   }
 };
 `}
   />
+  <p>
+    <code>DELETE</code>, <code>PATCH</code>, <code>POST</code>, and
+    <code>PUT</code> are also supported matching their respective HTTP methods.
+  </p>
   <p>
     The <strong>optional</strong> <code>order</code> export gives an explicit
     order to assign the handle. If no <code>order</code> is exported routes are handled

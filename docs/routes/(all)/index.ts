@@ -8,7 +8,7 @@ export const order = 999;
 
 const themes = ['light', 'dark'];
 
-export const get: DinoHandle = async ({request, response, platform}) => {
+export const GET: DinoHandle = async ({request, response, platform}) => {
   if (!(response instanceof Response)) {
     return response;
   }

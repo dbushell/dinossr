@@ -1,6 +1,7 @@
 /*
 !.gitignore
 !.github
+!deno.json
 !LICENSE
 !README.md
 !deps.ts

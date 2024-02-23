@@ -1,4 +1,5 @@
-import {path, base64, MurmurHash3} from '../deps.ts';
+import {path, encodeBase64} from '../deps.ts';
+import MurmurHash3 from './murmurhash.ts';
 
 export const encodeHash = (value: string) =>
   new MurmurHash3(value).result().toString(16);
@@ -9,7 +10,7 @@ export const encodeCrypto = async (value: string, algorithm = 'SHA-256') =>
   );
 
 export const encodeCryptoBase64 = async (value: string, algorithm?: string) =>
-  base64.encodeBase64(await encodeCrypto(value, algorithm));
+  encodeBase64(await encodeCrypto(value, algorithm));
 
 // Recursively find routes within directory
 export const traverse = async (

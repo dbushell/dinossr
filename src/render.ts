@@ -8,12 +8,20 @@ import type {
   DinoHandle,
   DinoRoute,
   DinoRender,
+  DinoModule,
   DinoSSRBundle
 } from './types.ts';
 
 const islandScript = await (
   await fetch(new URL('./bundle/svelte/island.min.js', import.meta.url))
 ).text();
+
+const routeMethods: Array<keyof DinoModule> = [
+  'DELETE',
+  'PATCH',
+  'POST',
+  'PUT'
+];
 
 // Return a route handle that renders with `app.html`
 export const createHandle = async (
@@ -172,8 +180,8 @@ export const importRoutes = (
     });
 
     // Allow additional GET handle
-    if (typeof mod.get === 'function') {
-      add('GET', mod.get as DinoHandle);
+    if (typeof mod.GET === 'function') {
+      add('GET', mod.GET as DinoHandle);
     }
   }
 
@@ -183,14 +191,16 @@ export const importRoutes = (
   }
 
   // Look for named GET handle
-  else if (typeof mod.get === 'function') {
-    add('GET', mod.get as DinoHandle);
+  else if (typeof mod.GET === 'function') {
+    add('GET', mod.GET as DinoHandle);
   }
 
-  // Support POST handle
-  if (typeof mod.post === 'function') {
-    add('POST', mod.post as DinoHandle);
-  }
+  // Support other handles
+  routeMethods.forEach((method) => {
+    if (typeof mod[method] === 'function') {
+      add(method as DinoRoute['method'], mod[method] as DinoHandle);
+    }
+  });
 
   return {routes};
 };
