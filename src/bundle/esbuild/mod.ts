@@ -10,14 +10,17 @@ import type {DinoServer} from '../../types.ts';
 
 let esbuild: typeof EsbuildType | undefined;
 
+const esbuildWasm = 'https://deno.land/x/esbuild@v0.20.0/wasm.js';
+const esbuildMod = 'https://deno.land/x/esbuild@v0.20.0/mod.js';
+
 export const esbuildStart = async () => {
   if (esbuild) {
     return esbuild;
   }
   const wasm = Deno.env.has('DENO_REGION');
-  esbuild = wasm
-    ? await import('https://deno.land/x/esbuild@v0.20.0/wasm.js')
-    : await import('https://deno.land/x/esbuild@v0.20.0/mod.js');
+  esbuild = (
+    wasm ? await import(esbuildWasm) : await import(esbuildMod)
+  ) as typeof EsbuildType;
   await esbuild.initialize({
     worker: false
   });

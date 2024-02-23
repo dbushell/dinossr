@@ -1,6 +1,6 @@
 import {svelte} from '../../deps.ts';
 import Script from './script.ts';
-import type * as EsbuildType from 'https://raw.githubusercontent.com/evanw/esbuild/v0.20.0/lib/shared/types.ts';
+import type * as EsbuildType from './esbuild/types.ts';
 
 export type {EsbuildType};
 
