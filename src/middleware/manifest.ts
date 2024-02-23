@@ -46,12 +46,13 @@ const generate = async function* (
     let bundle: DinoSSRBundle;
     if (!Deno.env.has('DENO_DEPLOYMENT_ID') && /\.(js|ts)$/.test(entry)) {
       // Skip bundler if not building or deploying
+      const entryPath = `file://${entry}`;
       const s1 = performance.now();
       bundle = {
         pattern,
         entry,
         hash,
-        mod: await import(`file://${entry}`),
+        mod: await import(entryPath),
         metafile: {inputs: {}, outputs: {}},
         islands: []
       };

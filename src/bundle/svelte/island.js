@@ -23,7 +23,8 @@ class Island extends HTMLElement {
     const selector = `[data-island="${island}"][type*="/json"]`;
     const json = document.querySelectorAll(selector).item(count);
     const props = json ? JSON.parse(json.textContent) : {};
-    const mod = await import(`/_/immutable/${island}.js`);
+    const modPath = `/_/immutable/${island}.js`;
+    const mod = await import(modPath);
     const target = document.createDocumentFragment();
     const div = document.createElement('div');
     this.replaceWith(div);
