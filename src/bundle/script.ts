@@ -20,16 +20,16 @@ export default class Script {
     ({code: this.#code, map: this.#exports} = parseExports(this.#code));
   }
 
-  get imports() {
+  get imports(): ParseImportMap {
     return this.#imports;
   }
 
-  get exports() {
+  get exports(): ParseExportMap {
     return this.#exports;
   }
 
   /** Combine all (or specific) exports into one `export` statement */
-  serializeModule(exports?: CodeOptions['exports']) {
+  serializeModule(exports?: CodeOptions['exports']): string {
     if (exports === false) return 'export {};';
     const parts = [];
     for (const [alias, name] of this.#exports) {
@@ -44,7 +44,7 @@ export default class Script {
   }
 
   /** Combine all (or specific) exports into one `return` statement */
-  serializeFunction(exports?: CodeOptions['exports']) {
+  serializeFunction(exports?: CodeOptions['exports']): string {
     if (exports === false) return 'return {};';
     const parts = [];
     for (const [alias, name] of this.#exports) {
@@ -59,7 +59,7 @@ export default class Script {
   }
 
   /** Serialize script with optional exports */
-  serialize(options: CodeOptions = {exportType: 'module'}) {
+  serialize(options: CodeOptions = {exportType: 'module'}): string {
     let code = this.#code;
     if (Array.isArray(options.exports)) {
       code = stripExports(code, this.#exports, options.exports);
@@ -75,7 +75,7 @@ export default class Script {
     return code;
   }
 
-  static supportedType(entry: string) {
+  static supportedType(entry: string): boolean {
     const ext = path.extname(entry);
     return supportedExtensions.includes(ext);
   }
