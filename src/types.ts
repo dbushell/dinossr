@@ -1,12 +1,17 @@
+/**
+ * @module
+ * Types for `jsr:@ssr/dinossr`
+ */
 import {cookie, velocirouter} from '../deps.ts';
 import type {BumbleDOMBundle, BumbleSSRBundle} from './bundle/types.ts';
 
-export type * from './bundle/types.ts';
-
+/** DinoSsr cookie map */
 export type DinoCookies = Map<string, cookie.Cookie>;
 
+/** DinoSsr route data for Svelte context */
 export type DinoData = Record<string, unknown>;
 
+/** DinoSsr platform context for VelociRouter */
 export type DinoPlatform = {
   info: Deno.ServeHandlerInfo;
   cookies: DinoCookies;
@@ -15,6 +20,7 @@ export type DinoPlatform = {
   serverData: DinoData;
 };
 
+/** Init options for DinoSsr class */
 export type DinoOptions = {
   dev?: boolean;
   origin?: URL;
@@ -26,19 +32,24 @@ export type DinoOptions = {
   serve?: Deno.ServeOptions;
 };
 
+/** DinoSsr router handle */
 export type DinoHandle = velocirouter.Handle<DinoPlatform>;
 
+/** DinoSsr router */
 export type DinoRouter = velocirouter.Router<DinoPlatform>;
 
+/** DinoSsr island client-side bundle */
 export type DinoDOMBundle = BumbleDOMBundle & {
   pattern: string;
 };
 
+/** DinoSsr route server-side bundle */
 export type DinoSSRBundle = BumbleSSRBundle<DinoModule> & {
   pattern: string;
   islands: Array<DinoIsland>;
 };
 
+/** DinoSsr route dynamic module */
 export type DinoModule = {
   pattern?: string;
   order?: number;
@@ -56,15 +67,18 @@ export type DinoModule = {
   ) => Promise<Response | Record<string, unknown>>;
 };
 
+/** DinoSsr rendered route response */
 export interface DinoResponse {
   response: ReturnType<DinoHandle>;
   head?: string;
 }
 
+/** DinoSsr route render function */
 export interface DinoRender {
   (...args: Parameters<DinoHandle>): DinoResponse | Promise<DinoResponse>;
 }
 
+/** DinoSsr route */
 export interface DinoRoute {
   method: velocirouter.Method;
   pattern: string;
@@ -73,12 +87,14 @@ export interface DinoRoute {
   order?: number;
 }
 
+/** DinoSsr island for build manifest */
 export interface DinoIsland {
   entry: string;
   hash: string;
   pattern: string;
 }
 
+/** DinoSsr build manifest */
 export interface DinoManifest {
   deployHash: string;
   modules: Array<
@@ -91,6 +107,7 @@ export interface DinoManifest {
   ISLANDS: Array<DinoDOMBundle>;
 }
 
+/** DinoSsr server interface */
 export interface DinoServer {
   readonly options: DinoOptions;
   readonly initialized: boolean;

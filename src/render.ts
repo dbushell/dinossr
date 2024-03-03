@@ -2,8 +2,8 @@ import {path} from '../deps.ts';
 import {replace, encodeCryptoBase64} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
 import {serverFetch} from './fetch.ts';
+import type {BumbleComponent} from './bundle/types.ts';
 import type {
-  BumbleComponent,
   DinoServer,
   DinoHandle,
   DinoRoute,

@@ -1,3 +1,7 @@
+/**
+ * @module
+ * Module exports the DinoSsr Server class
+ */
 import {
   path,
   deepMerge,
@@ -19,6 +23,7 @@ import type {
   DinoPlatform
 } from './types.ts';
 
+/** DinoSsr server */
 export class DinoSsr implements DinoServer {
   #initialized = false;
   #dir: string;
@@ -27,6 +32,11 @@ export class DinoSsr implements DinoServer {
   #router!: DinoRouter;
   #server!: Deno.HttpServer;
 
+  /**
+   * Create a new DinoSsr server
+   * @param dir     Base directory
+   * @param options Server options {@link DinoOptions}
+   */
   constructor(dir?: string, options: DinoOptions = {}) {
     // Ensure absolute path
     dir ??= Deno.cwd();

@@ -1,3 +1,7 @@
+/**
+ * @module
+ * Server and types for `jsr:@ssr/dinossr`
+ */
 export {DinoSsr} from './src/mod.ts';
 export type {
   DinoCookies,

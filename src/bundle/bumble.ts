@@ -2,13 +2,13 @@ import {path} from '../../deps.ts';
 import {esbuildBundle} from './esbuild/mod.ts';
 import {manifestDir} from './../manifest.ts';
 import {importBundle} from './import.ts';
+import type {DinoServer} from '../types.ts';
 import type {
-  DinoServer,
   BumbleOptions,
   BumbleBundle,
   BumbleDOMBundle,
   BumbleSSRBundle
-} from '../types.ts';
+} from './types.ts';
 
 /** Bundle the entry file (write if build) */
 const bumble = async (
