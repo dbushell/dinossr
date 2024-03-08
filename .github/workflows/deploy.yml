@@ -1,4 +1,4 @@
-name: Publish and Deploy
+name: Deploy
 
 on:
   push:
@@ -6,18 +6,6 @@ on:
       - main
 
 jobs:
-  publish:
-    name: Publish
-    runs-on: ubuntu-latest
-
-    permissions:
-      id-token: write
-      contents: read
-
-    steps:
-      - uses: actions/checkout@v4
-      - run: npx jsr publish
-
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
