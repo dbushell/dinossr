@@ -41,6 +41,13 @@ export class DinoSsr implements DinoServer {
     // Ensure absolute path
     dir ??= Deno.cwd();
     this.#dir = path.resolve(dir, './');
+    // Check deployment
+    if (Deno.env.has('DENO_REGION') && !options.manifest) {
+      console.error(
+        '⚠️ Deno Deploy requires "manifest" option\n👉 See documentation: https://ssr.rocks/docs/deploy/'
+      );
+      Deno.exit(1);
+    }
     // Get new or prebuilt manifest
     this.#manifest = options.manifest ?? newManifest(options.deployHash);
     // Setup options
