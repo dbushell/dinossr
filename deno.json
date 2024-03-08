@@ -1,11 +1,19 @@
 {
   "name": "@ssr/dinossr",
-  "version": "0.24.0",
+  "version": "0.25.0",
   "exports": {
     ".": "./mod.ts",
     "./types": "./src/types.ts"
   },
   "publish": {
+    "include": [
+      "src",
+      "deno.json",
+      "mod.ts",
+      "deps.ts",
+      "LICENSE",
+      "README.md"
+    ],
     "exclude": [".github", "docs"]
   }
 }
