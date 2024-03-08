@@ -1,5 +1,0 @@
-{
-  "imports": {
-    "dinossr": "jsr:@ssr/dinossr@0.25.0"
-  }
-}

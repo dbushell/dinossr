@@ -27,7 +27,7 @@
   <Code
     language="javascript"
     code={`
-import {Router} from 'https://deno.land/x/velocirouter/mod.ts';
+import {Router} from 'jsr:@ssr/velocirouter';
 
 const router = new Router();
     `}

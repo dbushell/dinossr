@@ -26,7 +26,7 @@
   <Code
     language="javascript"
     code={`
-import {DinoSsr} from 'dinossr';
+import {DinoSsr} from 'jsr:@ssr/dinossr';
 
 const dir = new URL('./', import.meta.url).pathname;
 const dinossr = new DinoServer(dir);
