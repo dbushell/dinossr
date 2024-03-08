@@ -15,14 +15,8 @@ jobs:
       contents: read
 
     steps:
-      - name: Clone Repository
-        uses: actions/checkout@v4
-
-      - name: Install Deno
-        uses: denoland/setup-deno@v1
-
-      - name: Publish Package
-        run: deno publish
+      - uses: actions/checkout@v4
+      - run: npx jsr publish
 
   deploy:
     name: Deploy
