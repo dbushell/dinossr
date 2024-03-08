@@ -4,5 +4,8 @@
   "exports": {
     ".": "./mod.ts",
     "./types": "./src/types.ts"
+  },
+  "publish": {
+    "exclude": [".github", "docs"]
   }
 }
