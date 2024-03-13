@@ -46,7 +46,7 @@ export class DinoSsr implements DinoServer {
       console.error(
         '⚠️ Deno Deploy requires "manifest" option\n👉 See documentation: https://ssr.rocks/docs/deploy/'
       );
-      Deno.exit(1);
+      throw new Error('Missing manifest');
     }
     // Get new or prebuilt manifest
     this.#manifest = options.manifest ?? newManifest(options.deployHash);
