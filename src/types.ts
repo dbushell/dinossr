@@ -1,6 +1,7 @@
 /**
+ * Types for `jsr:@ssr/dinossr`.
+ *
  * @module
- * Types for `jsr:@ssr/dinossr`
  */
 import {cookie, velocirouter} from '../deps.ts';
 import type {BumbleDOMBundle, BumbleSSRBundle} from './bundle/types.ts';
