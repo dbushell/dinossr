@@ -33,6 +33,12 @@ const getPolicies = (response: Response) => {
       csp[key].push(...value.split(',').map((s) => `${s.trim()}`));
     }
   }
+  // If `unsafe-inline` is present remove nonces and hashes
+  if (csp['style-src'].includes(`'unsafe-inline'`)) {
+    csp['style-src'] = csp['style-src'].filter(
+      (s) => !(s.startsWith(`'nonce-`) || s.startsWith(`'sha256-`))
+    );
+  }
   return csp;
 };
 
