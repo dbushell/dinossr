@@ -1,6 +1,6 @@
 {
   "name": "@ssr/dinossr",
-  "version": "0.26.0",
+  "version": "0.27.0",
   "exports": {
     ".": "./mod.ts",
     "./types": "./src/types.ts"

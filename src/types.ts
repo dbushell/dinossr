@@ -50,6 +50,17 @@ export type DinoSSRBundle = BumbleSSRBundle<DinoModule> & {
   islands: Array<DinoIsland>;
 };
 
+/** DinoSsr route load function */
+export type DinoLoad = {
+  (
+    props: DinoPlatform & {
+      fetch: typeof fetch;
+      params?: Record<string, string | undefined>;
+      request: Request;
+    }
+  ): Promise<Response | void>;
+};
+
 /** DinoSsr route dynamic module */
 export type DinoModule = {
   pattern?: string;
@@ -59,13 +70,7 @@ export type DinoModule = {
   PATCH?: DinoHandle;
   POST?: DinoHandle;
   PUT?: DinoHandle;
-  load?: (
-    props: Partial<DinoPlatform> & {
-      request: Request;
-      fetch: typeof fetch;
-      params?: Record<string, string | undefined>;
-    }
-  ) => Promise<Response | Record<string, unknown>>;
+  load?: DinoLoad;
 };
 
 /** DinoSsr rendered route response */

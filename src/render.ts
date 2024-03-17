@@ -6,6 +6,7 @@ import type {BumbleComponent} from './bundle/types.ts';
 import type {
   DinoServer,
   DinoHandle,
+  DinoLoad,
   DinoRoute,
   DinoRender,
   DinoModule,
@@ -101,7 +102,7 @@ export const importRoutes = (
       // Setup context and props
       const url = new URL(request.url);
       const params = match?.pathname?.groups ?? {};
-      const loadProps = {
+      const loadProps: Parameters<DinoLoad>[0] = {
         ...platform,
         fetch: serverFetch(request, server.router, platform),
         params: structuredClone(params),
