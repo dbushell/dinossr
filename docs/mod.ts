@@ -1,4 +1,4 @@
-import {DinoSsr, type DinoManifest} from 'jsr:@ssr/dinossr@0.27';
+import {DinoSsr, type DinoManifest} from 'jsr:@ssr/dinossr@0.28';
 
 const dir = new URL('./', import.meta.url).pathname;
 
