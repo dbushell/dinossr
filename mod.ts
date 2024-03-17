@@ -10,6 +10,7 @@ export type {
   DinoDOMBundle,
   DinoHandle,
   DinoIsland,
+  DinoLoad,
   DinoManifest,
   DinoModule,
   DinoOptions,
