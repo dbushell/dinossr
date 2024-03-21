@@ -5,13 +5,48 @@ import parseScript from './parse-script.ts';
 export const undefinedExport = Symbol();
 
 /** Return the named export node (or undefined symbol) */
-export const findExport = (code: string, name: string) => {
+export const findExport = (
+  code: string,
+  name: string
+): symbol | acorn.ExportNamedDeclaration => {
   const ast = parseScript(code);
+  // Possibly defined before exported in two statements
+  let constNode: acorn.VariableDeclaration | undefined;
   for (const node of ast.body) {
+    // Look for `const [name] = true;`
+    if (node.type === 'VariableDeclaration' && node.kind === 'const') {
+      const declarator = node.declarations[0];
+      if (
+        declarator?.init?.type === 'Literal' &&
+        declarator.id.type === 'Identifier' &&
+        declarator.id.name === name
+      ) {
+        constNode = node;
+      }
+      continue;
+    }
     if (node.type !== 'ExportNamedDeclaration') {
       continue;
     }
     if (!node.declaration) {
+      if (!constNode) continue;
+      // Check for pre-defined const export
+      for (const specifier of node.specifiers) {
+        if (
+          specifier.exported.type === 'Identifier' &&
+          specifier.exported.name === name
+        ) {
+          // Create fake export node
+          return {
+            type: 'ExportNamedDeclaration',
+            start: 0,
+            end: 0,
+            declaration: constNode,
+            specifiers: [],
+            source: null
+          };
+        }
+      }
       continue;
     }
     let identifier: acorn.Identifier | undefined;
@@ -33,8 +68,8 @@ export const findExport = (code: string, name: string) => {
 /** Return the named export node value (or undefined symbol) */
 export const findExportValue = (code: string, name: string) => {
   const node = findExport(code, name);
+  if (typeof node === 'symbol') return node;
   if (
-    node === undefinedExport ||
     node.declaration?.type !== 'VariableDeclaration' ||
     node.declaration.declarations[0].init?.type !== 'Literal'
   ) {

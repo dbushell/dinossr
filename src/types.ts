@@ -3,11 +3,11 @@
  *
  * @module
  */
-import {cookie, velocirouter} from '../deps.ts';
+import type {Cookie, Handle, Method, Router} from '../deps.ts';
 import type {BumbleDOMBundle, BumbleSSRBundle} from './bundle/types.ts';
 
 /** DinoSsr cookie map */
-export type DinoCookies = Map<string, cookie.Cookie>;
+export type DinoCookies = Map<string, Cookie>;
 
 /** DinoSsr route data for Svelte context */
 export type DinoData = Record<string, unknown>;
@@ -34,10 +34,10 @@ export type DinoOptions = {
 };
 
 /** DinoSsr router handle */
-export type DinoHandle = velocirouter.Handle<DinoPlatform>;
+export type DinoHandle = Handle<DinoPlatform>;
 
 /** DinoSsr router */
-export type DinoRouter = velocirouter.Router<DinoPlatform>;
+export type DinoRouter = Router<DinoPlatform>;
 
 /** DinoSsr island client-side bundle */
 export type DinoDOMBundle = BumbleDOMBundle & {
@@ -86,7 +86,7 @@ export interface DinoRender {
 
 /** DinoSsr route */
 export interface DinoRoute {
-  method: velocirouter.Method;
+  method: Method;
   pattern: string;
   hash: string;
   render: DinoRender;
