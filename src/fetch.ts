@@ -32,6 +32,12 @@ export const serverFetch = (
     // Local; pass request through router
     const newRequest = new Request(args[0], args[1]);
     newRequest.headers.set('x-fetch-depth', String(depth + 1));
-    return router.handle(newRequest, platform);
+    const newPlatform: DinoPlatform = {
+      ...platform,
+      publicData: {},
+      serverData: {}
+    };
+    Object.freeze(newPlatform);
+    return router.handle(newRequest, newPlatform);
   };
 };
