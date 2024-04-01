@@ -142,7 +142,7 @@ export const importRoutes = (
         };
         style += `dinossr-island { display: contents; }`;
         let script = islandScript.trim();
-        script = replace(script, '%DEPLOY_HASH%', server.deployHash);
+        script = replace(script, '%DEPLOY_HASH%', server.deployHash, true);
         const scriptHash = await encodeCryptoBase64(script, 'SHA-256');
         headers.append('x-script-src', `'sha256-${scriptHash}'`);
         render.head += `\n`;
@@ -161,6 +161,7 @@ export const importRoutes = (
         style += `\n${render.css.code}`;
       }
       if (style.length) {
+        style = replace(style, '%DEPLOY_HASH%', server.deployHash, true);
         const styleHash = await encodeCryptoBase64(style, 'SHA-256');
         headers.append('x-style-src', `'sha256-${styleHash}'`);
         render.head += `<style data-hash="${styleHash}">${style}</style>\n`;
