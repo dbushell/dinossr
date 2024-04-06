@@ -3,22 +3,22 @@
  *
  * @module
  */
-import type {Cookie, Handle, Method, Router} from '../deps.ts';
+import type {Cookie, Handle, Method, Platform, Router} from '../deps.ts';
 import type {BumbleDOMBundle, BumbleSSRBundle} from './bundle/types.ts';
 
 /** DinoSsr cookie map */
 export type DinoCookies = Map<string, Cookie>;
 
-/** DinoSsr route data for Svelte context */
-export type DinoData = Record<string, unknown>;
+/** DinoSsr custom platform context */
+export type DinoData = {publicData: Platform; serverData: Platform};
 
 /** DinoSsr platform context for VelociRouter */
-export type DinoPlatform = {
+export type DinoPlatform<T extends DinoData = DinoData> = {
   info: Deno.ServeHandlerInfo;
   cookies: DinoCookies;
   deployHash: string;
-  publicData: DinoData;
-  serverData: DinoData;
+  publicData: T['publicData'];
+  serverData: T['serverData'];
 };
 
 /** Init options for DinoSsr class */
@@ -34,10 +34,10 @@ export type DinoOptions = {
 };
 
 /** DinoSsr router handle */
-export type DinoHandle = Handle<DinoPlatform>;
+export type DinoHandle<T extends DinoData = DinoData> = Handle<DinoPlatform<T>>;
 
 /** DinoSsr router */
-export type DinoRouter = Router<DinoPlatform>;
+export type DinoRouter<T extends DinoData = DinoData> = Router<DinoPlatform<T>>;
 
 /** DinoSsr island client-side bundle */
 export type DinoDOMBundle = BumbleDOMBundle & {
@@ -51,9 +51,9 @@ export type DinoSSRBundle = BumbleSSRBundle<DinoModule> & {
 };
 
 /** DinoSsr route load function */
-export type DinoLoad = {
+export type DinoLoad<T extends DinoData = DinoData> = {
   (
-    props: DinoPlatform & {
+    props: DinoPlatform<T> & {
       fetch: typeof fetch;
       params?: Record<string, string | undefined>;
       request: Request;
@@ -114,7 +114,7 @@ export interface DinoManifest {
 }
 
 /** DinoSsr server interface */
-export interface DinoServer {
+export interface DinoServer<T extends DinoData = DinoData> {
   readonly options: DinoOptions;
   readonly initialized: boolean;
   readonly dev: boolean;
@@ -122,7 +122,7 @@ export interface DinoServer {
   readonly deployHash: string;
   readonly origin?: URL;
   readonly manifest: DinoManifest;
-  readonly router: DinoRouter;
+  readonly router: DinoRouter<T>;
   readonly server: Deno.HttpServer;
   init(): Promise<void>;
   hash(value: string, salt?: string): string;

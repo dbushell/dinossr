@@ -5,7 +5,7 @@
 import {
   path,
   deepMerge,
-  velocirouter,
+  VelociRouter,
   ensureDirSync,
   existsSync
 } from '../deps.ts';
@@ -16,6 +16,7 @@ import {manifestDir, newManifest, setManifest} from './manifest.ts';
 import Cookies from './cookies.ts';
 
 import type {
+  DinoData,
   DinoServer,
   DinoOptions,
   DinoRouter,
@@ -24,12 +25,12 @@ import type {
 } from './types.ts';
 
 /** DinoSsr server */
-export class DinoSsr implements DinoServer {
+export class DinoSsr<T extends DinoData = DinoData> implements DinoServer<T> {
   #initialized = false;
   #dir: string;
   #options: DinoOptions;
   #manifest: DinoManifest;
-  #router!: DinoRouter;
+  #router!: DinoRouter<T>;
   #server!: Deno.HttpServer;
 
   /**
@@ -96,7 +97,7 @@ export class DinoSsr implements DinoServer {
     return this.#manifest;
   }
 
-  get router(): DinoRouter {
+  get router(): DinoRouter<T> {
     if (!this.initialized) throw new Error('Not initialized');
     return this.#router;
   }
@@ -113,7 +114,7 @@ export class DinoSsr implements DinoServer {
     const start = performance.now();
 
     // Setup router
-    this.#router = new velocirouter.Router({
+    this.#router = new VelociRouter<DinoPlatform<T>>({
       onError: (error) => {
         console.error(error);
         return new Response(null, {status: 500});
@@ -152,7 +153,7 @@ export class DinoSsr implements DinoServer {
       this.options.serve ?? {},
       async (request, info) => {
         const cookies = new Cookies(request.headers);
-        const platform: DinoPlatform = {
+        const platform: DinoPlatform<T> = {
           info,
           cookies,
           deployHash: this.deployHash,
@@ -196,7 +197,8 @@ export class DinoSsr implements DinoServer {
       middleware.policy
     ];
     for (const callback of builtin) {
-      await Promise.resolve(callback(this));
+      /** @todo Pass generic T type necessary? */
+      await Promise.resolve(callback(this as unknown as DinoServer));
     }
     if (this.dev) {
       const time = (performance.now() - start).toFixed(2);
