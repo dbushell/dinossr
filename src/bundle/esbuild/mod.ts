@@ -14,7 +14,7 @@ export const esbuildStart = async () => {
   if (esbuild) {
     return esbuild;
   }
-  esbuild =  (await import('npm:esbuild@0.20.1')) as typeof EsbuildType;
+  esbuild = (await import('npm:esbuild@0.23.0')) as typeof EsbuildType;
   await esbuild.initialize({
     worker: false
   });
