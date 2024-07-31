@@ -785,9 +785,9 @@ export declare function stop(): Promise<void>;
 //
 //   https://github.com/microsoft/TypeScript-DOM-lib-generator/issues/826
 //
-declare global {
-  namespace WebAssembly {
-    interface Module {}
-  }
-  interface URL {}
-}
+// declare global {
+//   namespace WebAssembly {
+//     interface Module {}
+//   }
+//   interface URL {}
+// }

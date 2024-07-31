@@ -7,22 +7,17 @@ on:
 
 jobs:
   publish:
-    name: Publish
     runs-on: ubuntu-latest
 
     permissions:
-      id-token: write
       contents: read
+      id-token: write
 
     steps:
-      - name: Clone Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Install Deno
-        uses: denoland/setup-deno@v1
-
-      - name: Publish Package
-        run: deno publish
+      - name: Publish package
+        run: npx jsr publish
 
   deploy:
     name: Deploy
