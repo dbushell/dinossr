@@ -1,4 +1,4 @@
-import {path} from '../../deps.ts';
+import * as path from '@std/path';
 import {parseExports, parseImports, stripExports} from './mod.ts';
 import type {ParseExportMap, ParseImportMap} from './types.ts';
 

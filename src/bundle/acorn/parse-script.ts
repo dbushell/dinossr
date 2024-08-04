@@ -1,4 +1,4 @@
-import {acorn} from '../../../deps.ts';
+import * as acorn from 'acorn';
 import {encodeHash} from '../../utils.ts';
 
 const parseMap = new Map<string, acorn.Program>();

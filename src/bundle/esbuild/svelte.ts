@@ -1,4 +1,4 @@
-import {path} from '../../../deps.ts';
+import * as path from '@std/path';
 import {findExportValue} from '../mod.ts';
 import {tagExtract} from './utils.ts';
 import type {DinoServer} from '../../types.ts';

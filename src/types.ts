@@ -3,7 +3,8 @@
  *
  * @module
  */
-import type {Cookie, Handle, Method, Platform, Router} from '../deps.ts';
+import type {Cookie} from '@std/http/cookie';
+import type {Handle, Method, Platform, Router} from '@ssr/velocirouter';
 import type {BumbleDOMBundle, BumbleSSRBundle} from './bundle/types.ts';
 
 /** DinoSsr cookie map */

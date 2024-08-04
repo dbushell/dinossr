@@ -1,4 +1,4 @@
-import {path} from '../deps.ts';
+import * as path from '@std/path';
 import {replace, encodeCryptoBase64} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
 import {serverFetch} from './fetch.ts';

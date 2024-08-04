@@ -1,4 +1,4 @@
-import {path} from '../deps.ts';
+import * as path from '@std/path';
 
 const templateCache = new Map<string, string>();
 

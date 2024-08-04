@@ -2,7 +2,8 @@
  * @module
  * Module exports the DinoSsr Server class
  */
-import {path, deepMerge, VelociRouter} from '../deps.ts';
+import * as path from '@std/path';
+import {Router as VelociRouter} from '@ssr/velocirouter';
 import * as middleware from './middleware/mod.ts';
 import {encodeHash} from './utils.ts';
 import {readTemplate} from './template.ts';
@@ -54,7 +55,10 @@ export class DinoSsr<T extends DinoData = DinoData> implements DinoServer<T> {
         console.error(error.reason);
       }
     };
-    this.#options = deepMerge<DinoOptions>(defaultOptions, options ?? {});
+    this.#options = {
+      ...defaultOptions,
+      ...(options ?? {})
+    };
   }
 
   get options(): DinoOptions {

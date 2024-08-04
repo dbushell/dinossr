@@ -1,4 +1,4 @@
-import {path} from '../../deps.ts';
+import * as path from '@std/path';
 import {esbuildBundle} from './esbuild/mod.ts';
 import {importBundle} from './import.ts';
 import type {DinoServer} from '../types.ts';

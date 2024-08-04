@@ -1,4 +1,4 @@
-import {cookie} from '../deps.ts';
+import * as cookie from '@std/http/cookie';
 import type {DinoCookies} from './types.ts';
 
 export default class Cookies implements DinoCookies {

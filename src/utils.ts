@@ -1,6 +1,6 @@
 import {crypto, type DigestAlgorithm} from '@std/crypto';
-import {encodeHex} from '@std/encoding';
-import {path, encodeBase64} from '../deps.ts';
+import {encodeBase64, encodeHex} from '@std/encoding';
+import * as path from '@std/path';
 
 export const encodeHash = (value: string): Promise<string> =>
   crypto.subtle

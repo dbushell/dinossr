@@ -1,4 +1,4 @@
-import {path} from '../../../deps.ts';
+import * as path from '@std/path';
 import type {Metafile} from 'esbuild';
 
 // Return Svelte component name from path

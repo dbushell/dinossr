@@ -4,7 +4,6 @@
 !deno.json
 !LICENSE
 !README.md
-!deps.ts
 !mod.ts
 !docs
 !src

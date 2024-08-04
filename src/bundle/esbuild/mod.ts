@@ -1,4 +1,5 @@
-import {path, svelte} from '../../../deps.ts';
+import * as path from '@std/path';
+import * as svelte from 'svelte/compiler';
 import Script from '../script.ts';
 import {fetchImport} from './fetch.ts';
 import {createResolver, svelteResolver} from './resolver.ts';

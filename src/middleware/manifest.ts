@@ -1,4 +1,5 @@
-import {path, existsSync} from '../../deps.ts';
+import * as path from '@std/path';
+import {existsSync} from '@std/fs';
 import {routeMethods, importRoutes} from '../render.ts';
 import {addRoute} from './shared.ts';
 import {traverse} from '../utils.ts';

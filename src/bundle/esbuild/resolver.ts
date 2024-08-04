@@ -1,4 +1,5 @@
-import {path, svelte} from '../../../deps.ts';
+import * as path from '@std/path';
+import * as svelte from 'svelte/compiler';
 import type {OnResolveArgs, OnResolveResult} from 'esbuild';
 
 type Resolver = (args: OnResolveArgs) => OnResolveResult | undefined;
