@@ -1,7 +1,7 @@
 import {requestMap} from './shared.ts';
-import type {DinoServer} from '../types.ts';
+import type {DinoSsr} from '../mod.ts';
 
-export default (server: DinoServer) => {
+export default (server: DinoSsr) => {
   const input = new URLPattern({pathname: '/_/immutable/*'});
   server.router.get(input, ({request, response}) => {
     try {

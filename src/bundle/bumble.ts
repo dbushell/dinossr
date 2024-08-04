@@ -1,7 +1,7 @@
 import * as path from '@std/path';
 import {esbuildBundle} from './esbuild/mod.ts';
 import {importBundle} from './import.ts';
-import type {DinoServer} from '../types.ts';
+import type {DinoSsr} from '../mod.ts';
 import type {
   BumbleOptions,
   BumbleBundle,
@@ -11,7 +11,7 @@ import type {
 
 /** Bundle the entry file (write if build) */
 const bumble = async (
-  server: DinoServer,
+  server: DinoSsr,
   options: BumbleOptions
 ): Promise<BumbleBundle> => {
   const {entry, generate} = options;
@@ -21,7 +21,7 @@ const bumble = async (
 
 /** Bundle the entry file for client-side rendering */
 export const bumbleDOM = async (
-  server: DinoServer,
+  server: DinoSsr,
   options: BumbleOptions
 ): Promise<BumbleDOMBundle> => {
   const {entry, hash} = options;
@@ -42,7 +42,7 @@ export const bumbleDOM = async (
 
 /** Bundle the entry file for server-side rendering */
 export const bumbleSSR = async <M>(
-  server: DinoServer,
+  server: DinoSsr,
   options: BumbleOptions
 ): Promise<BumbleSSRBundle<M>> => {
   const {entry, hash} = options;

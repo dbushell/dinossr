@@ -1,9 +1,9 @@
 import * as path from '@std/path';
 import {existsSync} from '@std/fs';
 import {serveDir} from '@std/http/file-server';
-import type {DinoServer} from '../types.ts';
+import type {DinoSsr} from '../mod.ts';
 
-export default (server: DinoServer) => {
+export default (server: DinoSsr) => {
   if (!server.options.static) {
     return;
   }

@@ -1,7 +1,7 @@
 import {requestMap} from './shared.ts';
-import type {DinoServer} from '../types.ts';
+import type {DinoSsr} from '../mod.ts';
 
-export default (server: DinoServer) => {
+export default (server: DinoSsr) => {
   server.router.use(({request, response, stopPropagation}) => {
     if (requestMap.get(request)?.ignore) return response;
     if (request.headers.get('upgrade') === 'websocket') {

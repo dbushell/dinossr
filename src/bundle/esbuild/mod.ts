@@ -7,7 +7,7 @@ import {svelteGroup} from './svelte.ts';
 import {typescriptGroup} from './typescript.ts';
 import {componentName, normalizeMeta} from './utils.ts';
 import type {Deferred} from '../types.ts';
-import type {DinoServer} from '../../types.ts';
+import type {DinoSsr} from '../../mod.ts';
 import * as esbuild from 'esbuild';
 
 const deferredMap = new Map<string, Deferred<string>>();
@@ -34,7 +34,7 @@ const deferredCode = (
 };
 
 export const esbuildBundle = async (
-  server: DinoServer,
+  server: DinoSsr,
   entry: string,
   generate: 'dom' | 'ssr' = 'ssr'
 ) => {

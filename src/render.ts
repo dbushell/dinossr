@@ -3,8 +3,8 @@ import {replace, encodeCryptoBase64} from './utils.ts';
 import {readTemplate, hasTemplate} from './template.ts';
 import {serverFetch} from './fetch.ts';
 import type {BumbleComponent} from './bundle/types.ts';
+import type {DinoSsr} from '../mod.ts';
 import type {
-  DinoServer,
   DinoHandle,
   DinoLoad,
   DinoRoute,
@@ -27,7 +27,7 @@ export const routeMethods: Array<keyof DinoModule> = [
 
 // Return a route handle that renders with `app.html`
 export const createHandle = async (
-  server: DinoServer,
+  server: DinoSsr,
   route: DinoRoute
 ): Promise<DinoHandle> => {
   const template = await readTemplate();
@@ -61,7 +61,7 @@ export const createHandle = async (
 };
 
 export const importRoutes = (
-  server: DinoServer,
+  server: DinoSsr,
   bundle: DinoSSRBundle
 ): {routes: Array<DinoRoute>} => {
   const {hash, mod, islands} = bundle;

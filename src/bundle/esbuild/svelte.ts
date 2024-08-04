@@ -1,7 +1,7 @@
 import * as path from '@std/path';
 import {findExportValue} from '../mod.ts';
 import {tagExtract} from './utils.ts';
-import type {DinoServer} from '../../types.ts';
+import type {DinoSsr} from '../../mod.ts';
 import type {PreprocessorGroup} from 'svelte/compiler';
 
 const islandMap = new Map<string, string>();
@@ -9,7 +9,7 @@ const islandMap = new Map<string, string>();
 const preTags = ['script', 'svelte:window', 'svelte:document', 'svelte:head'];
 const postTags = ['style'];
 
-export const svelteGroup = (server: DinoServer, entry: string) => {
+export const svelteGroup = (server: DinoSsr, entry: string) => {
   // Append _island export to module script
   const islandExport: PreprocessorGroup = {
     script: async (params) => {

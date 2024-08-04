@@ -1,4 +1,4 @@
-import {DinoSsr} from 'jsr:@ssr/dinossr@0.34';
+import {DinoSsr} from 'jsr:@ssr/dinossr';
 
 const dir = new URL('./', import.meta.url).pathname;
 

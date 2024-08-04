@@ -19,6 +19,5 @@ export type {
   DinoResponse,
   DinoRoute,
   DinoRouter,
-  DinoServer,
   DinoSSRBundle
 } from './src/types.ts';

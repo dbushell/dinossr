@@ -4,8 +4,8 @@ import {routeMethods, importRoutes} from '../render.ts';
 import {addRoute} from './shared.ts';
 import {traverse} from '../utils.ts';
 import {bumbleDOM, bumbleSSR} from '../bundle/mod.ts';
+import type {DinoSsr} from '../mod.ts';
 import type {
-  DinoServer,
   DinoRoute,
   DinoIsland,
   DinoSSRBundle,
@@ -14,7 +14,7 @@ import type {
 
 // Generate routes for directory
 const generate = async function* (
-  server: DinoServer
+  server: DinoSsr
 ): AsyncGenerator<DinoManifest['modules'][number]> {
   const dir = path.join(server.dir, './routes');
   if (!existsSync(dir)) {
@@ -97,7 +97,7 @@ const generate = async function* (
   }
 };
 
-const generateManifest = async (server: DinoServer) => {
+const generateManifest = async (server: DinoSsr) => {
   // Create new routes and new manifest
   const routes: Array<DinoRoute> = [];
   // const manifest: DinoManifest = server.manifest;
@@ -132,6 +132,6 @@ const generateManifest = async (server: DinoServer) => {
   return server.manifest;
 };
 
-export default (server: DinoServer): Promise<DinoManifest> => {
+export default (server: DinoSsr): Promise<DinoManifest> => {
   return generateManifest(server);
 };

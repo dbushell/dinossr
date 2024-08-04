@@ -11,7 +11,6 @@ import Cookies from './cookies.ts';
 
 import type {
   DinoData,
-  DinoServer,
   DinoOptions,
   DinoRouter,
   DinoManifest,
@@ -19,7 +18,7 @@ import type {
 } from './types.ts';
 
 /** DinoSsr server */
-export class DinoSsr<T extends DinoData = DinoData> implements DinoServer<T> {
+export class DinoSsr<T extends DinoData = DinoData> {
   #initialized = false;
   #dir: string;
   #options: DinoOptions;
@@ -190,7 +189,7 @@ export class DinoSsr<T extends DinoData = DinoData> implements DinoServer<T> {
     ];
     for (const callback of builtin) {
       /** @todo Pass generic T type necessary? */
-      await Promise.resolve(callback(this as unknown as DinoServer));
+      await Promise.resolve(callback(this as unknown as DinoSsr));
     }
     if (this.dev) {
       const time = (performance.now() - start).toFixed(2);

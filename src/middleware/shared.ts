@@ -1,5 +1,6 @@
 import {createHandle} from '../render.ts';
-import type {DinoServer, DinoRoute} from '../types.ts';
+import type {DinoRoute} from '../types.ts';
+import type {DinoSsr} from '../mod.ts';
 
 export const requestMap = new WeakMap<Request, {ignore?: boolean}>();
 
@@ -8,7 +9,7 @@ const sendBody = (request: Request) =>
   request.method === 'GET' &&
   request.headers.get('accept')?.includes('text/html');
 
-export const addRoute = async (server: DinoServer, route: DinoRoute) => {
+export const addRoute = async (server: DinoSsr, route: DinoRoute) => {
   if (route.pattern === '/500') {
     addError(server, route);
     return;
@@ -25,7 +26,7 @@ export const addRoute = async (server: DinoServer, route: DinoRoute) => {
   server.router[key](input, await createHandle(server, route));
 };
 
-export const addError = async (server: DinoServer, route: DinoRoute) => {
+export const addError = async (server: DinoSsr, route: DinoRoute) => {
   const handle = await createHandle(server, route);
   server.router.onError = async (error, request, platform) => {
     console.error(error);
@@ -54,7 +55,7 @@ export const addError = async (server: DinoServer, route: DinoRoute) => {
   };
 };
 
-export const addNoMatch = async (server: DinoServer, route: DinoRoute) => {
+export const addNoMatch = async (server: DinoSsr, route: DinoRoute) => {
   const handle = await createHandle(server, route);
   server.router.onNoMatch = async (request, platform) => {
     const defaultResponse = new Response(null, {status: 404});

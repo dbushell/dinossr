@@ -1,9 +1,9 @@
 import {requestMap} from './shared.ts';
-import type {DinoServer} from '../types.ts';
+import type {DinoSsr} from '../mod.ts';
 
 const ignore = new Set(['/', '/404', '/500']);
 
-export default (server: DinoServer) => {
+export default (server: DinoSsr) => {
   // Possible routes for auto redirects
   const redirects = new Set<string>();
   for (const mod of server.manifest.modules) {

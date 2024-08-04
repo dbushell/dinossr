@@ -110,18 +110,3 @@ export interface DinoManifest {
     }
   >;
 }
-
-/** DinoSsr server interface */
-export interface DinoServer<T extends DinoData = DinoData> {
-  readonly options: DinoOptions;
-  readonly initialized: boolean;
-  readonly dev: boolean;
-  readonly dir: string;
-  readonly deployHash: string;
-  readonly origin?: URL;
-  readonly manifest: DinoManifest;
-  readonly router: DinoRouter<T>;
-  readonly server: Deno.HttpServer;
-  init(): Promise<void>;
-  hash(value: string, salt?: string): Promise<string>;
-}
