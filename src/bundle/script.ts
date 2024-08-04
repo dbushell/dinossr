@@ -11,13 +11,16 @@ interface CodeOptions {
 
 export default class Script {
   #code: string;
-  #imports: ParseImportMap;
-  #exports: ParseExportMap;
+  #imports!: ParseImportMap;
+  #exports!: ParseExportMap;
 
   constructor(code: string) {
     this.#code = code;
-    ({code: this.#code, map: this.#imports} = parseImports(this.#code));
-    ({code: this.#code, map: this.#exports} = parseExports(this.#code));
+  }
+
+  async parse() {
+    ({code: this.#code, map: this.#imports} = await parseImports(this.#code));
+    ({code: this.#code, map: this.#exports} = await parseExports(this.#code));
   }
 
   get imports(): ParseImportMap {
@@ -59,10 +62,12 @@ export default class Script {
   }
 
   /** Serialize script with optional exports */
-  serialize(options: CodeOptions = {exportType: 'module'}): string {
+  async serialize(
+    options: CodeOptions = {exportType: 'module'}
+  ): Promise<string> {
     let code = this.#code;
     if (Array.isArray(options.exports)) {
-      code = stripExports(code, this.#exports, options.exports);
+      code = await stripExports(code, this.#exports, options.exports);
     }
     if (options.exports) {
       if (options.exportType === 'module') {

@@ -1,9 +1,11 @@
-import {acorn} from '../../../deps.ts';
 import parseScript from './parse-script.ts';
 import type {ParseExportMap} from '../types.ts';
+import type {Identifier} from 'acorn';
 
-const parseExports = (code: string): {code: string; map: ParseExportMap} => {
-  const ast = parseScript(code);
+const parseExports = async (
+  code: string
+): Promise<{code: string; map: ParseExportMap}> => {
+  const ast = await parseScript(code);
   const map: ParseExportMap = new Map();
   // Negative offset to track removed code
   let offset = 0;
@@ -24,20 +26,20 @@ const parseExports = (code: string): {code: string; map: ParseExportMap} => {
       if (node.declaration.type !== 'Identifier') {
         throw new Error('Unsupported ExportDefaultDeclaration');
       }
-      map.set('default', (node.declaration as acorn.Identifier).name);
+      map.set('default', (node.declaration as Identifier).name);
       continue;
     }
     // Handle named exports
     if (node.type === 'ExportNamedDeclaration') {
       // Handle declarations
       if (node.declaration) {
-        let identifier: acorn.Identifier | undefined;
+        let identifier: Identifier | undefined;
         if (node.declaration.type === 'VariableDeclaration') {
-          identifier = node.declaration.declarations[0].id as acorn.Identifier;
+          identifier = node.declaration.declarations[0].id as Identifier;
         } else if (node.declaration.type === 'FunctionDeclaration') {
-          identifier = node.declaration.id as acorn.Identifier;
+          identifier = node.declaration.id as Identifier;
         } else if (node.declaration.type === 'ClassDeclaration') {
-          identifier = node.declaration.id as acorn.Identifier;
+          identifier = node.declaration.id as Identifier;
         }
         if (!identifier) {
           throw new Error('Unsupported ExportNamedDeclaration');
@@ -61,8 +63,8 @@ const parseExports = (code: string): {code: string; map: ParseExportMap} => {
             console.warn('Unsupported ExportNamedDeclaration');
           }
           map.set(
-            (specifier.exported as acorn.Identifier).name,
-            (specifier.local as acorn.Identifier).name
+            (specifier.exported as Identifier).name,
+            (specifier.local as Identifier).name
           );
         }
       }

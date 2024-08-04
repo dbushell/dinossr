@@ -1,9 +1,11 @@
-import {acorn} from '../../../deps.ts';
 import parseScript from './parse-script.ts';
 import type {ParseImportMap} from '../types.ts';
+import type {Identifier} from 'acorn';
 
-const parseImports = (code: string): {code: string; map: ParseImportMap} => {
-  const ast = parseScript(code);
+const parseImports = async (
+  code: string
+): Promise<{code: string; map: ParseImportMap}> => {
+  const ast = await parseScript(code);
   const map: ParseImportMap = new Map();
   // Negative offset to track removed code
   let offset = 0;
@@ -41,7 +43,7 @@ const parseImports = (code: string): {code: string; map: ParseImportMap} => {
       // Handle named imports (type: ImportSpecifier)
       if (specifier.imported.type === 'Identifier') {
         from.push({
-          alias: (specifier.imported as acorn.Identifier).name,
+          alias: (specifier.imported as Identifier).name,
           local: specifier.local.name
         });
         continue;

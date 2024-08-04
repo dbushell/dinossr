@@ -37,9 +37,6 @@ jobs:
         with:
           deno-version: vx.x.x
 
-      - name: Build
-        run: DINOSSR_BUILD=1 DINOSSR_DEPLOY_ID=${{ github.run_id }} deno run -A docs/mod.ts
-
       - name: Deploy
         uses: denoland/deployctl@v1
         with:

@@ -1,17 +1,21 @@
-import {acorn} from '../../../deps.ts';
 import parseScript from './parse-script.ts';
+import type {
+  ExportNamedDeclaration,
+  Identifier,
+  VariableDeclaration
+} from 'acorn';
 
 /** Export does not exist in code */
 export const undefinedExport = Symbol();
 
 /** Return the named export node (or undefined symbol) */
-export const findExport = (
+export const findExport = async (
   code: string,
   name: string
-): symbol | acorn.ExportNamedDeclaration => {
-  const ast = parseScript(code);
+): Promise<symbol | ExportNamedDeclaration> => {
+  const ast = await parseScript(code);
   // Possibly defined before exported in two statements
-  let constNode: acorn.VariableDeclaration | undefined;
+  let constNode: VariableDeclaration | undefined;
   for (const node of ast.body) {
     // Look for `const [name] = true;`
     if (node.type === 'VariableDeclaration' && node.kind === 'const') {
@@ -49,13 +53,13 @@ export const findExport = (
       }
       continue;
     }
-    let identifier: acorn.Identifier | undefined;
+    let identifier: Identifier | undefined;
     if (node.declaration.type === 'VariableDeclaration') {
-      identifier = node.declaration.declarations[0].id as acorn.Identifier;
+      identifier = node.declaration.declarations[0].id as Identifier;
     } else if (node.declaration.type === 'FunctionDeclaration') {
-      identifier = node.declaration.id as acorn.Identifier;
+      identifier = node.declaration.id as Identifier;
     } else if (node.declaration.type === 'ClassDeclaration') {
-      identifier = node.declaration.id as acorn.Identifier;
+      identifier = node.declaration.id as Identifier;
     }
     if (!identifier || identifier.name !== name) {
       continue;
@@ -66,8 +70,8 @@ export const findExport = (
 };
 
 /** Return the named export node value (or undefined symbol) */
-export const findExportValue = (code: string, name: string) => {
-  const node = findExport(code, name);
+export const findExportValue = async (code: string, name: string) => {
+  const node = await findExport(code, name);
   if (typeof node === 'symbol') return node;
   if (
     node.declaration?.type !== 'VariableDeclaration' ||

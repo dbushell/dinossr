@@ -1,16 +1,27 @@
+import {crypto, type DigestAlgorithm} from '@std/crypto';
+import {encodeHex} from '@std/encoding';
 import {path, encodeBase64} from '../deps.ts';
-import MurmurHash3 from './murmurhash.ts';
 
-export const encodeHash = (value: string) =>
-  new MurmurHash3(value).result().toString(16);
+export const encodeHash = (value: string): Promise<string> =>
+  crypto.subtle
+    .digest('FNV32A', new TextEncoder().encode(value))
+    .then(encodeHex);
 
-export const encodeCrypto = async (value: string, algorithm = 'SHA-256') =>
+export const encodeCrypto = async (
+  value: string,
+  algorithm?: DigestAlgorithm
+): Promise<Uint8Array> =>
   new Uint8Array(
-    await crypto.subtle.digest(algorithm, new TextEncoder().encode(value))
+    await crypto.subtle.digest(
+      algorithm ?? 'SHA-256',
+      new TextEncoder().encode(value)
+    )
   );
 
-export const encodeCryptoBase64 = async (value: string, algorithm?: string) =>
-  encodeBase64(await encodeCrypto(value, algorithm));
+export const encodeCryptoBase64 = async (
+  value: string,
+  algorithm?: DigestAlgorithm
+) => encodeBase64(await encodeCrypto(value, algorithm));
 
 // Recursively find routes within directory
 export const traverse = async (

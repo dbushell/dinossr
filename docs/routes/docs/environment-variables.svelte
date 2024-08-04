@@ -31,12 +31,6 @@
     Used to generate a deterministic <code>deployHash</code>. If not defined a
     new hash is generated based on deploy time.
   </p>
-  <h3><code>DINOSSR_BUILD</code></h3>
-  <p>
-    If defined routes a compiled and bundled to <code>.dinossr</code> in the project
-    root directory. This speeds up server cold starts significantly. Yes, it’s a
-    build step!
-  </p>
   <p>
     See notes on <a href="/docs/deploy/">Deno Deploy</a> for usage.
   </p>

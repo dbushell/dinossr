@@ -1,8 +1,8 @@
-import {svelte} from '../../../deps.ts';
 import {path} from '../../../deps.ts';
 import {findExportValue} from '../mod.ts';
 import {tagExtract} from './utils.ts';
 import type {DinoServer} from '../../types.ts';
+import type {PreprocessorGroup} from 'svelte/compiler';
 
 const islandMap = new Map<string, string>();
 
@@ -11,12 +11,12 @@ const postTags = ['style'];
 
 export const svelteGroup = (server: DinoServer, entry: string) => {
   // Append _island export to module script
-  const islandExport: svelte.PreprocessorGroup = {
-    script: (params) => {
+  const islandExport: PreprocessorGroup = {
+    script: async (params) => {
       let code = params.content;
       if (
         params.attributes.context !== 'module' ||
-        findExportValue(code, 'island') !== true
+        (await findExportValue(code, 'island')) !== true
       ) {
         return {code};
       }
@@ -26,7 +26,7 @@ export const svelteGroup = (server: DinoServer, entry: string) => {
       ) {
         throw new Error('Top-level routes cannot be islands');
       }
-      const hash = server.hash(params.filename!, 'dom');
+      const hash = await server.hash(params.filename!, 'dom');
       code = `\nexport const _$island = '${hash}';\n${code}`;
       islandMap.set(params.filename!, hash);
       return {code};
@@ -34,7 +34,7 @@ export const svelteGroup = (server: DinoServer, entry: string) => {
   };
 
   // Append import statement for Island component
-  const islandImport: svelte.PreprocessorGroup = {
+  const islandImport: PreprocessorGroup = {
     script: (params) => {
       let code = params.content;
       if (params.attributes.context) {
@@ -48,7 +48,7 @@ export const svelteGroup = (server: DinoServer, entry: string) => {
   };
 
   // Wrap component around markup
-  const islandMarkup: svelte.PreprocessorGroup = {
+  const islandMarkup: PreprocessorGroup = {
     markup: (params) => {
       let code = params.content;
       const hash = islandMap.get(params.filename!);

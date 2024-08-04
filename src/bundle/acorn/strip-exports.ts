@@ -1,16 +1,16 @@
-import {acorn} from '../../../deps.ts';
 import parseScript from './parse-script.ts';
 import parseExports from './parse-exports.ts';
 import type {ParseExportMap} from '../types.ts';
+import type {Identifier} from 'acorn';
 
-export const stripExports = (
+export const stripExports = async (
   code: string,
   exports: ParseExportMap,
   allowed: Array<string>
-): string => {
-  const parsed = parseExports(code);
+): Promise<string> => {
+  const parsed = await parseExports(code);
   code = parsed.code;
-  const ast = parseScript(code);
+  const ast = await parseScript(code);
   // Negative offset to track removed code
   let offset = 0;
   // Invert export map to lookup local names
@@ -21,7 +21,7 @@ export const stripExports = (
     if (node.type === 'VariableDeclaration') {
       // TODO: handle multiple declarations?
       node.declarations.forEach((d) => {
-        locals.push((d.id as acorn.Identifier).name);
+        locals.push((d.id as Identifier).name);
       });
     } else if (node.type === 'FunctionDeclaration') {
       locals.push(node.id.name);

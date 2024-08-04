@@ -27,7 +27,6 @@ export type DinoOptions = {
   origin?: URL;
   static?: string;
   deployHash?: string;
-  manifest?: DinoManifest;
   unhandledRejection?: (error: PromiseRejectionEvent) => void;
   rejectionHandled?: (error: PromiseRejectionEvent) => void;
   serve?: Deno.ServeOptions;
@@ -103,14 +102,12 @@ export interface DinoIsland {
 /** DinoSsr build manifest */
 export interface DinoManifest {
   deployHash: string;
+  islands: Array<DinoIsland>;
   modules: Array<
     Omit<DinoSSRBundle, 'mod' | 'metafile'> & {
       routes: Array<DinoRoute>;
     }
   >;
-  islands: Array<DinoIsland>;
-  MODULES: Array<DinoSSRBundle>;
-  ISLANDS: Array<DinoDOMBundle>;
 }
 
 /** DinoSsr server interface */
@@ -125,5 +122,5 @@ export interface DinoServer<T extends DinoData = DinoData> {
   readonly router: DinoRouter<T>;
   readonly server: Deno.HttpServer;
   init(): Promise<void>;
-  hash(value: string, salt?: string): string;
+  hash(value: string, salt?: string): Promise<string>;
 }

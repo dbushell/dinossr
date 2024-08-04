@@ -1,6 +1,5 @@
 import {path} from '../../deps.ts';
 import {esbuildBundle} from './esbuild/mod.ts';
-import {manifestDir} from './../manifest.ts';
 import {importBundle} from './import.ts';
 import type {DinoServer} from '../types.ts';
 import type {
@@ -15,17 +14,8 @@ const bumble = async (
   server: DinoServer,
   options: BumbleOptions
 ): Promise<BumbleBundle> => {
-  const {entry, hash, generate} = options;
+  const {entry, generate} = options;
   const bundle = await esbuildBundle(server, entry, generate);
-  if (Deno.env.has('DINOSSR_BUILD')) {
-    await Deno.writeTextFile(
-      path.join(manifestDir, `${hash}.js`),
-      bundle.script.serialize({
-        exports: options.exports,
-        exportType: 'module'
-      })
-    );
-  }
   return bundle;
 };
 
@@ -38,7 +28,7 @@ export const bumbleDOM = async (
   options.generate = 'dom';
   const s1 = performance.now();
   const bundle = await bumble(server, options);
-  const code = bundle.script.serialize({
+  const code = await bundle.script.serialize({
     exports: options.exports ?? true,
     exportType: 'module'
   });

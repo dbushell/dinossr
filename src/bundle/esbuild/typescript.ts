@@ -1,25 +1,25 @@
-import {svelte} from '../../../deps.ts';
 import {encodeHash} from '../../utils.ts';
 import type {EsbuildType} from '../types.ts';
+import type {PreprocessorGroup, Processed} from 'svelte/compiler';
 
-const processedMap = new Map<string, Promise<svelte.Processed>>();
+const processedMap = new Map<string, Promise<Processed>>();
 
 export const typescriptGroup = (
   transform: typeof EsbuildType.transform
-): svelte.PreprocessorGroup => {
+): PreprocessorGroup => {
   return {
-    script: ({content, attributes}) => {
+    script: async ({content, attributes}) => {
       // Skip non-TypeScript code
       if (attributes.lang !== 'ts') {
         return Promise.resolve({code: content});
       }
       // Check if code is already processed
-      const hash = encodeHash(content);
+      const hash = await encodeHash(content);
       if (processedMap.has(hash)) {
         return processedMap.get(hash);
       }
       // Process TypeScript code and return cached promise
-      const {promise, resolve} = Promise.withResolvers<svelte.Processed>();
+      const {promise, resolve} = Promise.withResolvers<Processed>();
       processedMap.set(hash, promise);
       transform(content, {
         loader: 'ts',

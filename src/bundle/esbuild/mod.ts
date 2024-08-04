@@ -161,6 +161,7 @@ export const esbuildBundle = async (
 
   const results = await esbuild.build(esbuildOptions);
   const script = new Script(results.outputFiles![0].text);
+  await script.parse();
   const metafile = normalizeMeta(server.dir, results.metafile!);
 
   return {script, metafile};

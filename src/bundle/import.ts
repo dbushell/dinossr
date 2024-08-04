@@ -6,7 +6,7 @@ export const importDynamicBundle = async <M>(
   exports: boolean | Array<string> = true
 ): Promise<BumbleModule<M>> => {
   const {script} = bundle;
-  const code = script.serialize({
+  const code = await script.serialize({
     exports,
     exportType: 'module'
   });
@@ -18,12 +18,12 @@ export const importDynamicBundle = async <M>(
 };
 
 /** Evaluate bundle in a function that returns the exports */
-export const importFunctionBundle = <M>(
+export const importFunctionBundle = async <M>(
   bundle: BumbleBundle,
   exports: boolean | Array<string> = true
 ): Promise<BumbleModule<M>> => {
   const {script} = bundle;
-  const code = script.serialize({
+  const code = await script.serialize({
     exports,
     exportType: 'function'
   });

@@ -41,7 +41,7 @@ const generate = async function* (
       pattern += path.basename(entry, path.extname(entry));
     }
     // Import module
-    const hash = server.hash(entry, 'ssr');
+    const hash = await server.hash(entry, 'ssr');
     let bundle: DinoSSRBundle;
     if (!Deno.env.has('DENO_DEPLOYMENT_ID') && /\.(js|ts)$/.test(entry)) {
       // Skip bundler if not building or deploying
@@ -78,7 +78,7 @@ const generate = async function* (
           );
           if (!found) continue;
           const entry = path.join(server.dir, key);
-          const hash = server.hash(entry, 'dom');
+          const hash = await server.hash(entry, 'dom');
           bundle.islands.push({
             entry,
             hash,
@@ -131,34 +131,6 @@ const generateManifest = async (server: DinoServer) => {
   return server.manifest;
 };
 
-const importManifest = (server: DinoServer) => {
-  const routes: Array<DinoRoute> = [];
-  for (const dom of server.manifest.ISLANDS) {
-    routes.push({
-      method: 'GET',
-      pattern: dom.pattern,
-      hash: dom.hash,
-      render: () => {
-        return {
-          response: new Response(dom.code, {
-            headers: {'content-type': 'text/javascript; charset=utf-8'}
-          })
-        };
-      }
-    });
-  }
-  for (const mod of server.manifest.MODULES) {
-    const {routes: modRoutes} = importRoutes(server, mod as DinoSSRBundle);
-    routes.push(...modRoutes);
-  }
-  routes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  routes.map((route) => addRoute(server, route));
-  return server.manifest;
-};
-
 export default (server: DinoServer): Promise<DinoManifest> => {
-  if (server.manifest.MODULES.length) {
-    return Promise.resolve(importManifest(server));
-  }
   return generateManifest(server);
 };

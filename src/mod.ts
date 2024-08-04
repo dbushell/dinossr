@@ -2,17 +2,10 @@
  * @module
  * Module exports the DinoSsr Server class
  */
-import {
-  path,
-  deepMerge,
-  VelociRouter,
-  ensureDirSync,
-  existsSync
-} from '../deps.ts';
+import {path, deepMerge, VelociRouter} from '../deps.ts';
 import * as middleware from './middleware/mod.ts';
 import {encodeHash} from './utils.ts';
 import {readTemplate} from './template.ts';
-import {manifestDir, newManifest, setManifest} from './manifest.ts';
 import Cookies from './cookies.ts';
 
 import type {
@@ -29,7 +22,7 @@ export class DinoSsr<T extends DinoData = DinoData> implements DinoServer<T> {
   #initialized = false;
   #dir: string;
   #options: DinoOptions;
-  #manifest: DinoManifest;
+  #manifest!: DinoManifest;
   #router!: DinoRouter<T>;
   #server!: Deno.HttpServer;
 
@@ -43,14 +36,9 @@ export class DinoSsr<T extends DinoData = DinoData> implements DinoServer<T> {
     dir ??= Deno.cwd();
     this.#dir = path.resolve(dir, './');
     // Check deployment
-    if (Deno.env.has('DENO_REGION') && !options.manifest) {
-      console.error(
-        '⚠️ Deno Deploy requires "manifest" option\n👉 See documentation: https://ssr.rocks/docs/deploy/'
-      );
-      throw new Error('Missing manifest');
+    if (Deno.env.has('DENO_REGION')) {
+      console.warn('⚠️ Deno Deploy is slow ⚠️');
     }
-    // Get new or prebuilt manifest
-    this.#manifest = options.manifest ?? newManifest(options.deployHash);
     // Setup options
     const defaultOptions: DinoOptions = {
       origin: Deno.env.has('ORIGIN')
@@ -111,6 +99,19 @@ export class DinoSsr<T extends DinoData = DinoData> implements DinoServer<T> {
     if (this.initialized) return;
     this.#initialized = true;
 
+    const deployHash = await encodeHash(
+      // Use build environment variable
+      Deno.env.get('DINOSSR_DEPLOY_ID') ??
+        // Use unique per startup
+        Date.now().toString()
+    );
+
+    this.#manifest = {
+      deployHash,
+      islands: [],
+      modules: []
+    };
+
     const start = performance.now();
 
     // Setup router
@@ -123,20 +124,7 @@ export class DinoSsr<T extends DinoData = DinoData> implements DinoServer<T> {
 
     await readTemplate(this.dir);
 
-    if (Deno.env.has('DINOSSR_BUILD')) {
-      if (existsSync(manifestDir)) {
-        Deno.removeSync(manifestDir, {recursive: true});
-      }
-      ensureDirSync(manifestDir);
-    }
-
     await this.#setup();
-
-    if (Deno.env.has('DINOSSR_BUILD')) {
-      setManifest(this.manifest);
-      // stop esbuild?
-      Deno.exit(0);
-    }
 
     globalThis.addEventListener(
       'unhandledrejection',
@@ -207,7 +195,7 @@ export class DinoSsr<T extends DinoData = DinoData> implements DinoServer<T> {
   }
 
   /** Hash a value with the deploy hash */
-  hash(value: string, salt = ''): string {
+  hash(value: string, salt = ''): Promise<string> {
     return encodeHash(value + salt + this.deployHash);
   }
 }
