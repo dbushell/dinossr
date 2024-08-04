@@ -25,6 +25,7 @@
     "@std/http": "jsr:@std/http@^0.224.5",
     "@std/path": "jsr:@std/path@^1.0.2",
     "acorn": "npm:acorn@^8.12.1",
+    "esbuild": "npm:esbuild@^0.23.0",
     "svelte": "npm:svelte@^4.2.18"
   }
 }

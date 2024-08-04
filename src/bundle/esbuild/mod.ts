@@ -5,27 +5,9 @@ import {createResolver, svelteResolver} from './resolver.ts';
 import {svelteGroup} from './svelte.ts';
 import {typescriptGroup} from './typescript.ts';
 import {componentName, normalizeMeta} from './utils.ts';
-import type {EsbuildType, Deferred} from '../types.ts';
+import type {Deferred} from '../types.ts';
 import type {DinoServer} from '../../types.ts';
-
-let esbuild: typeof EsbuildType | undefined;
-
-export const esbuildStart = async () => {
-  if (esbuild) {
-    return esbuild;
-  }
-  esbuild = (await import('npm:esbuild@0.23.0')) as typeof EsbuildType;
-  await esbuild.initialize({
-    worker: false
-  });
-  return esbuild;
-};
-
-export const esbuildStop = async () => {
-  if (esbuild) {
-    await esbuild.stop();
-  }
-};
+import * as esbuild from 'esbuild';
 
 const deferredMap = new Map<string, Deferred<string>>();
 const mtimeMap = new Map<string, number>();
@@ -55,8 +37,6 @@ export const esbuildBundle = async (
   entry: string,
   generate: 'dom' | 'ssr' = 'ssr'
 ) => {
-  const esbuild = await esbuildStart();
-
   // Setup preprocessors
   const group: Array<svelte.PreprocessorGroup> = [
     typescriptGroup(esbuild.transform),
@@ -83,7 +63,7 @@ export const esbuildBundle = async (
 
   const resolver = createResolver(server.dir);
 
-  const sveltePlugin: EsbuildType.Plugin = {
+  const sveltePlugin: esbuild.Plugin = {
     name: 'svelte',
     setup(build) {
       build.onResolve({filter: /.*/}, async (args) => {
@@ -96,7 +76,7 @@ export const esbuildBundle = async (
       });
       build.onLoad({filter: /^(file|https):/}, async (args) => {
         const key = `fetch:${args.path}`;
-        let loader: EsbuildType.Loader = 'js';
+        let loader: esbuild.Loader = 'js';
         let contents = await deferredCode(key, null, async () => {
           const response = await fetchImport(args.path);
           if (!response.ok) {
@@ -115,7 +95,7 @@ export const esbuildBundle = async (
         } else {
           const ext = path.extname(args.path).substring(1);
           if (/^(js|ts|json)$/.test(ext)) {
-            loader = ext as EsbuildType.Loader;
+            loader = ext as esbuild.Loader;
           }
         }
         return {
@@ -139,13 +119,13 @@ export const esbuildBundle = async (
           contents: await deferredCode(key, args.path, () => {
             return Deno.readTextFile(args.path);
           }),
-          loader: ext as EsbuildType.Loader
+          loader: ext as esbuild.Loader
         };
       });
     }
   };
 
-  const esbuildOptions: EsbuildType.BuildOptions = {
+  const esbuildOptions: esbuild.BuildOptions = {
     entryPoints: [entry],
     plugins: [sveltePlugin],
     external: ['npm:*', 'node:*'],

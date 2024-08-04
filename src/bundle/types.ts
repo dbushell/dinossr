@@ -1,26 +1,7 @@
-import {svelte} from '../../deps.ts';
-import Script from './script.ts';
-import type * as EsbuildType from './esbuild/types.ts';
-
-export type {EsbuildType};
+import type Script from './script.ts';
+import type {Metafile} from 'esbuild';
 
 export type Deferred<T> = ReturnType<typeof Promise.withResolvers<T>>;
-
-export type SveltePreprocess =
-  | svelte.PreprocessorGroup
-  | Array<svelte.PreprocessorGroup>;
-
-export type EsbuildResolve =
-  | null
-  | void
-  | undefined
-  | EsbuildType.OnResolveResult
-  | Promise<EsbuildResolve>;
-
-export type EsbuildMetafile = Exclude<
-  EsbuildType.BuildResult['metafile'],
-  undefined
->;
 
 export type BumbleOptions = {
   entry: string;
@@ -31,21 +12,21 @@ export type BumbleOptions = {
 
 export interface BumbleBundle {
   script: Script;
-  metafile: EsbuildType.Metafile;
+  metafile: Metafile;
 }
 
 export interface BumbleDOMBundle {
   entry: string;
   hash: string;
   code: string;
-  metafile: EsbuildType.Metafile;
+  metafile: Metafile;
 }
 
 export interface BumbleSSRBundle<M> {
   entry: string;
   hash: string;
   mod: BumbleModule<M>;
-  metafile: EsbuildType.Metafile;
+  metafile: Metafile;
 }
 
 // Partial of `create_ssr_component` return type:

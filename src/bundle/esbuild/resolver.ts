@@ -1,7 +1,7 @@
 import {path, svelte} from '../../../deps.ts';
-import type {EsbuildType, EsbuildResolve} from '../types.ts';
+import type {OnResolveArgs, OnResolveResult} from 'esbuild';
 
-type Resolver = (args: EsbuildType.OnResolveArgs) => EsbuildResolve;
+type Resolver = (args: OnResolveArgs) => OnResolveResult | undefined;
 
 const url = new URL('../svelte/', import.meta.url);
 

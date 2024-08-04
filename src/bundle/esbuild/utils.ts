@@ -1,5 +1,5 @@
 import {path} from '../../../deps.ts';
-import type {EsbuildMetafile} from '../types.ts';
+import type {Metafile} from 'esbuild';
 
 // Return Svelte component name from path
 export const componentName = (entry: string) => {
@@ -33,8 +33,8 @@ export const normalizeKey = (dir: string, key: string) => {
 
 // Resolve all metafile paths to relative paths
 // esbuild WASM resolves differently
-export const normalizeMeta = (dir: string, oldMeta: EsbuildMetafile) => {
-  const newMeta: EsbuildMetafile = {inputs: {}, outputs: {}};
+export const normalizeMeta = (dir: string, oldMeta: Metafile) => {
+  const newMeta: Metafile = {inputs: {}, outputs: {}};
   if (Object.hasOwn(newMeta, 'inputs')) {
     for (const [k, input] of Object.entries(oldMeta.inputs)) {
       const newInput = structuredClone(input);

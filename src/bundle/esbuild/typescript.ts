@@ -1,11 +1,11 @@
 import {encodeHash} from '../../utils.ts';
-import type {EsbuildType} from '../types.ts';
+import type * as esbuild from 'esbuild';
 import type {PreprocessorGroup, Processed} from 'svelte/compiler';
 
 const processedMap = new Map<string, Promise<Processed>>();
 
 export const typescriptGroup = (
-  transform: typeof EsbuildType.transform
+  transform: typeof esbuild.transform
 ): PreprocessorGroup => {
   return {
     script: async ({content, attributes}) => {
