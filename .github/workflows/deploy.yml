@@ -37,6 +37,10 @@ jobs:
         with:
           deno-version: vx.x.x
 
+      - name: Build
+        run: |
+          deno add npm:@esbuild/linux-x64
+
       - name: Deploy
         uses: denoland/deployctl@v1
         with:
