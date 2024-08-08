@@ -1,7 +1,5 @@
 # 🦕 DinoSsr
 
-Documentation 👉 [ssr.rocks](https://ssr.rocks)
-
 A minimal web framework powered by [VelociRouter](https://github.com/dbushell/velocirouter).
 
 ## Usage
@@ -16,7 +14,7 @@ await dinossr.init();
 
 ## Documentation
 
-[DinoSsr Documentation](https://ssr.rocks)
+DinoSsr Documentation 👉 [ssr.rocks](https://ssr.rocks) (coming soon)
 
 * * *
 
