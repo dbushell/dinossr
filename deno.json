@@ -1,6 +1,6 @@
 {
   "name": "@ssr/dinossr",
-  "version": "0.35.1",
+  "version": "0.36.0",
   "exports": {
     ".": "./mod.ts",
     "./types": "./src/types.ts"
@@ -13,7 +13,7 @@
       "LICENSE",
       "README.md"
     ],
-    "exclude": [".github", "docs"]
+    "exclude": [".github"]
   },
   "imports": {
     "@ssr/velocirouter": "jsr:@ssr/velocirouter@^0.9.0",
